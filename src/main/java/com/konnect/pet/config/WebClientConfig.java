@@ -18,14 +18,14 @@ import reactor.netty.http.client.HttpClient;
 @Configuration
 public class WebClientConfig {
 	private final int CONNECT_TIMEOUT = 10000;
-	private final int RESPONSE_TIMEOUT = 15000;
+	private final int RESPONSE_TIMEOUT = 5000;
 	private final int MAX_MEMORY_SIZE = 10 * 1024 * 1024;
 
 	@Bean
 	public WebClient webClient() {
 		HttpClient client = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT)
 				.responseTimeout(Duration.ofMillis(RESPONSE_TIMEOUT)).doOnConnected(conn -> conn
-						.addHandlerLast(new ReadTimeoutHandler(10)).addHandlerLast(new WriteTimeoutHandler(10)));
+						.addHandlerLast(new ReadTimeoutHandler(5)).addHandlerLast(new WriteTimeoutHandler(5)));
 
 		ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
 				.codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(MAX_MEMORY_SIZE)).build();

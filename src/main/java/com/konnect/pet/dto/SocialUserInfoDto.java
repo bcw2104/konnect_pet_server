@@ -1,5 +1,7 @@
 package com.konnect.pet.dto;
 
+import com.konnect.pet.enums.PlatformType;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,4 +10,5 @@ import lombok.Getter;
 public class SocialUserInfoDto {
 	private String email;
 	private String platformId;
+	private PlatformType platformType;
 }

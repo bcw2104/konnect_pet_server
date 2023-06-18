@@ -1,13 +1,19 @@
 package com.konnect.pet.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.konnect.pet.enums.Roles;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,8 +36,9 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 	@Column(name = "user_id")
 	private Long id;
 
+	@Enumerated(EnumType.STRING)
 	@Column(length = 10, nullable = false)
-	private String role;
+	private Roles role;
 
 	@Column(length = 50, unique = true, nullable = false)
 	private String email;
@@ -59,18 +66,13 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 
 	private boolean marketingYn;
 
+	private LocalDateTime lastLoginDate;
+
 	// TODO 주소 추가
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		Collection<GrantedAuthority> collect = new ArrayList<>();
-		collect.add(new GrantedAuthority() {
-			@Override
-			public String getAuthority() {
-				return role;
-			}
-		});
-		return collect;
+		return List.of(this.role);
 	}
 
 	@Override

@@ -18,8 +18,8 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(AccessDeniedException.class)
 	protected ResponseEntity<?> handleAccessDeniedException(AccessDeniedException e) {
-		log.error("message: {}, class: {}", e.getMessage(),AccessDeniedException.class);
-		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ResponseDto(ResponseType.INVALID_REQUEST));
+		log.error("message: {}, class: {}", e.getMessage(),AccessDeniedException.class,e);
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ResponseDto(ResponseType.INVALID_ACCESS_TOKEN));
 	}
 
 	@ExceptionHandler(AuthenticationException.class)
@@ -30,15 +30,21 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(CustomResponseException.class)
 	protected ResponseEntity<?> handleCustomResponseException(CustomResponseException e) {
-		log.error("message: {}, rep_code:{}, rep_msg:{}, class: {}", e.getMessage(), e.getResponseType().getKey(),
-				e.getResponseType().getValue(),CustomResponseException.class);
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDto(e.getResponseType()));
+		log.error("message: {}, rep_code:{}, rep_msg:{}, class: {}", e.getMessage(), e.getResponseType().getCode(),
+				e.getResponseType().getMessage(),CustomResponseException.class);
+		return ResponseEntity.status(e.getStatus()).body(new ResponseDto(e.getResponseType()));
 	}
 
 	@ExceptionHandler(RuntimeException.class)
 	protected ResponseEntity<?> handleRuntimeException(RuntimeException e) {
 		log.error("message: {}, class: {}", e.getMessage(), RuntimeException.class);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseDto(ResponseType.FAIL));
+	}
+
+	@ExceptionHandler(Exception.class)
+	protected ResponseEntity<?> handleException(Exception e) {
+		log.error("message: {}, class: {}", e.getMessage(), Exception.class);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseDto(ResponseType.SERVER_ERROR));
 	}
 
 }

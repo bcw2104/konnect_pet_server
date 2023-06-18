@@ -16,6 +16,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.konnect.pet.enums.Roles;
+
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -44,7 +46,7 @@ public class SecurityConfig {
 				.authorizeHttpRequests(
 						authorize ->
 						authorize.requestMatchers(AUTH_WHITELIST).permitAll()
-						.anyRequest().authenticated())
+						.anyRequest().hasRole(Roles.ROLE_LVL1.getLevel()))
 				.addFilterAfter(new JwtAuthenticationFilter(jwtTokenProvider),
 						UsernamePasswordAuthenticationFilter.class)
 				.formLogin(AbstractHttpConfigurer::disable)

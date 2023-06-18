@@ -3,10 +3,14 @@ package com.konnect.pet.repository;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.konnect.pet.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long>{
 
-	Optional<User> getByEmail(String email);
+	@Query("select u from User u where u.id = :id")
+	Optional<User> findById(Long id);
+
+	Optional<User> findByEmail(String email);
 }

@@ -31,6 +31,6 @@ public class ExternalApiService {
 								.map(body -> new IOException(body)))
 				.bodyToMono(Map.class);
 
-		return response.flux().toStream().findFirst().orElse(null);
+		return response.block();
 	}
 }
