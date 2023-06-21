@@ -8,6 +8,8 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import com.konnect.pet.dto.MailDto;
+import com.konnect.pet.enums.ResponseType;
+import com.konnect.pet.ex.CustomResponseException;
 
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -44,6 +46,7 @@ public class MailService {
 		} catch (Exception e) {
 			log.info("Mail send error - to: {}, from: {}, template: {}, message: {}", mail.getReceiver(), sender,
 					mail.getTemplate(), e.getMessage(),e);
+			throw new CustomResponseException(ResponseType.SERVER_ERROR);
 		}
 
 	}

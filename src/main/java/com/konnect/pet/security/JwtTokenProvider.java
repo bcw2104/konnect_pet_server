@@ -22,7 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.konnect.pet.dto.TokenInfoDto;
+import com.konnect.pet.dto.JwtTokenDto;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.ex.CustomResponseException;
@@ -54,7 +54,7 @@ public class JwtTokenProvider {
 	private Long ACCESS_TOKEN_LIFE = 1000L * 60L * 60L * 24L;
 	private Long REFRESH_TOKEN_LIFE = 1000L * 60L * 60L * 24L * 365L;
 
-	public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, CustomUserDetailsService customUserDetailsService,
+	public JwtTokenProvider(@Value("${konnect.jwt.secret}") String secretKey, CustomUserDetailsService customUserDetailsService,
 			UserRepository userRepository) {
 		byte[] keyBytes = Decoders.BASE64.decode(secretKey);
 		this.key = Keys.hmacShaKeyFor(keyBytes);
@@ -64,12 +64,12 @@ public class JwtTokenProvider {
 
 	// 유저 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
 	@Transactional
-	public TokenInfoDto generateToken(Long userId) {
+	public JwtTokenDto generateToken(Long userId) {
 
 		Optional<User> userOpt = userRepository.findById(userId);
 
 		if (userOpt.isEmpty()) {
-			throw new CustomResponseException(ResponseType.AUTH_FAIL);
+			throw new CustomResponseException(ResponseType.LOGIN_FAIL);
 		}
 
 		User user = userOpt.get();
@@ -90,12 +90,12 @@ public class JwtTokenProvider {
 		user.setAuthTokenId(tokenId);
 
 		log.info("Generate User Token - userId: {}", user.getId());
-		return TokenInfoDto.builder().grantType("Bearer").accessToken(accessToken).refreshToken(refreshToken).build();
+		return JwtTokenDto.builder().grantType("Bearer").accessToken(accessToken).refreshToken(refreshToken).build();
 	}
 
 	// AccessToken 만료 시 , RefreshToken 을 생성하는 메서드
 	@Transactional
-	public TokenInfoDto generateTokenByRefreshToken(String accessToken, String refreshToken) {
+	public JwtTokenDto generateTokenByRefreshToken(String accessToken, String refreshToken) {
 		// 토큰 복호화
 		Claims accessClaims = parseClaims(accessToken);
 		Claims refreshClaims = parseClaims(refreshToken);
@@ -129,7 +129,7 @@ public class JwtTokenProvider {
 			user.setAuthTokenId(tokenId);
 
 			log.info("ReGenerate User Token - userId: {}", user.getId());
-			return TokenInfoDto.builder().grantType("Bearer").accessToken(newAccessToken).refreshToken(newRefreshToken)
+			return JwtTokenDto.builder().grantType("Bearer").accessToken(newAccessToken).refreshToken(newRefreshToken)
 					.build();
 		} else {
 			throw new CustomResponseException(ResponseType.INVALID_REFRESH_TOKEN);
