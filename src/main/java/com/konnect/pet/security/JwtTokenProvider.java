@@ -79,18 +79,21 @@ public class JwtTokenProvider {
 		Date now = new Date();
 		long timestamp = (new Date()).getTime();
 		// Access Token 생성 - 하루
+		Date accessTokenExpireAt = new Date(timestamp + ACCESS_TOKEN_LIFE);
 		String accessToken = Jwts.builder().setSubject(user.getId().toString()).claim("id", tokenId)
-				.setExpiration(new Date(timestamp + ACCESS_TOKEN_LIFE)).setIssuedAt(now)
-				.signWith(key, SignatureAlgorithm.HS256).compact();
+				.setExpiration(accessTokenExpireAt).setIssuedAt(now).signWith(key, SignatureAlgorithm.HS256).compact();
 
 		// Refresh Token 생성 - 1년
-		String refreshToken = Jwts.builder().setSubject(tokenId).setExpiration(new Date(timestamp + REFRESH_TOKEN_LIFE))
-				.setIssuedAt(now).signWith(key, SignatureAlgorithm.HS256).compact();
+		Date refreshTokenExpireAt = new Date(timestamp + REFRESH_TOKEN_LIFE);
+		String refreshToken = Jwts.builder().setSubject(tokenId).setExpiration(refreshTokenExpireAt).setIssuedAt(now)
+				.signWith(key, SignatureAlgorithm.HS256).compact();
 
 		user.setAuthTokenId(tokenId);
 
 		log.info("Generate User Token - userId: {}", user.getId());
-		return TokenInfoDto.builder().grantType("Bearer").accessToken(accessToken).refreshToken(refreshToken).build();
+		return TokenInfoDto.builder().grantType("Bearer").accessToken(accessToken).refreshToken(refreshToken)
+				.accessTokenExpireAt(accessTokenExpireAt.getTime()).refreshTokenExpireAt(refreshTokenExpireAt.getTime())
+				.build();
 	}
 
 	// AccessToken 만료 시 , RefreshToken 을 생성하는 메서드
@@ -117,20 +120,22 @@ public class JwtTokenProvider {
 			Date now = new Date();
 			long timestamp = (new Date()).getTime();
 			// Access Token 생성 - 하루
+			Date accessTokenExpireAt = new Date(timestamp + ACCESS_TOKEN_LIFE);
 			String newAccessToken = Jwts.builder().setSubject(user.getId().toString()).claim("id", tokenId)
-					.setExpiration(new Date(timestamp + ACCESS_TOKEN_LIFE)).setIssuedAt(now)
-					.signWith(key, SignatureAlgorithm.HS256).compact();
+					.setExpiration(accessTokenExpireAt).setIssuedAt(now).signWith(key, SignatureAlgorithm.HS256)
+					.compact();
 
 			// Refresh Token 생성 - 1년
-			String newRefreshToken = Jwts.builder().setSubject(tokenId)
-					.setExpiration(new Date(timestamp + REFRESH_TOKEN_LIFE)).setIssuedAt(now)
-					.signWith(key, SignatureAlgorithm.HS256).compact();
+			Date refreshTokenExpireAt = new Date(timestamp + REFRESH_TOKEN_LIFE);
+			String newRefreshToken = Jwts.builder().setSubject(tokenId).setExpiration(refreshTokenExpireAt)
+					.setIssuedAt(now).signWith(key, SignatureAlgorithm.HS256).compact();
 
 			user.setAuthTokenId(tokenId);
 
 			log.info("ReGenerate User Token - userId: {}", user.getId());
 			return TokenInfoDto.builder().grantType("Bearer").accessToken(newAccessToken).refreshToken(newRefreshToken)
-					.build();
+					.accessTokenExpireAt(accessTokenExpireAt.getTime())
+					.refreshTokenExpireAt(refreshTokenExpireAt.getTime()).build();
 		} else {
 			throw new CustomResponseException(ResponseType.INVALID_REFRESH_TOKEN);
 		}

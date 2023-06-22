@@ -77,7 +77,7 @@ public class AuthService {
 			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
 		}
 
-		return new ResponseDto(ResponseType.SUCCESS);
+		return new ResponseDto(ResponseType.LOGIN_FAIL);
 	}
 
 	public ResponseDto getSocialUserInfo(String token, PlatformType type) {
