@@ -54,7 +54,7 @@ public class JwtTokenProvider {
 	private Long ACCESS_TOKEN_LIFE = 1000L * 60L * 60L * 24L;
 	private Long REFRESH_TOKEN_LIFE = 1000L * 60L * 60L * 24L * 365L;
 
-	public JwtTokenProvider(@Value("${konnect.jwt.secret}") String secretKey, CustomUserDetailsService customUserDetailsService,
+	public JwtTokenProvider(@Value("${application.jwt.secret}") String secretKey, CustomUserDetailsService customUserDetailsService,
 			UserRepository userRepository) {
 		byte[] keyBytes = Decoders.BASE64.decode(secretKey);
 		this.key = Keys.hmacShaKeyFor(keyBytes);
@@ -171,7 +171,7 @@ public class JwtTokenProvider {
 			log.info("Invalid JWT Token", e);
 		} catch (ExpiredJwtException e) {
 			log.info("Expired JWT Token", e.getMessage());
-			throw new CustomResponseException(HttpStatus.FORBIDDEN, ResponseType.EXPIRED_ACCESS_TOKEN);
+			throw new CustomResponseException(HttpStatus.FORBIDDEN, ResponseType.INVALID_ACCESS_TOKEN);
 		} catch (UnsupportedJwtException e) {
 			log.info("Unsupported JWT Token", e);
 		} catch (IllegalArgumentException e) {

@@ -36,6 +36,8 @@ dependencies {
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+	implementation "com.twilio.sdk:twilio:9.7.0"
+
 	implementation 'org.apache.commons:commons-lang3'
 
 	// jwt

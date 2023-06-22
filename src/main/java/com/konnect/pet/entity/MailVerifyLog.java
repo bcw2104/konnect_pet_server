@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Setter
 @Getter
@@ -17,6 +18,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class MailVerifyLog extends BaseAutoSetEntity {
 
 	@Id
@@ -28,6 +30,6 @@ public class MailVerifyLog extends BaseAutoSetEntity {
 
 	@Column(length = 3, nullable = false)
 	private String locationCode;
-	
+
 	private boolean consumedYn;
 }

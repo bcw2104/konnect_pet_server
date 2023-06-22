@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.support.CustomSQLExceptionTranslatorRegistrar;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,14 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final ExternalApiService apiService;
 	private final MailService mailService;
+	private final SmsService smsService;
+
+	@Value("${application.name}")
+	private String APP_NAME;
+
+	private String generateRandomString(int length, boolean useNumber, boolean useLetters) {
+		return RandomStringUtils.random(length, useLetters, useNumber);
+	}
 
 	public ResponseDto refreshToken(HttpServletRequest request) {
 		String accessToken = tokenProvider.resolveToken(request, "Expired");
@@ -117,20 +126,28 @@ public class AuthService {
 
 	@Transactional
 	public ResponseDto sendVerifyCodeBySms(String tel, VerifyLocationCode locationCode) {
-		Map<String, Object> mailData = new HashMap<>();
+		String verifiyCode = generateRandomString(6, true, false);
+		StringBuffer smsContent = new StringBuffer();
+		smsContent.append("Your ").append(APP_NAME).append(" verification code is: ").append(verifiyCode);
 
-		String verifiyCode = generateRandomString(8, true, true);
+		boolean isSuccess = smsService.sendSimpleSms(tel, smsContent.toString());
 
-		SmsVerifyLog verifyLog = SmsVerifyLog.builder().verifiyCode(verifiyCode).consumedYn(false)
-				.locationCode(locationCode.getCode()).build();
+		if (isSuccess) {
+			SmsVerifyLog verifyLog = SmsVerifyLog.builder().verifiyCode(verifiyCode).consumedYn(false).successYn(false)
+					.locationCode(locationCode.getCode()).build();
 
-		smsVerifyLogRepository.save(verifyLog);
+			smsVerifyLogRepository.save(verifyLog);
 
-		Map<String, Object> result = new HashMap<>();
-		result.put("req_id", verifyLog.getId());
-		result.put("timestamp", Timestamp.valueOf(verifyLog.getCreatedDate()));
+			Map<String, Object> result = new HashMap<>();
+			result.put("reqId", verifyLog.getId());
+			result.put("timestamp", Timestamp.valueOf(verifyLog.getCreatedDate()));
 
-		return new ResponseDto(ResponseType.SUCCESS, result);
+			return new ResponseDto(ResponseType.SUCCESS, result);
+		}
+		else {
+			return new ResponseDto(ResponseType.FAIL);
+		}
+
 	}
 
 	@Transactional
@@ -152,25 +169,21 @@ public class AuthService {
 		mailVerifyLogRepository.save(verifyLog);
 
 		Map<String, Object> result = new HashMap<>();
-		result.put("req_id", verifyLog.getId());
+		result.put("reqId", verifyLog.getId());
 		result.put("timestamp", Timestamp.valueOf(verifyLog.getCreatedDate()));
 
 		return new ResponseDto(ResponseType.SUCCESS, result);
 	}
 
-	private String generateRandomString(int length, boolean useNumber, boolean useLetters) {
-		return RandomStringUtils.random(length, useLetters, useNumber);
-	}
-
 	@Transactional
 	public ResponseDto validateVerfiyCode(Long logId, Long timestamp, String verifyCode, VerifyType type) {
 		Map<String, Object> result = new HashMap<>();
-		
+
 		if (VerifyType.SMS.equals(type)) {
 			SmsVerifyLog log = smsVerifyLogRepository.findById(logId)
 					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 			Long createdTimestamp = Timestamp.valueOf(log.getCreatedDate()).getTime();
-			//TODO 여기다 시간 체크
+			// TODO 여기다 시간 체크
 			if (!timestamp.equals(createdTimestamp)) {
 				new CustomResponseException(ResponseType.INVALID_PARAMETER);
 			}
@@ -191,7 +204,6 @@ public class AuthService {
 		} else {
 			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
 		}
-
 
 		return new ResponseDto(ResponseType.SUCCESS, result);
 	}

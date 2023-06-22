@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Setter
 @Getter
@@ -19,6 +20,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class SmsVerifyLog extends BaseAutoSetEntity {
 
 	@Id
@@ -30,6 +32,7 @@ public class SmsVerifyLog extends BaseAutoSetEntity {
 
 	@Column(length = 3, nullable = false)
 	private String locationCode;
-	
+
+	private boolean successYn;
 	private boolean consumedYn;
 }

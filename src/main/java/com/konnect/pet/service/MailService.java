@@ -26,9 +26,9 @@ public class MailService {
 	private final TemplateEngine engine;
 
 	@Value("${spring.mail.username}")
-	private String sender;
-	@Value("${spring.mail.display}")
-	private String display;
+	private String MAIL_SENDER;
+	@Value("${application.name}")
+	private String APP_NAME;
 
 	public void sendTemplateMail(MailDto mail) {
 		MimeMessage message = mailSender.createMimeMessage();
@@ -39,7 +39,7 @@ public class MailService {
 			String html = engine.process("mails/" + mail.getTemplate(), context);
 
 			message.setSubject(mail.getSubject());
-			message.setFrom(new InternetAddress(sender, display));
+			message.setFrom(new InternetAddress(MAIL_SENDER, APP_NAME));
 			message.addRecipient(RecipientType.TO, new InternetAddress(mail.getReceiver()));
 			message.setText(html, "UTF-8", "html");
 			mailSender.send(message);

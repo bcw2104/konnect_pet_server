@@ -49,18 +49,18 @@ public class AuthController {
 
 		return ResponseEntity.ok(authService.getSocialUserInfo(token, PlatformType.GOOGLE));
 	}
-	
+
 	@PostMapping("/v1/send/sms")
 	public ResponseEntity<?> sendSms(@RequestBody Map<String, Object> body){
 		String tel = body.get("tel").toString();
 
-		return ResponseEntity.ok(authService.sendVerifyCodeByEmail(tel, VerifyLocationCode.SIGNUP));
+		return ResponseEntity.ok(authService.sendVerifyCodeBySms(tel, VerifyLocationCode.SIGNUP));
 	}
-	
+
 	@PostMapping("/v1/send/email")
 	public ResponseEntity<?> sendEmail(@RequestBody Map<String, Object> body){
 		String email = body.get("email").toString();
-		
+
 		return ResponseEntity.ok(authService.sendVerifyCodeByEmail(email, VerifyLocationCode.SIGNUP));
 	}
 }

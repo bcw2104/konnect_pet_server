@@ -17,8 +17,7 @@ public enum ResponseType {
 	AUTH_FAIL("9200", "auth failed", "인증에 실패했습니다."),
 	UNAUTHORIZED("9201", "unauthorized", "접근할 수 없는 서비스입니다."),
 	INVALID_ACCESS_TOKEN("9202", "invalid access token", "유효하지 않은 토큰입니다."),
-	INVALID_REFRESH_TOKEN("9203", "invalid refresh token", "유효하지 않은 토큰입니다."),
-	EXPIRED_ACCESS_TOKEN("9202", "expired access token", "만료된 토큰입니다."),
+	INVALID_REFRESH_TOKEN("9203", "invalid refresh token", "로그인이 필요한 서비스입니다."),
 
 	LOGIN_FAIL("9210", "login failed", "아이디 또는 비밀번호가 일치하지 않습니다."),
 	VERIFY_FAIL("9211", "invalid verify code", "인증번호가 일치하지 않습니다."),
