@@ -1,7 +1,5 @@
 package com.konnect.pet.dto;
 
-import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +7,7 @@ import lombok.Data;
 @Builder
 @Data
 @AllArgsConstructor
-public class TokenInfoDto {
+public class JwtTokenDto {
 
 	private String grantType;
 	private String accessToken;

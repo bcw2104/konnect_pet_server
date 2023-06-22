@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konnect.pet.enums.PlatformType;
+import com.konnect.pet.enums.code.VerifyLocationCode;
 import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.service.AuthService;
 import com.konnect.pet.service.UserService;
@@ -47,5 +48,19 @@ public class AuthController {
 		String token = request.getHeader("SOCIAL_AUTH_TOKEN").toString();
 
 		return ResponseEntity.ok(authService.getSocialUserInfo(token, PlatformType.GOOGLE));
+	}
+	
+	@PostMapping("/v1/send/sms")
+	public ResponseEntity<?> sendSms(@RequestBody Map<String, Object> body){
+		String tel = body.get("tel").toString();
+
+		return ResponseEntity.ok(authService.sendVerifyCodeByEmail(tel, VerifyLocationCode.SIGNUP));
+	}
+	
+	@PostMapping("/v1/send/email")
+	public ResponseEntity<?> sendEmail(@RequestBody Map<String, Object> body){
+		String email = body.get("email").toString();
+		
+		return ResponseEntity.ok(authService.sendVerifyCodeByEmail(email, VerifyLocationCode.SIGNUP));
 	}
 }
