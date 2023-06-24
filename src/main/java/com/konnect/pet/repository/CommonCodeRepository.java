@@ -9,5 +9,5 @@ import com.konnect.pet.entity.embedded.CommonCodePair;
 
 public interface CommonCodeRepository extends JpaRepository<CommonCode,CommonCodePair>{
 
-	List<CommonCode> findByCodePair_CodeGroup(String codeGroup);
+	List<CommonCode> findByCodePair_CodeGroupOrderBySortOrderAsc(String codeGroup);
 }

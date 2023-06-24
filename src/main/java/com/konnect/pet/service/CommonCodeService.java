@@ -19,11 +19,11 @@ public class CommonCodeService {
 
 	public List<PickerItemDto> getPickerItemByCodeGroup(String codeGroup) {
 
-		return commonCodeRepository.findByCodePair_CodeGroup(codeGroup).stream().map(ele -> new PickerItemDto(ele))
+		return commonCodeRepository.findByCodePair_CodeGroupOrderBySortOrderAsc(codeGroup).stream().map(ele -> new PickerItemDto(ele))
 				.collect(Collectors.toList());
 	}
 
 	public List<CommonCode> getByCodeGroup(String codeGroup) {
-		return commonCodeRepository.findByCodePair_CodeGroup(codeGroup);
+		return commonCodeRepository.findByCodePair_CodeGroupOrderBySortOrderAsc(codeGroup);
 	}
 }

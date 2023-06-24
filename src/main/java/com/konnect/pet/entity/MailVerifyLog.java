@@ -23,6 +23,7 @@ public class MailVerifyLog extends BaseAutoSetEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "log_id")
 	private Long id;
 
 	@Column(length = 8, nullable = false)

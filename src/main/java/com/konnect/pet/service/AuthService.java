@@ -2,6 +2,7 @@ package com.konnect.pet.service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -52,6 +53,10 @@ public class AuthService {
 
 	@Value("${application.name}")
 	private String APP_NAME;
+
+	//seconds
+	private final int SMS_VERIFY_TIMEOUT = 180;
+	private final int Email_VERIFY_TIMEOUT = 600;
 
 	private String generateRandomString(int length, boolean useNumber, boolean useLetters) {
 		return RandomStringUtils.random(length, useLetters, useNumber);
@@ -140,12 +145,11 @@ public class AuthService {
 
 			Map<String, Object> result = new HashMap<>();
 			result.put("reqId", verifyLog.getId());
-			result.put("timestamp", Timestamp.valueOf(verifyLog.getCreatedDate()));
+			result.put("timestamp", verifyLog.getCreatedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
 			return new ResponseDto(ResponseType.SUCCESS, result);
-		}
-		else {
-			return new ResponseDto(ResponseType.FAIL);
+		} else {
+			throw new CustomResponseException(ResponseType.SERVER_ERROR);
 		}
 
 	}
@@ -170,37 +174,46 @@ public class AuthService {
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("reqId", verifyLog.getId());
-		result.put("timestamp", Timestamp.valueOf(verifyLog.getCreatedDate()));
+		result.put("timestamp", verifyLog.getCreatedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
 		return new ResponseDto(ResponseType.SUCCESS, result);
 	}
 
 	@Transactional
-	public ResponseDto validateVerfiyCode(Long logId, Long timestamp, String verifyCode, VerifyType type) {
+	public ResponseDto validateVerfiyCode(Long logId, LocalDateTime timestamp, String verifyCode, VerifyType type) {
 		Map<String, Object> result = new HashMap<>();
+		LocalDateTime now = LocalDateTime.now();
 
 		if (VerifyType.SMS.equals(type)) {
-			SmsVerifyLog log = smsVerifyLogRepository.findById(logId)
+			SmsVerifyLog verifyLog = smsVerifyLogRepository.findById(logId)
 					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
-			Long createdTimestamp = Timestamp.valueOf(log.getCreatedDate()).getTime();
-			// TODO 여기다 시간 체크
-			if (!timestamp.equals(createdTimestamp)) {
+
+			if (!timestamp.isEqual(verifyLog.getCreatedDate())) {
 				new CustomResponseException(ResponseType.INVALID_PARAMETER);
 			}
-			if (!log.getVerifiyCode().equals(verifyCode)) {
+			if (verifyLog.getCreatedDate().plusSeconds(SMS_VERIFY_TIMEOUT).isBefore(now)) {
+				throw new CustomResponseException(ResponseType.VERIFY_TIMEOUT);
+			}
+			if (!verifyLog.getVerifiyCode().equals(verifyCode)) {
 				throw new CustomResponseException(ResponseType.VERIFY_FAIL);
 			}
-			log.setConsumedYn(true);
+			verifyLog.setConsumedYn(true);
 		} else if (VerifyType.EMAIL.equals(type)) {
-			MailVerifyLog log = mailVerifyLogRepository.findById(logId)
+			MailVerifyLog verifyLog = mailVerifyLogRepository.findById(logId)
 					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
-			if (!Timestamp.valueOf(log.getCreatedDate()).equals(timestamp)) {
+
+			Long createdTimestamp = Timestamp.valueOf(verifyLog.getCreatedDate()).getTime();
+
+			if (!timestamp.isEqual(verifyLog.getCreatedDate())) {
 				new CustomResponseException(ResponseType.INVALID_PARAMETER);
 			}
-			if (!log.getVerifiyCode().equals(verifyCode)) {
+			if (verifyLog.getCreatedDate().plusSeconds(Email_VERIFY_TIMEOUT).isBefore(now)) {
+				throw new CustomResponseException(ResponseType.VERIFY_TIMEOUT);
+			}
+			if (!verifyLog.getVerifiyCode().equals(verifyCode)) {
 				throw new CustomResponseException(ResponseType.VERIFY_FAIL);
 			}
-			log.setConsumedYn(true);
+			verifyLog.setConsumedYn(true);
 		} else {
 			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
 		}

@@ -17,11 +17,9 @@ import lombok.Setter;
 public class PickerItemDto {
 	private String label;
 	private String value;
-	private String key;
 
 	public PickerItemDto(CommonCode commonCode) {
 		this.label = commonCode.getCodeName();
 		this.value = commonCode.getCodePair().getCode();
-		this.key = commonCode.getCodePair().getCode();
 	}
 }

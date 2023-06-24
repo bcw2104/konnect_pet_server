@@ -3,8 +3,11 @@ package com.konnect.pet.service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.konnect.pet.enums.ResponseType;
+import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.response.ResponseDto;
 import com.twilio.Twilio;
+import com.twilio.exception.ApiException;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 
@@ -28,18 +31,27 @@ public class SmsService {
 
 	public boolean sendSimpleSms(String to, String content) {
 		initTwilio();
-		Message message = Message
-				.creator(new PhoneNumber(to), TWILIO_SMS_SID, content)
+		try {
+			Message message = Message.creator(new PhoneNumber(to), TWILIO_SMS_SID, content)
 //				.setStatusCallback(content)
-				.create();
+					.create();
+			log.info("call twilio sms api - status: {}, errorCode: {}", message.getStatus(), message.getErrorCode());
 
-		log.info("call twilio sms api - status: {}, errorCode: {}", message.getStatus(),message.getErrorCode());
+			if (message.getErrorCode() != null) {
+				return false;
+			}
 
-		if(message.getErrorCode() != null) {
-			return false;
+			return true;
+		} catch (ApiException e) {
+			log.error("twilio api error - status: {}, errorCode: {}, errorMsg: {}", e.getStatusCode(),e.getCode(),e.getMessage());
+			if(e.getStatusCode() == 400) {
+				throw new CustomResponseException(ResponseType.INVALID_TEL);
+			}
+			else {
+				throw new CustomResponseException(ResponseType.SERVER_ERROR);
+			}
 		}
 
-		return true;
 	}
 
 	private void initTwilio() {

@@ -18,5 +18,7 @@ public class CommonCode extends BaseAutoSetEntity{
 	private String codeName;
 	@Column(length = 30)
 	private String codeDescription;
+
+	private int sortOrder;
 }
 

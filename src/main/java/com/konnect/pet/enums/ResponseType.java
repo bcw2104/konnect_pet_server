@@ -12,6 +12,7 @@ public enum ResponseType {
 	// 요청 이슈로 실패 91XX
 	INVALID_REQUEST("9101", "invalid request","잠시 후 다시 시도해주세요."),
 	INVALID_PARAMETER("9102", "invalid parameter", "잠시 후 다시 시도해주세요."),
+	INVALID_TEL("9103", "invalid tel number", "유효하지 않은 전화번호입니다."),
 
 	//인증 실패 92XX
 	AUTH_FAIL("9200", "auth failed", "인증에 실패했습니다."),
@@ -21,6 +22,8 @@ public enum ResponseType {
 
 	LOGIN_FAIL("9210", "login failed", "아이디 또는 비밀번호가 일치하지 않습니다."),
 	VERIFY_FAIL("9211", "invalid verify code", "인증번호가 일치하지 않습니다."),
+	VERIFY_TIMEOUT("9212", "verify timeout", "인증 유효시간을 초과했습니다."),
+
 
 	DOMMY("10000", "dommy","dommy");
 

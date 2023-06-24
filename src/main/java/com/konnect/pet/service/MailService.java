@@ -44,7 +44,7 @@ public class MailService {
 			message.setText(html, "UTF-8", "html");
 			mailSender.send(message);
 		} catch (Exception e) {
-			log.info("Mail send error - to: {}, from: {}, template: {}, message: {}", mail.getReceiver(), sender,
+			log.info("Mail send error - to: {}, from: {}, template: {}, message: {}", mail.getReceiver(), MAIL_SENDER,
 					mail.getTemplate(), e.getMessage(),e);
 			throw new CustomResponseException(ResponseType.SERVER_ERROR);
 		}

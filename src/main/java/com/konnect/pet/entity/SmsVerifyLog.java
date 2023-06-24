@@ -25,6 +25,7 @@ public class SmsVerifyLog extends BaseAutoSetEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "log_id")
 	private Long id;
 
 	@Column(length = 6, nullable = false)

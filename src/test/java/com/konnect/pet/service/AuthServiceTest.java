@@ -43,7 +43,7 @@ public class AuthServiceTest {
 
 	@Test
 	void smsSendTest() {
-		ResponseDto result = authService.sendVerifyCodeBySms("+821050267047", VerifyLocationCode.SIGNUP);
+		ResponseDto result = authService.sendVerifyCodeBySms("821050267047", VerifyLocationCode.SIGNUP);
 
 		assertThat(result.getRsp_code()).isEqualTo("1000");
 
