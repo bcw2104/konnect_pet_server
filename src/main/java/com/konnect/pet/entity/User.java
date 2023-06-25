@@ -9,6 +9,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.konnect.pet.enums.PlatformType;
 import com.konnect.pet.enums.Roles;
 
 import jakarta.persistence.Column;
@@ -41,11 +42,18 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 	@Column(length = 10, nullable = false)
 	private Roles role;
 
-	@Column(length = 50, unique = true, nullable = false)
+	@Enumerated(EnumType.STRING)
+	@Column(length = 10, nullable = false)
+	private PlatformType platform;
+
+	@Column(length = 50, nullable = false)
 	private String email;
 
 	@Column(length = 60, nullable = false)
 	private String password;
+
+	@Column(length = 20, nullable = false)
+	private String telMask;
 
 	@Column(length = 64, nullable = false)
 	private String telHash;

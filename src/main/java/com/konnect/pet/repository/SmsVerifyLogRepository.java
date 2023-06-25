@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import com.konnect.pet.entity.MailVerifyLog;
 import com.konnect.pet.entity.SmsVerifyLog;
 
 public interface SmsVerifyLogRepository extends JpaRepository<SmsVerifyLog,Long>{

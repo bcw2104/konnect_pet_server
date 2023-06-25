@@ -1,5 +1,7 @@
 package com.konnect.pet.entity;
 
+import com.konnect.pet.enums.code.LocationCode;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

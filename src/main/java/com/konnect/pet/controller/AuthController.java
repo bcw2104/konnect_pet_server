@@ -8,21 +8,25 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konnect.pet.constant.CommonCodeConst;
 import com.konnect.pet.dto.PickerItemDto;
+import com.konnect.pet.dto.SignupRequestDto;
 import com.konnect.pet.enums.PlatformType;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.VerifyType;
-import com.konnect.pet.enums.code.VerifyLocationCode;
+import com.konnect.pet.enums.code.LocationCode;
 import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.service.AuthService;
 import com.konnect.pet.service.CommonCodeService;
+import com.konnect.pet.service.TermsService;
 import com.konnect.pet.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +41,7 @@ public class AuthController {
 
 	private final AuthService authService;
 	private final CommonCodeService commonCodeService;
+	private final TermsService termsService;
 
 	@GetMapping("/v1/screen/signup/step1")
 	public ResponseEntity<?> signupStep1(){
@@ -50,6 +55,16 @@ public class AuthController {
 		responseDto.setResult(result);
 
 		return ResponseEntity.ok(responseDto);
+	}
+
+	@GetMapping("/v1/screen/signup/step3")
+	public ResponseEntity<?> signupStep3(){
+		return ResponseEntity.ok(termsService.getTermsGroupByLocationCodeAndVisibleYn(LocationCode.SIGNUP,true));
+	}
+
+	@GetMapping("/v1/terms/group/{groupId}/lastest")
+	public ResponseEntity<?> term(@PathVariable("groupId") Long termGroupId){
+		return ResponseEntity.ok(termsService.getLastestTermsByTermsGroupId(termGroupId));
 	}
 
 	@PostMapping("/v1/token/refresh")
@@ -67,6 +82,12 @@ public class AuthController {
 		return ResponseEntity.ok(authService.login(email, password, PlatformType.EMAIL));
 	}
 
+	@PostMapping("/v1/join")
+	public ResponseEntity<?> join(@RequestBody SignupRequestDto requestDto){
+
+		return ResponseEntity.ok(authService.join(requestDto));
+	}
+
 	@GetMapping("/v1/google/userinfo")
 	public ResponseEntity<?> getUserInfo(HttpServletRequest request){
 		String token = request.getHeader("SOCIAL_AUTH_TOKEN").toString();
@@ -75,14 +96,14 @@ public class AuthController {
 	}
 
 	@PostMapping("/v1/verify/sms")
-	public ResponseEntity<?> sendVerifyms(@RequestBody Map<String, Object> body){
+	public ResponseEntity<?> sendVerifySms(@RequestBody Map<String, Object> body){
 		String tel = body.get("tel").toString();
 
-		return ResponseEntity.ok(authService.sendVerifyCodeBySms(tel, VerifyLocationCode.SIGNUP));
+		return ResponseEntity.ok(authService.sendVerifyCodeBySms(tel, LocationCode.SIGNUP));
 	}
 
 	@PostMapping("/v1/verify/sms/check")
-	public ResponseEntity<?> checkVerifyms(@RequestBody Map<String, Object> body){
+	public ResponseEntity<?> checkVerifySms(@RequestBody Map<String, Object> body){
 		Long reqId = Long.parseLong(body.get("reqId").toString());
 		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));
 		String verifyCode = body.get("verify").toString();
@@ -94,6 +115,15 @@ public class AuthController {
 	public ResponseEntity<?> sendEmail(@RequestBody Map<String, Object> body){
 		String email = body.get("email").toString();
 
-		return ResponseEntity.ok(authService.sendVerifyCodeByEmail(email, VerifyLocationCode.SIGNUP));
+		return ResponseEntity.ok(authService.sendVerifyCodeByEmail(email, LocationCode.SIGNUP));
+	}
+
+	@PostMapping("/v1/verify/email/check")
+	public ResponseEntity<?> checkVerifyEmail(@RequestBody Map<String, Object> body){
+		Long reqId = Long.parseLong(body.get("reqId").toString());
+		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));
+		String verifyCode = body.get("verify").toString();
+
+		return ResponseEntity.ok(authService.validateVerfiyCode(reqId, timestamp, verifyCode, VerifyType.EMAIL));
 	}
 }
