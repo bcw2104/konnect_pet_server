@@ -9,6 +9,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class SocialUserInfoDto {
 	private String email;
-	private String platformId;
 	private PlatformType platformType;
 }

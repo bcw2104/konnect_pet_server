@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.ex.CustomResponseException;
-import com.konnect.pet.response.ResponseDto;
 import com.twilio.Twilio;
 import com.twilio.exception.ApiException;
 import com.twilio.rest.api.v2010.account.Message;
@@ -29,7 +28,7 @@ public class SmsService {
 	@Value("${application.twilio.sms.sid}")
 	private String TWILIO_SMS_SID;
 
-	public boolean sendSimpleSms(String to, String content) {
+	public Message sendSimpleSms(String to, String content) {
 		initTwilio();
 		try {
 			Message message = Message.creator(new PhoneNumber(to), TWILIO_SMS_SID, content)
@@ -38,10 +37,10 @@ public class SmsService {
 			log.info("call twilio sms api - status: {}, errorCode: {}", message.getStatus(), message.getErrorCode());
 
 			if (message.getErrorCode() != null) {
-				return false;
+				return null;
 			}
 
-			return true;
+			return message;
 		} catch (ApiException e) {
 			log.error("twilio api error - status: {}, errorCode: {}, errorMsg: {}", e.getStatusCode(),e.getCode(),e.getMessage());
 			if(e.getStatusCode() == 400) {

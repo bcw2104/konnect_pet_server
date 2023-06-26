@@ -24,6 +24,9 @@ public enum ResponseType {
 	VERIFY_FAIL("9211", "invalid verify code", "인증번호가 일치하지 않습니다."),
 	VERIFY_TIMEOUT("9212", "verify timeout", "인증 유효시간을 초과했습니다."),
 
+	DUPLICATED_TEL("9213", "duplicated tel", "이미 가입된 전화번호입니다."),
+	DUPLICATED_EMAIL("9214", "duplicated email", "이미 가입된 이메일주소입니다."),
+
 
 	DOMMY("10000", "dommy","dommy");
 

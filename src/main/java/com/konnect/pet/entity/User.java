@@ -49,8 +49,11 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 	@Column(length = 50, nullable = false)
 	private String email;
 
-	@Column(length = 60, nullable = false)
+	@Column(length = 60, nullable = true)
 	private String password;
+
+	@Column(length = 5)
+	private String nationCode;
 
 	@Column(length = 20, nullable = false)
 	private String telMask;

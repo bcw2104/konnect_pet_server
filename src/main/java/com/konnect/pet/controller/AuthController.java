@@ -48,8 +48,8 @@ public class AuthController {
 
 		Map<String,Object> result = new HashMap<String, Object>();
 
-		List<PickerItemDto> countryCodes = commonCodeService.getPickerItemByCodeGroup(CommonCodeConst.COUNTRY_CD);
-		result.put("countryCodes",countryCodes);
+		List<PickerItemDto> nationCodes = commonCodeService.getPickerItemByCodeGroup(CommonCodeConst.COUNTRY_CD);
+		result.put("nationCodes",nationCodes);
 
 		ResponseDto responseDto = new ResponseDto(ResponseType.SUCCESS,result);
 		responseDto.setResult(result);
@@ -78,7 +78,6 @@ public class AuthController {
 		String email = body.get("email").toString();
 		String password = body.get("password").toString();
 
-
 		return ResponseEntity.ok(authService.login(email, password, PlatformType.EMAIL));
 	}
 
@@ -88,11 +87,12 @@ public class AuthController {
 		return ResponseEntity.ok(authService.join(requestDto));
 	}
 
-	@GetMapping("/v1/google/userinfo")
-	public ResponseEntity<?> getUserInfo(HttpServletRequest request){
-		String token = request.getHeader("SOCIAL_AUTH_TOKEN").toString();
+	@PostMapping("/v1/login/social")
+	public ResponseEntity<?> googleLogin(@RequestBody Map<String, Object> body){
+		String token = body.get("token").toString();
+		PlatformType type = PlatformType.valueOf(body.get("type").toString());
 
-		return ResponseEntity.ok(authService.getSocialUserInfo(token, PlatformType.GOOGLE));
+		return ResponseEntity.ok(authService.socialLogin(token,type));
 	}
 
 	@PostMapping("/v1/verify/sms")
@@ -105,8 +105,11 @@ public class AuthController {
 	@PostMapping("/v1/verify/sms/check")
 	public ResponseEntity<?> checkVerifySms(@RequestBody Map<String, Object> body){
 		Long reqId = Long.parseLong(body.get("reqId").toString());
+		String encTel = body.get("encTel").toString();
 		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));
 		String verifyCode = body.get("verify").toString();
+
+		authService.checkTelDuplication(encTel);
 
 		return ResponseEntity.ok(authService.validateVerfiyCode(reqId, timestamp, verifyCode, VerifyType.SMS));
 	}
@@ -122,8 +125,10 @@ public class AuthController {
 	public ResponseEntity<?> checkVerifyEmail(@RequestBody Map<String, Object> body){
 		Long reqId = Long.parseLong(body.get("reqId").toString());
 		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));
+		String email = body.get("email").toString();
 		String verifyCode = body.get("verify").toString();
 
+		authService.checkEmailDuplication(email);
 		return ResponseEntity.ok(authService.validateVerfiyCode(reqId, timestamp, verifyCode, VerifyType.EMAIL));
 	}
 }

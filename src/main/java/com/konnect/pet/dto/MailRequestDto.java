@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Builder
 @Data
-public class MailDto {
+public class MailRequestDto {
 	private String receiver;
 	private String subject;
 	private Map<String,Object> data;

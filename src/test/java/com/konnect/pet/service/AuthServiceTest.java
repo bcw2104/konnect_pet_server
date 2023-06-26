@@ -20,7 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.konnect.pet.dto.MailDto;
+import com.konnect.pet.dto.MailRequestDto;
 import com.konnect.pet.entity.SmsVerifyLog;
 import com.konnect.pet.enums.code.LocationCode;
 import com.konnect.pet.repository.MailVerifyLogRepository;
@@ -72,7 +72,7 @@ public class AuthServiceTest {
 
 		data.put("sample","안녕!!");
 
-		MailDto mailDto = MailDto.builder().subject("Test").receiver("bcw2104@naver.com")
+		MailRequestDto mailDto = MailRequestDto.builder().subject("Test").receiver("bcw2104@naver.com")
 				.template("email_verify_template").data(data).build();
 
 		mailService.sendTemplateMail(mailDto);

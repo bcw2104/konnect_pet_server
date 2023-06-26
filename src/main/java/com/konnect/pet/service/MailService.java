@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import com.konnect.pet.dto.MailDto;
+import com.konnect.pet.dto.MailRequestDto;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.ex.CustomResponseException;
 
@@ -30,7 +30,7 @@ public class MailService {
 	@Value("${application.name}")
 	private String APP_NAME;
 
-	public void sendTemplateMail(MailDto mail) {
+	public void sendTemplateMail(MailRequestDto mail) {
 		MimeMessage message = mailSender.createMimeMessage();
 		try {
 			Context context = new Context();
