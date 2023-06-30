@@ -228,14 +228,14 @@ public class AuthService {
 		try {
 			if (PlatformType.GOOGLE.equals(type)) {
 				Map userInfo = apiService.callGoogleUserInfoApi(token);
-
-				String gid = userInfo.get("id").toString();
 				String email = userInfo.get("email").toString();
 
 				return login(email, null, PlatformType.GOOGLE);
 			} else if (PlatformType.FACEBOOK.equals(type)) {
+				Map userInfo = apiService.callFacebookUserInfoApi(token);
+				String email = userInfo.get("email").toString();
 
-				return new ResponseDto(ResponseType.SUCCESS, null);
+				return login(email, null, PlatformType.FACEBOOK);
 			} else {
 				throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
 			}

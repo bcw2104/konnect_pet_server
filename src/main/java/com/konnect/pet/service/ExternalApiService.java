@@ -18,19 +18,40 @@ public class ExternalApiService {
 
 	private final WebClient webClient;
 
-	@Value("${social.auth.google.user.info}")
-	private String GOOGLE_USER_INFO_URL;
+	@Value("${social.auth.google.end-point}")
+	private String GOOGLE_BASE_URL;
+	@Value("${social.auth.facebook.end-point}")
+	private String FACEBOOK_BASE_URL;
 
 	public Map callGoogleUserInfoApi(String token) throws IOException {
-
-		log.info("{}",GOOGLE_USER_INFO_URL);
-		Mono<Map> response = webClient.get().uri(GOOGLE_USER_INFO_URL).header("Authorization", "Bearer" + token)
+		log.info("{}", GOOGLE_BASE_URL+"/userinfo/v2/me");
+		
+		Mono<Map> response = webClient.get().uri(GOOGLE_BASE_URL+"/userinfo/v2/me")
+				.header("Authorization", "Bearer" + token)
 				.retrieve()
 				.onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
 						clientResponse -> clientResponse.bodyToMono(String.class)
 								.map(body -> new IOException(body)))
 				.bodyToMono(Map.class);
 
+		return response.block();
+	}
+	
+	public Map callFacebookUserInfoApi(String token) throws IOException {
+		log.info("{}",FACEBOOK_BASE_URL+"/me");
+		
+		Mono<Map> response = webClient.get().uri(FACEBOOK_BASE_URL+"/me",
+				uriBuilder ->
+					uriBuilder
+					.queryParam("access_token", token)
+					.queryParam("fields", "id,name,email")
+					.build())
+				.retrieve()
+				.onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+						clientResponse -> clientResponse.bodyToMono(String.class)
+						.map(body -> new IOException(body)))
+				.bodyToMono(Map.class);
+		
 		return response.block();
 	}
 }
