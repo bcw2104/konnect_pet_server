@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.konnect.pet.constant.CommonCodeConst;
 import com.konnect.pet.dto.PickerItemDto;
-import com.konnect.pet.dto.SignupRequestDto;
+import com.konnect.pet.dto.AuthRequestDto;
 import com.konnect.pet.enums.PlatformType;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.VerifyType;
@@ -82,10 +82,72 @@ public class AuthController {
 	}
 
 	@PostMapping("/v1/join")
-	public ResponseEntity<?> join(@RequestBody SignupRequestDto requestDto){
+	public ResponseEntity<?> join(@RequestBody AuthRequestDto requestDto){
 
 		return ResponseEntity.ok(authService.join(requestDto));
 	}
+
+	@PostMapping("/v1/join/verify/sms")
+	public ResponseEntity<?> sendJoinVerifySms(@RequestBody Map<String, Object> body){
+		String tel = body.get("tel").toString();
+
+		return ResponseEntity.ok(authService.sendVerifyCodeBySms(tel, LocationCode.SIGNUP));
+	}
+
+	@PostMapping("/v1/join/verify/sms/check")
+	public ResponseEntity<?> checkJoinVerifySms(@RequestBody Map<String, Object> body){
+		Long reqId = Long.parseLong(body.get("reqId").toString());
+		String tel = body.get("tel").toString();
+		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));
+		String verifyCode = body.get("verify").toString();
+
+		authService.checkTelDuplication(tel, true);
+
+		return ResponseEntity.ok(authService.validateVerfiyCode(reqId, timestamp, verifyCode, tel,VerifyType.SMS));
+	}
+
+	@PostMapping("/v1/join/verify/email")
+	public ResponseEntity<?> sendJoinVerifyEmail(@RequestBody Map<String, Object> body){
+		String email = body.get("email").toString();
+
+		return ResponseEntity.ok(authService.sendVerifyCodeByEmail(email, LocationCode.SIGNUP));
+	}
+
+	@PostMapping("/v1/join/verify/email/check")
+	public ResponseEntity<?> checkJoinVerifyEmail(@RequestBody Map<String, Object> body){
+		Long reqId = Long.parseLong(body.get("reqId").toString());
+		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));
+		String email = body.get("email").toString();
+		String verifyCode = body.get("verify").toString();
+
+		authService.checkEmailDuplication(email,true);
+		return ResponseEntity.ok(authService.validateVerfiyCode(reqId, timestamp, verifyCode,email, VerifyType.EMAIL));
+	}
+
+	@PostMapping("/v1/password/reset")
+	public ResponseEntity<?> resetPassword(@RequestBody AuthRequestDto requestDto){
+
+		return ResponseEntity.ok(authService.resetPassword(requestDto));
+	}
+
+	@PostMapping("/v1/password/verify/email")
+	public ResponseEntity<?> commonVerifyEmail(@RequestBody Map<String, Object> body){
+		String email = body.get("email").toString();
+
+		authService.checkEmailDuplication(email,false);
+		return ResponseEntity.ok(authService.sendVerifyCodeByEmail(email, LocationCode.PASSWORD_RESET));
+	}
+
+	@PostMapping("/v1/password/verify/email/check")
+	public ResponseEntity<?> checkVerifyEmail(@RequestBody Map<String, Object> body){
+		Long reqId = Long.parseLong(body.get("reqId").toString());
+		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));
+		String email = body.get("email").toString();
+		String verifyCode = body.get("verify").toString();
+
+		return ResponseEntity.ok(authService.validateVerfiyCode(reqId, timestamp, verifyCode,email, VerifyType.EMAIL));
+	}
+
 
 	@PostMapping("/v1/login/social")
 	public ResponseEntity<?> googleLogin(@RequestBody Map<String, Object> body){
@@ -95,40 +157,4 @@ public class AuthController {
 		return ResponseEntity.ok(authService.socialLogin(token,type));
 	}
 
-	@PostMapping("/v1/verify/sms")
-	public ResponseEntity<?> sendVerifySms(@RequestBody Map<String, Object> body){
-		String tel = body.get("tel").toString();
-
-		return ResponseEntity.ok(authService.sendVerifyCodeBySms(tel, LocationCode.SIGNUP));
-	}
-
-	@PostMapping("/v1/verify/sms/check")
-	public ResponseEntity<?> checkVerifySms(@RequestBody Map<String, Object> body){
-		Long reqId = Long.parseLong(body.get("reqId").toString());
-		String encTel = body.get("encTel").toString();
-		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));
-		String verifyCode = body.get("verify").toString();
-
-		authService.checkTelDuplication(encTel);
-
-		return ResponseEntity.ok(authService.validateVerfiyCode(reqId, timestamp, verifyCode, VerifyType.SMS));
-	}
-
-	@PostMapping("/v1/verify/email")
-	public ResponseEntity<?> sendEmail(@RequestBody Map<String, Object> body){
-		String email = body.get("email").toString();
-
-		return ResponseEntity.ok(authService.sendVerifyCodeByEmail(email, LocationCode.SIGNUP));
-	}
-
-	@PostMapping("/v1/verify/email/check")
-	public ResponseEntity<?> checkVerifyEmail(@RequestBody Map<String, Object> body){
-		Long reqId = Long.parseLong(body.get("reqId").toString());
-		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));
-		String email = body.get("email").toString();
-		String verifyCode = body.get("verify").toString();
-
-		authService.checkEmailDuplication(email);
-		return ResponseEntity.ok(authService.validateVerfiyCode(reqId, timestamp, verifyCode, VerifyType.EMAIL));
-	}
 }

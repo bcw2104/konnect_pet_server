@@ -27,6 +27,8 @@ public enum ResponseType {
 	DUPLICATED_TEL("9213", "duplicated tel", "이미 가입된 전화번호입니다."),
 	DUPLICATED_EMAIL("9214", "duplicated email", "이미 가입된 이메일주소입니다."),
 
+	NOT_EXIST_EMAIL("9215", "email is not exist", "가입되지 않은 이메일주소입니다."),
+
 
 	DOMMY("10000", "dommy","dommy");
 

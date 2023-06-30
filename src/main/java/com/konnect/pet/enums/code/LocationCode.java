@@ -7,7 +7,8 @@ import lombok.Getter;
  */
 @Getter
 public enum LocationCode implements CommonCode{
-	SIGNUP("001","회원가입");
+	SIGNUP("001","회원가입"),
+	PASSWORD_RESET("002","비밀번호 초기화");
 
 	private String code;
 	private String codeName;

@@ -27,10 +27,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.konnect.pet.dto.SocialUserInfoDto;
+import com.konnect.pet.dto.VerifyFormat;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konnect.pet.constant.CommonCodeConst;
 import com.konnect.pet.dto.JwtTokenDto;
 import com.konnect.pet.dto.MailRequestDto;
-import com.konnect.pet.dto.SignupRequestDto;
+import com.konnect.pet.dto.AuthRequestDto;
 import com.konnect.pet.entity.CommonCode;
 import com.konnect.pet.entity.MailVerifyLog;
 import com.konnect.pet.entity.SmsVerifyLog;
@@ -74,6 +76,8 @@ public class AuthService {
 	private final ExternalApiService apiService;
 	private final MailService mailService;
 	private final SmsService smsService;
+
+	private final ObjectMapper objectMapper;
 
 	@Value("${application.name}")
 	private String APP_NAME;
@@ -140,8 +144,12 @@ public class AuthService {
 	}
 
 	@Transactional
-	public ResponseDto join(SignupRequestDto requestDto) {
+	public ResponseDto join(AuthRequestDto requestDto) {
 		validateJoinData(requestDto);
+
+		VerifyFormat smsVerifyFormat = validateVerfiyKey(requestDto.getSmsVerifyKey());
+		VerifyFormat emailVerifyFormat = validateVerfiyKey(requestDto.getEmailVerifyKey());
+
 		try {
 			User user = new User();
 
@@ -149,15 +157,16 @@ public class AuthService {
 				user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
 			}
 
-			String tel = Aes256Utils.decrypt(requestDto.getEncTel(), PRIVACY_AES_KEY, PRIVACY_AES_IV);
+			String tel = smsVerifyFormat.getTarget();
+			String email = emailVerifyFormat.getTarget();
 
 			StringBuffer maskingTel = new StringBuffer();
 			maskingTel.append(tel.substring(0, 2));
 			maskingTel.append("****");
 			maskingTel.append(tel.substring(6));
 
-			user.setEmail(requestDto.getEmail());
-			user.setTelEnc(requestDto.getEncTel());
+			user.setEmail(email);
+			user.setTelEnc(Aes256Utils.encrypt(tel, PRIVACY_AES_KEY, PRIVACY_AES_IV));
 			user.setTelMask(maskingTel.toString());
 			user.setTelHash(Sha256Utils.encrypt(tel));
 			user.setRole(Roles.ROLE_LVL1);
@@ -197,32 +206,32 @@ public class AuthService {
 		}
 	}
 
-	private void validateJoinData(SignupRequestDto requestDto) {
-		if (StringUtils.isEmpty(requestDto.getEmail()) || StringUtils.isEmpty(requestDto.getEncTel())
-				|| (requestDto.getPlatform().equals(PlatformType.EMAIL)
-						&& (StringUtils.isEmpty(requestDto.getPassword()) || requestDto.getEmailReqId() == null))
-				|| requestDto.getSmsReqId() == null) {
+	private void validateJoinData(AuthRequestDto requestDto) {
+		if (StringUtils.isEmpty(requestDto.getSmsVerifyKey()) || (requestDto.getPlatform().equals(PlatformType.EMAIL)
+						&& (StringUtils.isEmpty(requestDto.getPassword()) || StringUtils.isEmpty(requestDto.getEmailVerifyKey())))) {
 			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
 		}
-
-		SmsVerifyLog smsVerifyLog = smsVerifyLogRepository.findById(requestDto.getSmsReqId())
-				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
-
-		if (!smsVerifyLog.getCreatedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-				.equals(requestDto.getSmsTimestamp())) {
-			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
-		}
-		if (requestDto.getPlatform().equals(PlatformType.EMAIL)) {
-			MailVerifyLog emailVerifyLog = mailVerifyLogRepository.findById(requestDto.getEmailReqId())
-					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
-
-			if (!emailVerifyLog.getCreatedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-					.equals(requestDto.getEmailTimestamp())) {
-				throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
-			}
-		}
-
 	}
+
+	@Transactional
+	public ResponseDto resetPassword(AuthRequestDto requestDto) {
+		validateResetPasswordData(requestDto);
+
+		VerifyFormat emailVerifyFormat = validateVerfiyKey(requestDto.getEmailVerifyKey());
+
+		User user = userRepository.findByEmail(emailVerifyFormat.getTarget()).orElseThrow(()->new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+		user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+
+		return new ResponseDto(ResponseType.SUCCESS);
+	}
+
+	private void validateResetPasswordData(AuthRequestDto requestDto) {
+		if (StringUtils.isEmpty(requestDto.getPassword()) || StringUtils.isEmpty(requestDto.getEmailVerifyKey())) {
+			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+		}
+	}
+
 
 	public ResponseDto socialLogin(String token, PlatformType type) {
 		try {
@@ -253,12 +262,6 @@ public class AuthService {
 		Message message = smsService.sendSimpleSms(tel, smsContent.toString());
 
 		if (message != null) {
-			String encTel;
-			try {
-				encTel = Aes256Utils.encrypt(message.getTo(), PRIVACY_AES_KEY, PRIVACY_AES_IV);
-			} catch (Exception e) {
-				throw new CustomResponseException(ResponseType.SERVER_ERROR);
-			}
 
 			SmsVerifyLog verifyLog = SmsVerifyLog.builder().verifiyCode(verifiyCode).consumedYn(false).successYn(false)
 					.locationCode(locationCode.getCode()).build();
@@ -267,7 +270,7 @@ public class AuthService {
 
 			Map<String, Object> result = new HashMap<>();
 			result.put("reqId", verifyLog.getId());
-			result.put("data", encTel);
+			result.put("tel", message.getTo());
 			result.put("timestamp",
 					verifyLog.getCreatedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
@@ -279,11 +282,18 @@ public class AuthService {
 	}
 
 	@Transactional(readOnly = true)
-	public void checkTelDuplication(String encTel) {
-		boolean isExist = userRepository.existsByTelEnc(encTel);
+	public void checkTelDuplication(String tel, boolean join) {
+		try {
+			boolean isExist = userRepository.existsByTelEnc(Aes256Utils.encrypt(tel, PRIVACY_AES_KEY, PRIVACY_AES_IV));
 
-		if (isExist) {
-			throw new CustomResponseException(ResponseType.DUPLICATED_TEL);
+			if (isExist && join) {
+				throw new CustomResponseException(ResponseType.DUPLICATED_EMAIL);
+			}
+			if (!isExist && !join) {
+				throw new CustomResponseException(ResponseType.NOT_EXIST_EMAIL);
+			}
+		} catch (Exception e) {
+			throw new CustomResponseException(ResponseType.SERVER_ERROR);
 		}
 	}
 
@@ -313,16 +323,19 @@ public class AuthService {
 	}
 
 	@Transactional(readOnly = true)
-	public void checkEmailDuplication(String email) {
+	public void checkEmailDuplication(String email, boolean join) {
 		boolean isExist = userRepository.existsByEmail(email);
-		if (isExist) {
+		if (isExist && join) {
 			throw new CustomResponseException(ResponseType.DUPLICATED_EMAIL);
+		}
+		if (!isExist && !join) {
+			throw new CustomResponseException(ResponseType.NOT_EXIST_EMAIL);
 		}
 	}
 
 	@Transactional
-	public ResponseDto validateVerfiyCode(Long logId, LocalDateTime timestamp, String verifyCode, VerifyType type) {
-		Map<String, Object> result = new HashMap<>();
+	public ResponseDto validateVerfiyCode(Long logId, LocalDateTime timestamp, String verifyCode, String target,
+			VerifyType type) {
 		LocalDateTime now = LocalDateTime.now();
 
 		if (VerifyType.SMS.equals(type)) {
@@ -346,6 +359,9 @@ public class AuthService {
 			MailVerifyLog verifyLog = mailVerifyLogRepository.findById(logId)
 					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
+			if (verifyLog.isConsumedYn()) {
+				new CustomResponseException(ResponseType.VERIFY_FAIL);
+			}
 			if (!timestamp.isEqual(verifyLog.getCreatedDate())) {
 				new CustomResponseException(ResponseType.INVALID_PARAMETER);
 			}
@@ -360,7 +376,52 @@ public class AuthService {
 			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
 		}
 
-		return new ResponseDto(ResponseType.SUCCESS, result);
+		VerifyFormat format = VerifyFormat.builder().verifyId(logId).verifyTime(timestamp).type(type).target(target)
+				.build();
+
+		try {
+			String data = objectMapper.writeValueAsString(format);
+
+			Map<String, Object> result = new HashMap<>();
+			result.put("key", Aes256Utils.encrypt(PRIVACY_AES_KEY, PRIVACY_AES_IV, data));
+
+			return new ResponseDto(ResponseType.SUCCESS, result);
+		} catch (Exception e) {
+			log.error("validate verfiy error - {}", e.getMessage(), e);
+			throw new CustomResponseException(ResponseType.SERVER_ERROR);
+		}
+	}
+
+	@Transactional
+	public VerifyFormat validateVerfiyKey(String key) {
+		try {
+			String decKey = Aes256Utils.decrypt(PRIVACY_AES_KEY, PRIVACY_AES_IV, key);
+
+			VerifyFormat format = objectMapper.readValue(decKey, VerifyFormat.class);
+
+			if (VerifyType.SMS.equals(format.getType())) {
+				SmsVerifyLog verifyLog = smsVerifyLogRepository.findById(format.getVerifyId())
+						.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+				if (!verifyLog.isConsumedYn() || !format.getVerifyTime().isEqual(verifyLog.getCreatedDate())) {
+					new CustomResponseException(ResponseType.INVALID_PARAMETER);
+				}
+			} else if (VerifyType.EMAIL.equals(format.getType())) {
+				MailVerifyLog verifyLog = mailVerifyLogRepository.findById(format.getVerifyId())
+						.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+				if (!verifyLog.isConsumedYn() || !format.getVerifyTime().isEqual(verifyLog.getCreatedDate())) {
+					new CustomResponseException(ResponseType.INVALID_PARAMETER);
+				}
+			} else {
+				throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+			}
+
+			return format;
+		} catch (Exception e) {
+			log.error("validate key error - {}", e.getMessage(), e);
+			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+		}
 	}
 
 }
