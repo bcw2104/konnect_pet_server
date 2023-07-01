@@ -2,8 +2,10 @@ package com.konnect.pet.enums;
 
 public enum ResponseType {
 
-
-	SUCCESS("1000", "success","성공"),
+	//성공은 코드명 10XX
+	SUCCESS("1000", "success","완료되었습니다."),
+	RESET_PASSWORD_SUCCESS("1001", "success","비밀번호 재설정이 완료되었습니다. 다시 로그인해주세요."),
+	JOIN_SUCCESS("1002", "success","회원가입이 완료되었습니다."),
 
 	// 내부 이슈로 실패 90XX
 	FAIL("9000", "failed","잠시 후 다시 시도해주세요."),
@@ -28,9 +30,12 @@ public enum ResponseType {
 	DUPLICATED_EMAIL("9214", "duplicated email", "이미 가입된 이메일주소입니다."),
 
 	NOT_EXIST_EMAIL("9215", "email is not exist", "가입되지 않은 이메일주소입니다."),
+	JOIN_WITH_GOOGLE("9216", "social join user", "Google 연동 회원입니다. Google 로그인을 해주세요."),
+	JOIN_WITH_FACEBOOK("9217", "social join user", "Facebook 연동 회원입니다. Facebook 로그인을 해주세요."),
+	JOIN_WITH_APPLE("9218", "social join user", "Apple 연동 회원입니다. Apple 로그인을 해주세요."),
 
 
-	DOMMY("10000", "dommy","dommy");
+	dummy("10000", "dummy","dummy");
 
 	private String code;
 	private String message;

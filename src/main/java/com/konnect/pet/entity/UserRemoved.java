@@ -30,13 +30,17 @@ import lombok.Setter;
 @Entity
 @NoArgsConstructor
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_EMAIL", columnNames = { "email" }),
+		@UniqueConstraint(name = "UK_USER_ID", columnNames = { "userId" }),
 		@UniqueConstraint(name = "UK_TEL", columnNames = { "telHash" }) })
-public class User extends BaseAutoSetEntity implements UserDetails {
+public class UserRemoved extends BaseAutoSetEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_id")
+	@Column(name = "removed_user_id")
 	private Long id;
+
+	@Column(nullable = false)
+	private Long userId;
 
 	@Enumerated(EnumType.STRING)
 	@Column(length = 10, nullable = false)
@@ -64,9 +68,6 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 	@Column(length = 64, nullable = false)
 	private String telEnc;
 
-	@Column(length = 6)
-	private String authTokenId;
-
 	@Column(length = 10)
 	private String deviceOs;
 
@@ -79,46 +80,19 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 	@Column(length = 200)
 	private String deviceToken;
 
-	private boolean marketingYn;
-
-	private LocalDateTime lastLoginDate;
-
-	// TODO 주소 추가
-
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return List.of(this.role);
+	public UserRemoved(User user) {
+		this.userId = user.getId();
+		this.role = user.getRole();
+		this.platform = user.getPlatform();
+		this.email = user.getEmail();
+		this.password = user.getPassword();
+		this.nationCode = user.getNationCode();
+		this.telMask = user.getTelMask();
+		this.telHash = user.getTelHash();
+		this.telEnc = user.getTelEnc();
+		this.deviceOs = user.getDeviceOs();
+		this.deviceOsVersion = user.getDeviceOsVersion();
+		this.deviceModel = user.getDeviceModel();
+		this.deviceToken = user.getDeviceToken();
 	}
-
-	@Override
-	public String getPassword() {
-		return this.password;
-	}
-
-	@Override
-	public String getUsername() {
-		return null;
-	}
-
-	@Override
-	public boolean isAccountNonExpired() {
-		return true;
-	}
-
-	@Override
-	public boolean isAccountNonLocked() {
-		return true;
-	}
-
-	@Override
-	public boolean isCredentialsNonExpired() {
-		return true;
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return true;
-	}
-
-
 }
