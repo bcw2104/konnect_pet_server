@@ -73,23 +73,27 @@ public class AuthService {
 
 	@Transactional
 	public ResponseDto socialLogin(String token, PlatformType type) {
+		String email = null;
+
 		try {
 			if (PlatformType.GOOGLE.equals(type)) {
 				Map userInfo = apiService.callGoogleUserInfoApi(token);
-				String email = userInfo.get("email").toString();
-
-				return login(email, null, PlatformType.GOOGLE);
+				email = userInfo.get("email").toString();
 			} else if (PlatformType.FACEBOOK.equals(type)) {
 				Map userInfo = apiService.callFacebookUserInfoApi(token);
-				String email = userInfo.get("email").toString();
-
-				return login(email, null, PlatformType.FACEBOOK);
+				email = userInfo.get("email").toString();
 			} else {
-				throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+
 			}
 		} catch (Exception e) {
 			throw new CustomResponseException(ResponseType.SERVER_ERROR);
 		}
+
+		if (email == null) {
+			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+		}
+
+		return login(email, null, type);
 	}
 
 	@Transactional
@@ -110,6 +114,7 @@ public class AuthService {
 				return new ResponseDto(ResponseType.SUCCESS, token);
 			}
 
+			return new ResponseDto(ResponseType.LOGIN_FAIL);
 		} else {
 			Optional<User> userOpt = userRepository.findByEmail(email);
 
@@ -131,13 +136,26 @@ public class AuthService {
 			}
 
 			User user = userOpt.get();
+
+			if (!type.equals(user.getPlatform())) {
+				if (user.getPlatform().equals(PlatformType.EMAIL)) {
+					throw new CustomResponseException(ResponseType.JOIN_WITH_EMAIL);
+				} else if (user.getPlatform().equals(PlatformType.GOOGLE)) {
+					throw new CustomResponseException(ResponseType.JOIN_WITH_GOOGLE);
+				} else if (user.getPlatform().equals(PlatformType.APPLE)) {
+					throw new CustomResponseException(ResponseType.JOIN_WITH_APPLE);
+				} else if (user.getPlatform().equals(PlatformType.FACEBOOK)) {
+					throw new CustomResponseException(ResponseType.JOIN_WITH_FACEBOOK);
+				}
+				throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+			}
+
 			JwtTokenDto token = tokenProvider.generateToken(user.getId());
 			user.setLastLoginDate(LocalDateTime.now());
 
 			return new ResponseDto(ResponseType.SUCCESS, token);
 		}
 
-		return new ResponseDto(ResponseType.LOGIN_FAIL);
 	}
 
 	@Transactional
@@ -168,6 +186,7 @@ public class AuthService {
 			user.setTelHash(Sha256Utils.encrypt(tel));
 			user.setRole(Roles.ROLE_LVL1);
 			user.setPlatform(requestDto.getPlatform());
+			user.setNationCode(requestDto.getNationCode());
 			user.setLastLoginDate(LocalDateTime.now());
 			user.setMarketingYn(Boolean
 					.parseBoolean(((Map) requestDto.getTermsAgreed().get(CommonCodeConst.MARKETING_TERMS_GROUP_ID))
@@ -227,20 +246,26 @@ public class AuthService {
 		}
 	}
 
-
 	@Transactional(readOnly = true)
 	public void checkTelBeforeVerify(String tel, boolean join) {
+		String encTel = null;
 		try {
-			boolean isExist = userRepository.existsByTelEnc(Aes256Utils.encrypt(tel, PRIVACY_AES_KEY, PRIVACY_AES_IV));
-
-			if (isExist && join) {
-				throw new CustomResponseException(ResponseType.DUPLICATED_EMAIL);
-			}
-			if (!isExist && !join) {
-				throw new CustomResponseException(ResponseType.NOT_EXIST_EMAIL);
-			}
+			encTel = Aes256Utils.encrypt(tel, PRIVACY_AES_KEY, PRIVACY_AES_IV);
 		} catch (Exception e) {
 			throw new CustomResponseException(ResponseType.SERVER_ERROR);
+		}
+
+		if (encTel == null) {
+			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+		}
+
+		boolean isExist = userRepository.existsByTelEnc(encTel);
+
+		if (isExist && join) {
+			throw new CustomResponseException(ResponseType.DUPLICATED_EMAIL);
+		}
+		if (!isExist && !join) {
+			throw new CustomResponseException(ResponseType.NOT_EXIST_EMAIL);
 		}
 	}
 
@@ -249,23 +274,18 @@ public class AuthService {
 		Optional<User> userOpt = userRepository.findByEmail(email);
 		if (userOpt.isPresent() && join) {
 			throw new CustomResponseException(ResponseType.DUPLICATED_EMAIL);
-		}
-		else if (userOpt.isPresent() && !join) {
+		} else if (userOpt.isPresent() && !join) {
 			User user = userOpt.get();
-			if(user.getPlatform().equals(PlatformType.GOOGLE)) {
+			if (user.getPlatform().equals(PlatformType.GOOGLE)) {
 				throw new CustomResponseException(ResponseType.JOIN_WITH_GOOGLE);
-			}
-			else if(user.getPlatform().equals(PlatformType.FACEBOOK)) {
+			} else if (user.getPlatform().equals(PlatformType.FACEBOOK)) {
 				throw new CustomResponseException(ResponseType.JOIN_WITH_FACEBOOK);
-			}
-			else if(user.getPlatform().equals(PlatformType.APPLE)) {
+			} else if (user.getPlatform().equals(PlatformType.APPLE)) {
 				throw new CustomResponseException(ResponseType.JOIN_WITH_APPLE);
 			}
-		}
-		else if (!userOpt.isPresent() && !join) {
+		} else if (!userOpt.isPresent() && !join) {
 			throw new CustomResponseException(ResponseType.NOT_EXIST_EMAIL);
 		}
 	}
-
 
 }

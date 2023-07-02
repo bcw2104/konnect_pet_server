@@ -30,9 +30,11 @@ public enum ResponseType {
 	DUPLICATED_EMAIL("9214", "duplicated email", "이미 가입된 이메일주소입니다."),
 
 	NOT_EXIST_EMAIL("9215", "email is not exist", "가입되지 않은 이메일주소입니다."),
+
 	JOIN_WITH_GOOGLE("9216", "social join user", "Google 연동 회원입니다. Google 로그인을 해주세요."),
 	JOIN_WITH_FACEBOOK("9217", "social join user", "Facebook 연동 회원입니다. Facebook 로그인을 해주세요."),
 	JOIN_WITH_APPLE("9218", "social join user", "Apple 연동 회원입니다. Apple 로그인을 해주세요."),
+	JOIN_WITH_EMAIL("9219", "social join user", "일반 가입 회원입니다. 일반 로그인을 해주세요."),
 
 
 	dummy("10000", "dummy","dummy");
