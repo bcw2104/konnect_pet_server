@@ -29,9 +29,7 @@ import lombok.Setter;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_EMAIL", columnNames = { "email" }),
-		@UniqueConstraint(name = "UK_USER_ID", columnNames = { "userId" }),
-		@UniqueConstraint(name = "UK_TEL", columnNames = { "telHash" }) })
+@Table(uniqueConstraints = {@UniqueConstraint(name = "UK_USER_ID", columnNames = { "userId" })})
 public class UserRemoved extends BaseAutoSetEntity {
 
 	@Id

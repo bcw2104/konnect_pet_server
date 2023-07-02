@@ -103,11 +103,12 @@ public class UserService {
 
 		UserRemoved userRemoved = new UserRemoved(user);
 
-		String dummy = "rm_" + user.getId();
+		String dummy = "r_" + user.getId();
 
 		user.setAuthTokenId(null);
-		user.setEmail(null);
-		user.setNationCode(null);
+		
+		user.setEmail(dummy);
+		user.setNationCode(dummy);
 
 		user.setPassword(null);
 		user.setEmail(dummy);
