@@ -100,7 +100,6 @@ public class AuthController {
 	@PostMapping("/v1/join/verify/sms")
 	public ResponseEntity<?> sendJoinVerifySms(@RequestBody Map<String, Object> body){
 		String tel = body.get("tel").toString();
-		authService.checkTelBeforeVerify(tel, true);
 
 		return ResponseEntity.ok(verifyService.sendVerifyCodeBySms(tel, LocationCode.SIGNUP));
 	}
@@ -111,6 +110,7 @@ public class AuthController {
 		String tel = body.get("tel").toString();
 		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));
 		String verifyCode = body.get("verify").toString();
+		authService.checkTelBeforeVerify(tel, true);
 
 		return ResponseEntity.ok(verifyService.validateVerfiyCode(reqId, timestamp, verifyCode, tel,VerifyType.SMS));
 	}
