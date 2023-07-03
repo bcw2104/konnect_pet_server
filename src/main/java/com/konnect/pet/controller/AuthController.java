@@ -42,32 +42,6 @@ public class AuthController {
 
 	private final AuthService authService;
 	private final VerifyService verifyService;
-	private final CommonCodeService commonCodeService;
-	private final TermsService termsService;
-
-	@GetMapping("/v1/screen/signup/step1")
-	public ResponseEntity<?> screenSignupStep1(){
-
-		Map<String,Object> result = new HashMap<String, Object>();
-
-		List<PickerItemDto> nationCodes = commonCodeService.getPickerItemByCodeGroup(CommonCodeConst.COUNTRY_CD);
-		result.put("nationCodes",nationCodes);
-
-		ResponseDto responseDto = new ResponseDto(ResponseType.SUCCESS,result);
-		responseDto.setResult(result);
-
-		return ResponseEntity.ok(responseDto);
-	}
-
-	@GetMapping("/v1/screen/signup/step3")
-	public ResponseEntity<?> screenSignupStep3(){
-		return ResponseEntity.ok(termsService.getTermsGroupByLocationCodeAndVisibleYn(LocationCode.SIGNUP,true));
-	}
-
-	@GetMapping("/v1/terms/group/{groupId}/lastest")
-	public ResponseEntity<?> term(@PathVariable("groupId") Long termGroupId){
-		return ResponseEntity.ok(termsService.getLastestTermsByTermsGroupId(termGroupId));
-	}
 
 	@PostMapping("/v1/token/refresh")
 	public ResponseEntity<?> tokenRefresh(HttpServletRequest request){

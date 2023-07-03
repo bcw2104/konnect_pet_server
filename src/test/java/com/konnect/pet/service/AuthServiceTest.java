@@ -44,37 +44,5 @@ public class AuthServiceTest {
 	@Autowired
 	SmsVerifyLogRepository smsVerifyLogRepository;
 
-	@Test
-	void generatePassword() throws NoSuchAlgorithmException, NoSuchPaddingException {
-		  byte[] iv = new byte[32];
-		  new SecureRandom().nextBytes(iv);
-		System.out.println("=====================");
-			System.out.println(Base64.encodeBase64String(iv));
-		System.out.println("=====================");
-	}
-
-	@Test
-	void smsSendTest() {
-		ResponseDto result = authService.sendVerifyCodeBySms("821050267047", LocationCode.SIGNUP);
-
-		assertThat(result.getRsp_code()).isEqualTo("1000");
-
-		Long id = Long.parseLong(((Map<String, Object>) result.getResult()).get("reqId").toString());
-		Optional<SmsVerifyLog> smsLog = smsVerifyLogRepository.findById(id);
-
-		assertThat(smsLog.isPresent()).isEqualTo(true);
-		System.out.println(smsLog.get().toString());
-	}
-
-	@Test
-	void sendMailTest() {
-		Map<String, Object> data = new HashMap<>();
-
-		data.put("sample","안녕!!");
-
-		MailRequestDto mailDto = MailRequestDto.builder().subject("Test").receiver("bcw2104@naver.com")
-				.template("email_verify_template").data(data).build();
-
-		mailService.sendTemplateMail(mailDto);
-	}
+	
 }

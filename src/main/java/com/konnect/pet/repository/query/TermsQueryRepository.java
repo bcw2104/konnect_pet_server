@@ -26,7 +26,8 @@ public class TermsQueryRepository {
 				.select(Projections.constructor(TermsGroupDto.class, termsGroup.id, termsGroup.termsGroupName,
 						termsGroup.termsGroupContent, termsGroup.requiredYn))
 				.from(termsGroup)
-				.where(termsGroup.visibleYn.eq(visibleYn), termsGroup.locationCode.eq(locationCode.getCode()))
+				.where(termsGroup.visibleYn.eq(visibleYn),
+						locationCode == null ? null : termsGroup.locationCode.eq(locationCode.getCode()))
 				.orderBy(termsGroup.sortOrder.asc()).fetch();
 
 	}
