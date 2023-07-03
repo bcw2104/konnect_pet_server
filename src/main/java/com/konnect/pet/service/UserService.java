@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.konnect.pet.dto.UserSimpleDto;
 import com.konnect.pet.dto.VerifyFormat;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserRemoved;
@@ -36,6 +37,16 @@ public class UserService {
 	private String PRIVACY_AES_KEY;
 	@Value("${application.aes.privacy.iv}")
 	private String PRIVACY_AES_IV;
+
+	@Transactional(readOnly = true)
+	public ResponseDto getUserSimplenfo(Long userId) {
+
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+		
+		UserSimpleDto simpleDto = new UserSimpleDto(user.getId(), user.getEmail(), user.getTelMask(), user.getPlatform().name());
+		return new ResponseDto(ResponseType.SUCCESS,simpleDto);
+	}
 
 	@Transactional
 	public ResponseDto sendVerifyCodeBySms(Long userId, LocationCode locationCode) {
@@ -106,7 +117,7 @@ public class UserService {
 		String dummy = "r_" + user.getId();
 
 		user.setAuthTokenId(null);
-		
+
 		user.setEmail(dummy);
 		user.setNationCode(dummy);
 

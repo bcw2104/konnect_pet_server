@@ -34,7 +34,7 @@ public class UserController {
 	@GetMapping("/v1/info")
 	public ResponseEntity<?> userInfo(Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
-		return ResponseEntity.ok(new ResponseDto(ResponseType.SUCCESS, new UserSimpleDto(user)));
+		return ResponseEntity.ok(userService.getUserSimplenfo(user.getId()));
 	}
 
 	@PostMapping("/v1/device")
