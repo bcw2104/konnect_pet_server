@@ -262,10 +262,10 @@ public class AuthService {
 		boolean isExist = userRepository.existsByTelEnc(encTel);
 
 		if (isExist && join) {
-			throw new CustomResponseException(ResponseType.DUPLICATED_EMAIL);
+			throw new CustomResponseException(ResponseType.DUPLICATED_TEL);
 		}
 		if (!isExist && !join) {
-			throw new CustomResponseException(ResponseType.NOT_EXIST_EMAIL);
+			throw new CustomResponseException(ResponseType.NOT_EXIST_TEL);
 		}
 	}
 
