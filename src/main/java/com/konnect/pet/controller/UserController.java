@@ -43,6 +43,13 @@ public class UserController {
 
 		return ResponseEntity.ok(userService.updateDeviceInfo(user.getId(), body));
 	}
+	
+	@PostMapping("/v1/logout")
+	public ResponseEntity<?> logout(Authentication authentication) {
+		User user = (User) authentication.getPrincipal();
+		
+		return ResponseEntity.ok(userService.logout(user.getId()));
+	}
 
 	@PostMapping("/v1/mypage/leave")
 	public ResponseEntity<?> leaveUser(Authentication authentication, @RequestBody Map<String, Object> body) {

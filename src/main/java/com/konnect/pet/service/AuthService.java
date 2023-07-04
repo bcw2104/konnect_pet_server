@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import com.konnect.pet.dto.VerifyFormat;
 import com.konnect.pet.entity.TermsGroup;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserTermsAgreement;
+import com.konnect.pet.entity.redis.RefreshToken;
 import com.konnect.pet.enums.PlatformType;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.Roles;
@@ -29,6 +31,7 @@ import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.TermsGroupRepository;
 import com.konnect.pet.repository.UserRepository;
 import com.konnect.pet.repository.UserTermsAggrementRepository;
+import com.konnect.pet.repository.redis.RefreshTokenRepository;
 import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.security.JwtTokenProvider;
 import com.konnect.pet.utils.Aes256Utils;
@@ -51,6 +54,8 @@ public class AuthService {
 	private final ExternalApiService apiService;
 	private final VerifyService verifyService;
 
+	private final RefreshTokenRepository refreshTokenRepository;
+
 	private final ObjectMapper objectMapper;
 
 	@Value("${application.aes.privacy.key}")
@@ -59,16 +64,24 @@ public class AuthService {
 	private String PRIVACY_AES_IV;
 
 	public ResponseDto refreshToken(HttpServletRequest request) {
-		String accessToken = tokenProvider.resolveToken(request, "EXPRIED");
-		String refreshToken = tokenProvider.resolveToken(request, "REFRESH");
+		String refreshToken = tokenProvider.resolveToken(request);
+		
+		if(refreshToken == null) {
+			new CustomResponseException(HttpStatus.FORBIDDEN, ResponseType.INVALID_REFRESH_TOKEN);
+		}
+		
+		Long userId = Long.parseLong(tokenProvider.parseClaims(refreshToken).get("id").toString());
 
-		if (accessToken == null || refreshToken == null) {
-			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+		RefreshToken redisSavedToken = refreshTokenRepository.findById(userId).orElseThrow(
+				() -> new CustomResponseException(HttpStatus.FORBIDDEN, ResponseType.INVALID_REFRESH_TOKEN));
+
+		if (!redisSavedToken.getRefreshToken().equals(refreshToken)) {
+			// 위변조 탐지
+			refreshTokenRepository.deleteById(userId);
+			new CustomResponseException(HttpStatus.FORBIDDEN, ResponseType.INVALID_REFRESH_TOKEN);
 		}
 
-		JwtTokenDto newToken = tokenProvider.generateTokenByRefreshToken(accessToken, refreshToken);
-
-		return new ResponseDto(ResponseType.SUCCESS, newToken);
+		return new ResponseDto(ResponseType.SUCCESS, tokenProvider.generateToken(userId));
 	}
 
 	@Transactional

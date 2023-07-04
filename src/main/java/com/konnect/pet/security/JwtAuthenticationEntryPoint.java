@@ -6,6 +6,9 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
+import com.konnect.pet.enums.ResponseType;
+import com.konnect.pet.ex.CustomResponseException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -19,6 +22,13 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) {
-    	resolver.resolveException(request, response, null, authException);
+    	String exception = request.getAttribute("exception").toString();
+    	
+    	if(exception.equals(ResponseType.INVALID_ACCESS_TOKEN.getCode())) {
+        	resolver.resolveException(request, response, null, new CustomResponseException(ResponseType.INVALID_ACCESS_TOKEN));
+    	}
+    	else {
+        	resolver.resolveException(request, response, null, authException);
+    	}
     }
 }

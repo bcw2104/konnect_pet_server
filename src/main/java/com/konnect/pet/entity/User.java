@@ -63,10 +63,7 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 
 	@Column(length = 64, nullable = false)
 	private String telEnc;
-
-	@Column(length = 6)
-	private String authTokenId;
-
+	
 	@Column(length = 10)
 	private String deviceOs;
 

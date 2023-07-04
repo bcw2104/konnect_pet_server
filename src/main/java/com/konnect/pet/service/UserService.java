@@ -18,6 +18,7 @@ import com.konnect.pet.enums.code.LocationCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.UserRemovedRepository;
 import com.konnect.pet.repository.UserRepository;
+import com.konnect.pet.repository.redis.RefreshTokenRepository;
 import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.utils.Aes256Utils;
 
@@ -32,11 +33,20 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final UserRemovedRepository userRemovedRepository;
 	private final VerifyService verifyService;
+	private final RefreshTokenRepository refreshTokenRepository;
+
 
 	@Value("${application.aes.privacy.key}")
 	private String PRIVACY_AES_KEY;
 	@Value("${application.aes.privacy.iv}")
 	private String PRIVACY_AES_IV;
+	
+
+	public ResponseDto logout(Long userId) {
+		refreshTokenRepository.deleteById(userId);
+		
+		return new ResponseDto(ResponseType.SUCCESS);
+	}
 
 	@Transactional(readOnly = true)
 	public ResponseDto getUserSimplenfo(Long userId) {
@@ -91,6 +101,7 @@ public class UserService {
 
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
+	
 
 	@Transactional
 	public ResponseDto removeUser(Long userId, String smsVerifyKey) {
@@ -115,9 +126,7 @@ public class UserService {
 		UserRemoved userRemoved = new UserRemoved(user);
 
 		String dummy = "r_" + user.getId();
-
-		user.setAuthTokenId(null);
-
+		
 		user.setEmail(dummy);
 		user.setNationCode(dummy);
 

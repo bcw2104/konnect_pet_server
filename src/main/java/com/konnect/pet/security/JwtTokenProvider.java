@@ -16,9 +16,11 @@ import org.springframework.util.StringUtils;
 
 import com.konnect.pet.dto.JwtTokenDto;
 import com.konnect.pet.entity.User;
+import com.konnect.pet.entity.redis.RefreshToken;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.UserRepository;
+import com.konnect.pet.repository.redis.RefreshTokenRepository;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -39,149 +41,95 @@ public class JwtTokenProvider {
 	private final Key key;
 
 	private final CustomUserDetailsService customUserDetailsService;
+	
+	private final RefreshTokenRepository refreshTokenRepository;
 
-	private UserRepository userRepository;
+	@Value("${application.jwt.access.exp}")
+	private Long ACCESS_TOKEN_EXP;
+	@Value("${application.jwt.refresh.exp}")
+	private Long REFRESH_TOKEN_EXP;
 
-	private Long ACCESS_TOKEN_LIFE = 1000L * 60L * 60L * 24L;
-	private Long REFRESH_TOKEN_LIFE = 1000L * 60L * 60L * 24L * 365L;
-
-	public JwtTokenProvider(@Value("${application.jwt.secret}") String secretKey, CustomUserDetailsService customUserDetailsService,
-			UserRepository userRepository) {
-		byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-		this.key = Keys.hmacShaKeyFor(keyBytes);
+	public JwtTokenProvider(@Value("${application.jwt.secret}") String TOKEN_SECRET,CustomUserDetailsService customUserDetailsService, RefreshTokenRepository refreshTokenRepository) {
+		this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(TOKEN_SECRET));
 		this.customUserDetailsService = customUserDetailsService;
-		this.userRepository = userRepository;
+		this.refreshTokenRepository = refreshTokenRepository;
 	}
 
 	// 유저 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
 	@Transactional
 	public JwtTokenDto generateToken(Long userId) {
 
-		Optional<User> userOpt = userRepository.findById(userId);
-
-		if (userOpt.isEmpty()) {
-			throw new CustomResponseException(ResponseType.LOGIN_FAIL);
-		}
-
-		User user = userOpt.get();
-
-		String tokenId = RandomStringUtils.randomAlphabetic(6);
-
+		refreshTokenRepository.deleteById(userId);
+		
 		Date now = new Date();
 		long timestamp = (new Date()).getTime();
-		// Access Token 생성 - 하루
-		Date accessTokenExpireAt = new Date(timestamp + ACCESS_TOKEN_LIFE);
-		String accessToken = Jwts.builder().setSubject(user.getId().toString()).claim("id", tokenId)
+		// Access Token 생성
+		Date accessTokenExpireAt = new Date(timestamp + ACCESS_TOKEN_EXP * 1000L);
+		String accessToken = Jwts.builder().setSubject("ATK").claim("id", userId)
 				.setExpiration(accessTokenExpireAt).setIssuedAt(now).signWith(key, SignatureAlgorithm.HS256).compact();
 
-		// Refresh Token 생성 - 1년
-		Date refreshTokenExpireAt = new Date(timestamp + REFRESH_TOKEN_LIFE);
-		String refreshToken = Jwts.builder().setSubject(tokenId).setExpiration(refreshTokenExpireAt).setIssuedAt(now)
-				.signWith(key, SignatureAlgorithm.HS256).compact();
-
-		user.setAuthTokenId(tokenId);
-
-		log.info("Generate User Token - userId: {}", user.getId());
+		// Refresh Token 생성
+		Date refreshTokenExpireAt = new Date(timestamp + REFRESH_TOKEN_EXP * 1000L);
+		String refreshToken = Jwts.builder().setSubject("RTK").claim("id", userId)
+				.setExpiration(refreshTokenExpireAt).setIssuedAt(now).signWith(key, SignatureAlgorithm.HS256).compact();
+		
+		RefreshToken redisRefreshToken = new RefreshToken(userId, refreshToken, REFRESH_TOKEN_EXP);
+		refreshTokenRepository.save(redisRefreshToken);
+		
+		log.info("Generate User Token - userId: {}", userId);
 
 		return JwtTokenDto.builder().grantType("Bearer").accessToken(accessToken).refreshToken(refreshToken)
 				.accessTokenExpireAt(accessTokenExpireAt.getTime()).refreshTokenExpireAt(refreshTokenExpireAt.getTime())
 				.build();
 	}
 
-	// AccessToken 만료 시 , RefreshToken 을 생성하는 메서드
-	@Transactional
-	public JwtTokenDto generateTokenByRefreshToken(String accessToken, String refreshToken) {
-		// 토큰 복호화
-		Claims accessClaims = parseClaims(accessToken);
-		Claims refreshClaims = parseClaims(refreshToken);
-
-		Optional<User> userOpt = userRepository.findById(Long.parseLong(accessClaims.getSubject()));
-
-		if (userOpt.isEmpty()) {
-			throw new CustomResponseException(ResponseType.INVALID_ACCESS_TOKEN);
-		}
-
-		User user = userOpt.get();
-
-		if (refreshToken != null && validateToken(refreshToken)
-				&& refreshClaims.getSubject().equals(user.getAuthTokenId())
-				&& refreshClaims.getSubject().equals(accessClaims.get("id"))) {
-
-			String tokenId = RandomStringUtils.randomAlphabetic(6);
-
-			Date now = new Date();
-			long timestamp = (new Date()).getTime();
-			// Access Token 생성 - 하루
-			Date accessTokenExpireAt = new Date(timestamp + ACCESS_TOKEN_LIFE);
-			String newAccessToken = Jwts.builder().setSubject(user.getId().toString()).claim("id", tokenId)
-					.setExpiration(accessTokenExpireAt).setIssuedAt(now).signWith(key, SignatureAlgorithm.HS256)
-					.compact();
-
-			// Refresh Token 생성 - 1년
-			Date refreshTokenExpireAt = new Date(timestamp + REFRESH_TOKEN_LIFE);
-			String newRefreshToken = Jwts.builder().setSubject(tokenId).setExpiration(refreshTokenExpireAt)
-					.setIssuedAt(now).signWith(key, SignatureAlgorithm.HS256).compact();
-
-			user.setAuthTokenId(tokenId);
-
-			log.info("ReGenerate User Token - userId: {}", user.getId());
-
-			return JwtTokenDto.builder().grantType("Bearer").accessToken(accessToken).refreshToken(refreshToken)
-					.accessTokenExpireAt(accessTokenExpireAt.getTime()).refreshTokenExpireAt(refreshTokenExpireAt.getTime())
-					.build();
-		} else {
-			throw new CustomResponseException(ResponseType.INVALID_REFRESH_TOKEN);
-		}
-	}
-
 	// JWT 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
-	public Authentication getAuthentication(String accessToken) {
+	public Authentication getAuthentication(String token) {
 		// 토큰 복호화
-		Claims claims = parseClaims(accessToken);
+		Claims claims = parseClaims(token);
 
-		String username = claims.getSubject();
-		String tokenId = claims.get("id").toString();
-
+		String username = claims.get("id").toString();
 		// UserDetails 객체를 만들어서 Authentication 리턴
 		UserDetails principal = customUserDetailsService.loadUserByUsername(username);
 
-		User user = (User) principal;
-
-		if (!tokenId.equals(user.getAuthTokenId())) {
-			throw new InsufficientAuthenticationException("Invalid token");
-		}
 		return new UsernamePasswordAuthenticationToken(principal, "", principal.getAuthorities());
 	}
 
 	// 토큰 정보를 검증하는 메서드
-	public boolean validateToken(String token) {
+	public ResponseType validateToken(String token, String requestURI) {
+		boolean isRefesh = requestURI.equals("/api/auth/v1/token/refresh");
+
 		try {
-			Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-			return true;
+			Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+			String subject = claims.getSubject();
+
+			if ((isRefesh && subject.equals("RTK")) || (!isRefesh && subject.equals("ATK"))) {
+				return ResponseType.SUCCESS;
+			}
 		} catch (SecurityException | MalformedJwtException e) {
 			log.info("Invalid JWT Token", e);
 		} catch (ExpiredJwtException e) {
-			log.info("Expired JWT Token", e.getMessage());
-			throw new CustomResponseException(HttpStatus.FORBIDDEN, ResponseType.INVALID_ACCESS_TOKEN);
+			log.info("Expired JWT Token", e);
+			return isRefesh ? ResponseType.INVALID_REFRESH_TOKEN : ResponseType.INVALID_ACCESS_TOKEN;
 		} catch (UnsupportedJwtException e) {
 			log.info("Unsupported JWT Token", e);
 		} catch (IllegalArgumentException e) {
 			log.info("JWT claims string is empty.", e);
 		}
-		return false;
+		return ResponseType.AUTH_FAIL;
 	}
 
-	private Claims parseClaims(String accessToken) {
+	public Claims parseClaims(String token) {
 		try {
-			return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
+			return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
 		} catch (ExpiredJwtException e) {
 			return e.getClaims();
 		}
 	}
 
 	// Request Header 에서 토큰 정보 추출
-	public String resolveToken(HttpServletRequest request, String header) {
-		String bearerToken = request.getHeader(header);
+	public String resolveToken(HttpServletRequest request) {
+		String bearerToken = request.getHeader("Authorization");
 		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
 			return bearerToken.substring(7);
 		}
