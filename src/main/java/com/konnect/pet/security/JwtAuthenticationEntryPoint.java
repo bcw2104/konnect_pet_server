@@ -22,8 +22,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) {
-    	String exception = request.getAttribute("exception").toString();
-    	
+    	String exception = request.getAttribute("token_ex") != null ? request.getAttribute("token_ex").toString() : "";
+
     	if(exception.equals(ResponseType.INVALID_ACCESS_TOKEN.getCode())) {
         	resolver.resolveException(request, response, null, new CustomResponseException(ResponseType.INVALID_ACCESS_TOKEN));
     	}
