@@ -65,11 +65,11 @@ public class AuthService {
 
 	public ResponseDto refreshToken(HttpServletRequest request) {
 		String refreshToken = tokenProvider.resolveToken(request);
-		
+
 		if(refreshToken == null) {
 			new CustomResponseException(HttpStatus.FORBIDDEN, ResponseType.INVALID_REFRESH_TOKEN);
 		}
-		
+
 		Long userId = Long.parseLong(tokenProvider.parseClaims(refreshToken).get("id").toString());
 
 		RefreshToken redisSavedToken = refreshTokenRepository.findById(userId).orElseThrow(
@@ -99,6 +99,7 @@ public class AuthService {
 
 			}
 		} catch (Exception e) {
+			log.info(e.getMessage(),e);
 			throw new CustomResponseException(ResponseType.SERVER_ERROR);
 		}
 

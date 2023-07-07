@@ -23,6 +23,7 @@ import com.konnect.pet.repository.MailVerifyLogRepository;
 import com.konnect.pet.repository.SmsVerifyLogRepository;
 import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.utils.Aes256Utils;
+import com.konnect.pet.utils.ValidationUtils;
 import com.twilio.rest.api.v2010.account.Message;
 
 import lombok.RequiredArgsConstructor;
@@ -51,13 +52,9 @@ public class VerifyService {
 	private final int SMS_VERIFY_TIMEOUT = 180;
 	private final int EMAIL_VERIFY_TIMEOUT = 600;
 
-	private String generateRandomString(int length, boolean useNumber, boolean useLetters) {
-		return RandomStringUtils.random(length, useLetters, useNumber);
-	}
-
 	@Transactional
 	public ResponseDto sendVerifyCodeBySms(String tel, LocationCode locationCode) {
-		String verifiyCode = generateRandomString(6, true, false);
+		String verifiyCode = ValidationUtils.generateRandomString(6, true, false);
 		StringBuffer smsContent = new StringBuffer();
 		smsContent.append("Your ").append(APP_NAME).append(" verification code is: ").append(verifiyCode);
 
@@ -88,7 +85,7 @@ public class VerifyService {
 	public ResponseDto sendVerifyCodeByEmail(String email, LocationCode locationCode) {
 		Map<String, Object> mailData = new HashMap<>();
 
-		String verifiyCode = generateRandomString(8, true, true);
+		String verifiyCode = ValidationUtils.generateRandomString(8, true, true);
 
 		mailData.put("verifyCode", verifiyCode);
 

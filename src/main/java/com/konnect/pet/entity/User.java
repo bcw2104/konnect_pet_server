@@ -63,7 +63,7 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 
 	@Column(length = 64, nullable = false)
 	private String telEnc;
-	
+
 	@Column(length = 10)
 	private String deviceOs;
 
@@ -79,6 +79,9 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 	private boolean marketingYn;
 
 	private LocalDateTime lastLoginDate;
+
+	@Column(length = 6)
+	private String aktId;
 
 	// TODO 주소 추가
 

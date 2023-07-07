@@ -25,7 +25,7 @@ public class ExternalApiService {
 
 	public Map callGoogleUserInfoApi(String token) throws IOException {
 		log.info("{}", GOOGLE_BASE_URL+"/userinfo/v2/me");
-		
+
 		Mono<Map> response = webClient.get().uri(GOOGLE_BASE_URL+"/userinfo/v2/me")
 				.header("Authorization", "Bearer" + token)
 				.retrieve()
@@ -36,10 +36,10 @@ public class ExternalApiService {
 
 		return response.block();
 	}
-	
+
 	public Map callFacebookUserInfoApi(String token) throws IOException {
 		log.info("{}",FACEBOOK_BASE_URL+"/me");
-		
+
 		Mono<Map> response = webClient.get().uri(FACEBOOK_BASE_URL+"/me",
 				uriBuilder ->
 					uriBuilder
@@ -51,7 +51,7 @@ public class ExternalApiService {
 						clientResponse -> clientResponse.bodyToMono(String.class)
 						.map(body -> new IOException(body)))
 				.bodyToMono(Map.class);
-		
+
 		return response.block();
 	}
 }

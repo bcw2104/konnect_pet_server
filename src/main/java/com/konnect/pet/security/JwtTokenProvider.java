@@ -11,6 +11,7 @@ import org.springframework.security.authentication.InsufficientAuthenticationExc
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -21,6 +22,7 @@ import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.UserRepository;
 import com.konnect.pet.repository.redis.RefreshTokenRepository;
+import com.konnect.pet.utils.ValidationUtils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -41,7 +43,8 @@ public class JwtTokenProvider {
 	private final Key key;
 
 	private final CustomUserDetailsService customUserDetailsService;
-	
+
+	private final UserRepository userRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 
 	@Value("${application.jwt.access.exp}")
@@ -49,10 +52,14 @@ public class JwtTokenProvider {
 	@Value("${application.jwt.refresh.exp}")
 	private Long REFRESH_TOKEN_EXP;
 
-	public JwtTokenProvider(@Value("${application.jwt.secret}") String TOKEN_SECRET,CustomUserDetailsService customUserDetailsService, RefreshTokenRepository refreshTokenRepository) {
+	public JwtTokenProvider(@Value("${application.jwt.secret}") String TOKEN_SECRET,
+			CustomUserDetailsService customUserDetailsService,
+			RefreshTokenRepository refreshTokenRepository,
+			UserRepository userRepository) {
 		this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(TOKEN_SECRET));
 		this.customUserDetailsService = customUserDetailsService;
 		this.refreshTokenRepository = refreshTokenRepository;
+		this.userRepository = userRepository;
 	}
 
 	// 유저 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
@@ -60,22 +67,27 @@ public class JwtTokenProvider {
 	public JwtTokenDto generateToken(Long userId) {
 
 		refreshTokenRepository.deleteById(userId);
-		
+
+		String atkId = ValidationUtils.generateRandomString(6, true, true);
 		Date now = new Date();
 		long timestamp = (new Date()).getTime();
 		// Access Token 생성
 		Date accessTokenExpireAt = new Date(timestamp + ACCESS_TOKEN_EXP * 1000L);
-		String accessToken = Jwts.builder().setSubject("ATK").claim("id", userId)
+		String accessToken = Jwts.builder().setSubject("ATK").claim("id", userId).claim("atkId", atkId)
 				.setExpiration(accessTokenExpireAt).setIssuedAt(now).signWith(key, SignatureAlgorithm.HS256).compact();
 
 		// Refresh Token 생성
 		Date refreshTokenExpireAt = new Date(timestamp + REFRESH_TOKEN_EXP * 1000L);
 		String refreshToken = Jwts.builder().setSubject("RTK").claim("id", userId)
 				.setExpiration(refreshTokenExpireAt).setIssuedAt(now).signWith(key, SignatureAlgorithm.HS256).compact();
-		
+
 		RefreshToken redisRefreshToken = new RefreshToken(userId, refreshToken, REFRESH_TOKEN_EXP);
 		refreshTokenRepository.save(redisRefreshToken);
-		
+
+		User user = userRepository.findById(userId).orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+		user.setAktId(atkId);
+
 		log.info("Generate User Token - userId: {}", userId);
 
 		return JwtTokenDto.builder().grantType("Bearer").accessToken(accessToken).refreshToken(refreshToken)
@@ -89,8 +101,15 @@ public class JwtTokenProvider {
 		Claims claims = parseClaims(token);
 
 		String username = claims.get("id").toString();
+		String atkId = claims.get("atkId").toString();
+
 		// UserDetails 객체를 만들어서 Authentication 리턴
 		UserDetails principal = customUserDetailsService.loadUserByUsername(username);
+
+		User user = (User) principal;
+		if(user.getId() != null && !atkId.equals(user.getAktId())) {
+			throw new UsernameNotFoundException("user login other device");
+		}
 
 		return new UsernamePasswordAuthenticationToken(principal, "", principal.getAuthorities());
 	}
