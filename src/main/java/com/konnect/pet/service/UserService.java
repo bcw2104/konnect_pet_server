@@ -40,28 +40,23 @@ public class UserService {
 	private String PRIVACY_AES_KEY;
 	@Value("${application.aes.privacy.iv}")
 	private String PRIVACY_AES_IV;
-	
+
 
 	public ResponseDto logout(Long userId) {
 		refreshTokenRepository.deleteById(userId);
-		
+
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
 
 	@Transactional(readOnly = true)
-	public ResponseDto getUserSimplenfo(Long userId) {
+	public ResponseDto getUserSimplenfo(User user) {
 
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
-		
 		UserSimpleDto simpleDto = new UserSimpleDto(user.getId(), user.getEmail(), user.getTelMask(), user.getPlatform().name());
 		return new ResponseDto(ResponseType.SUCCESS,simpleDto);
 	}
 
 	@Transactional
-	public ResponseDto sendVerifyCodeBySms(Long userId, LocationCode locationCode) {
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+	public ResponseDto sendVerifyCodeBySms(User user, LocationCode locationCode) {
 		try {
 			String tel = Aes256Utils.decrypt(user.getTelEnc(), PRIVACY_AES_KEY, PRIVACY_AES_IV);
 
@@ -101,7 +96,7 @@ public class UserService {
 
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
-	
+
 
 	@Transactional
 	public ResponseDto removeUser(Long userId, String smsVerifyKey) {
@@ -126,7 +121,7 @@ public class UserService {
 		UserRemoved userRemoved = new UserRemoved(user);
 
 		String dummy = "r_" + user.getId();
-		
+
 		user.setEmail(dummy);
 		user.setNationCode(dummy);
 

@@ -34,7 +34,7 @@ public class UserController {
 	@GetMapping("/v1/info")
 	public ResponseEntity<?> userInfo(Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
-		return ResponseEntity.ok(userService.getUserSimplenfo(user.getId()));
+		return ResponseEntity.ok(userService.getUserSimplenfo(user));
 	}
 
 	@PostMapping("/v1/device")
@@ -43,11 +43,11 @@ public class UserController {
 
 		return ResponseEntity.ok(userService.updateDeviceInfo(user.getId(), body));
 	}
-	
+
 	@PostMapping("/v1/logout")
 	public ResponseEntity<?> logout(Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
-		
+
 		return ResponseEntity.ok(userService.logout(user.getId()));
 	}
 
@@ -63,7 +63,7 @@ public class UserController {
 	public ResponseEntity<?> sendJoinVerifySms(Authentication authentication){
 		User user = (User) authentication.getPrincipal();
 
-		return ResponseEntity.ok(userService.sendVerifyCodeBySms(user.getId(), LocationCode.LEAVE));
+		return ResponseEntity.ok(userService.sendVerifyCodeBySms(user, LocationCode.LEAVE));
 	}
 
 	@PostMapping("/v1/verify/sms/check")
