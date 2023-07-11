@@ -53,8 +53,7 @@ public class JwtTokenProvider {
 	private Long REFRESH_TOKEN_EXP;
 
 	public JwtTokenProvider(@Value("${application.jwt.secret}") String TOKEN_SECRET,
-			CustomUserDetailsService customUserDetailsService,
-			RefreshTokenRepository refreshTokenRepository,
+			CustomUserDetailsService customUserDetailsService, RefreshTokenRepository refreshTokenRepository,
 			UserRepository userRepository) {
 		this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(TOKEN_SECRET));
 		this.customUserDetailsService = customUserDetailsService;
@@ -78,13 +77,14 @@ public class JwtTokenProvider {
 
 		// Refresh Token 생성
 		Date refreshTokenExpireAt = new Date(timestamp + REFRESH_TOKEN_EXP * 1000L);
-		String refreshToken = Jwts.builder().setSubject("RTK").claim("id", userId)
-				.setExpiration(refreshTokenExpireAt).setIssuedAt(now).signWith(key, SignatureAlgorithm.HS256).compact();
+		String refreshToken = Jwts.builder().setSubject("RTK").claim("id", userId).setExpiration(refreshTokenExpireAt)
+				.setIssuedAt(now).signWith(key, SignatureAlgorithm.HS256).compact();
 
 		RefreshToken redisRefreshToken = new RefreshToken(userId, refreshToken, REFRESH_TOKEN_EXP);
 		refreshTokenRepository.save(redisRefreshToken);
 
-		User user = userRepository.findById(userId).orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
 		user.setAktId(atkId);
 
@@ -101,14 +101,18 @@ public class JwtTokenProvider {
 		Claims claims = parseClaims(token);
 
 		String username = claims.get("id").toString();
-		String atkId = claims.get("atkId").toString();
+		String subject = claims.getSubject();
 
 		// UserDetails 객체를 만들어서 Authentication 리턴
 		UserDetails principal = customUserDetailsService.loadUserByUsername(username);
 
-		User user = (User) principal;
-		if(user.getId() != null && !atkId.equals(user.getAktId())) {
-			throw new UsernameNotFoundException("user login other device");
+		if (subject.equals("ATK")) {
+			String atkId = claims.get("atkId").toString();
+
+			User user = (User) principal;
+			if (user.getId() != null && !atkId.equals(user.getAktId())) {
+				throw new UsernameNotFoundException("user login other device");
+			}
 		}
 
 		return new UsernamePasswordAuthenticationToken(principal, "", principal.getAuthorities());

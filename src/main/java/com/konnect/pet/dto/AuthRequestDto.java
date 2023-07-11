@@ -18,8 +18,11 @@ public class AuthRequestDto {
 	private PlatformType platform;
 	private String smsVerifyKey;
 	private String emailVerifyKey;
-	
+
 	private String nationCode;
+
+	private String address;
+	private String coords;
 
 	private String password;
 

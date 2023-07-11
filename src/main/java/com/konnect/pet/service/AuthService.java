@@ -201,6 +201,8 @@ public class AuthService {
 			user.setRole(Roles.ROLE_LVL1);
 			user.setPlatform(requestDto.getPlatform());
 			user.setNationCode(requestDto.getNationCode());
+			user.setResidenceAddress(requestDto.getAddress());
+			user.setResidenceCoords(requestDto.getCoords());
 			user.setLastLoginDate(LocalDateTime.now());
 			user.setMarketingYn(Boolean
 					.parseBoolean(((Map) requestDto.getTermsAgreed().get(CommonCodeConst.MARKETING_TERMS_GROUP_ID))

@@ -73,6 +73,12 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 	@Column(length = 20)
 	private String deviceModel;
 
+	@Column(length = 255)
+	private String residenceAddress;
+
+	@Column(length = 50)
+	private String residenceCoords;
+
 	@Column(length = 200)
 	private String deviceToken;
 

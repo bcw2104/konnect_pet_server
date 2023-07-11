@@ -85,7 +85,7 @@ public class VerifyService {
 	public ResponseDto sendVerifyCodeByEmail(String email, LocationCode locationCode) {
 		Map<String, Object> mailData = new HashMap<>();
 
-		String verifiyCode = ValidationUtils.generateRandomString(8, true, true);
+		String verifiyCode = ValidationUtils.generateRandomString(8, true, false);
 
 		mailData.put("verifyCode", verifiyCode);
 
