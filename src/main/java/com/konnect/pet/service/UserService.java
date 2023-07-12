@@ -35,12 +35,10 @@ public class UserService {
 	private final VerifyService verifyService;
 	private final RefreshTokenRepository refreshTokenRepository;
 
-
 	@Value("${application.aes.privacy.key}")
 	private String PRIVACY_AES_KEY;
 	@Value("${application.aes.privacy.iv}")
 	private String PRIVACY_AES_IV;
-
 
 	public ResponseDto logout(Long userId) {
 		refreshTokenRepository.deleteById(userId);
@@ -51,8 +49,10 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public ResponseDto getUserSimplenfo(User user) {
 
-		UserSimpleDto simpleDto = new UserSimpleDto(user.getId(), user.getEmail(), user.getTelMask(), user.getPlatform().name());
-		return new ResponseDto(ResponseType.SUCCESS,simpleDto);
+		UserSimpleDto simpleDto = UserSimpleDto.builder().userId(user.getId()).email(user.getEmail())
+				.platform(user.getPlatform().name()).tel(user.getTelMask()).residenceAddress(user.getResidenceAddress())
+				.residenceCoords(user.getResidenceCoords()).build();
+		return new ResponseDto(ResponseType.SUCCESS, simpleDto);
 	}
 
 	@Transactional
@@ -96,7 +96,6 @@ public class UserService {
 
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
-
 
 	@Transactional
 	public ResponseDto removeUser(Long userId, String smsVerifyKey) {
