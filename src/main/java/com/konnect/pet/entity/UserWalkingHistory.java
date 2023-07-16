@@ -12,12 +12,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
-public class UserWalkingHistory extends BaseAutoSetEntity{
+@NoArgsConstructor
+public class UserWalkingHistory extends BaseAutoSetEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,14 +27,12 @@ public class UserWalkingHistory extends BaseAutoSetEntity{
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="user_id", foreignKey = @ForeignKey(name = "FK_walking_user"),nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_walking_user"), nullable = false)
 	private User user;
 
-	private int distance;
+	private int meters;
 
-	private int rewardPoint;
-
-	private int donationPoint;
+	private int seconds;
 
 	@Column(length = 2000)
 	private String routes;
@@ -41,15 +41,13 @@ public class UserWalkingHistory extends BaseAutoSetEntity{
 
 	private LocalDateTime endDate;
 
-	public UserWalkingHistory(User user,LocalDateTime startDate) {
+	public UserWalkingHistory(User user, LocalDateTime startDate) {
 		this.user = user;
-		this.distance = 0;
-		this.rewardPoint = 0;
-		this.donationPoint = 0;
+		this.meters = 0;
+		this.seconds = 0;
 		this.routes = null;
 		this.startDate = startDate;
 		this.endDate = null;
 	}
-
 
 }

@@ -19,6 +19,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
@@ -89,7 +90,6 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 	@Column(length = 6)
 	private String aktId;
 
-	// TODO 주소 추가
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
