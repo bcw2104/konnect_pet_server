@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
+import com.querydsl.jpa.JPQLTemplates;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import jakarta.persistence.EntityManager;
@@ -16,6 +17,6 @@ public class QueryDslConfig {
 
 	@Bean
 	JPAQueryFactory queryFactory() {
-		return new JPAQueryFactory(em);
+		 return new JPAQueryFactory(JPQLTemplates.DEFAULT, em);
 	}
 }

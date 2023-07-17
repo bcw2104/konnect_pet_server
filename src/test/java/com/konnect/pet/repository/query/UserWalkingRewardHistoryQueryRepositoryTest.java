@@ -16,7 +16,8 @@ public class UserWalkingRewardHistoryQueryRepositoryTest {
 
     @Test
     public void testFindUserCurrentRewardTotalAmount() {
-        Map<Long, Group> findUserCurrentRewardTotalAmount = historyQueryRepository.findUserCurrentRewardTotalAmount(20L);
+        Map<Long, Integer> findUserCurrentRewardTotalAmount = historyQueryRepository.findUserCurrentRewardTotalAmount(20L);
+
     }
 
 }

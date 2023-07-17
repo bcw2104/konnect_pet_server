@@ -38,7 +38,7 @@ public class UserWalkingRewardHistoryQueryRepository {
 
 	private final JPAQueryFactory queryFactory;
 
-	public Map<Long, Group> findUserCurrentRewardTotalAmount(Long userId) {
+	public Map<Long, Integer> findUserCurrentRewardTotalAmount(Long userId) {
 		LocalDateTime now = LocalDateTime.now();
 		LocalDateTime startOfDay = now.with(LocalTime.MIDNIGHT);
 		LocalDateTime startOfWeek = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
@@ -52,19 +52,17 @@ public class UserWalkingRewardHistoryQueryRepository {
 						userWalkingRewardHistory.walkingRewardPolicy.endDate.goe(now))
 				.where(userWalkingRewardHistory.user.id.eq(userId)
 						.and(userWalkingRewardHistory.walkingRewardPolicy.peroidType.eq(PeriodCode.DAY.getCode())
-								.and(userWalkingRewardHistory.walkingRewardPolicy.createdDate.goe(startOfDay))
+								.and(userWalkingRewardHistory.createdDate.goe(startOfDay))
 								.or(userWalkingRewardHistory.walkingRewardPolicy.peroidType
 										.eq(PeriodCode.WEEK.getCode())
-										.and(userWalkingRewardHistory.walkingRewardPolicy.createdDate.goe(startOfWeek))
+										.and(userWalkingRewardHistory.createdDate.goe(startOfWeek))
 										.or(userWalkingRewardHistory.walkingRewardPolicy.peroidType
 												.eq(PeriodCode.MONTH.getCode())
-												.and(userWalkingRewardHistory.walkingRewardPolicy.createdDate
+												.and(userWalkingRewardHistory.createdDate
 														.goe(startOfMonth))
 										.or(userWalkingRewardHistory.walkingRewardPolicy.peroidType
 												.eq(PeriodCode.INFINITY.getCode()))))))
 				.transform(GroupBy.groupBy(userWalkingRewardHistory.walkingRewardPolicy.id).as(
-						userWalkingRewardHistory.walkingRewardPolicy.maxRewardAmountPerWalking,
-						userWalkingRewardHistory.walkingRewardPolicy.maxRewardAmountPerPeriod,
 						userWalkingRewardHistory.amount.sum()));
 
 	}

@@ -1,24 +1,35 @@
 package com.konnect.pet.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.konnect.pet.entity.User;
+import com.konnect.pet.entity.UserPoint;
 
-public interface UserPointRepository extends JpaRepository<User, Long>{
+import jakarta.persistence.LockModeType;
+
+public interface UserPointRepository extends JpaRepository<UserPoint, Long>{
 
 	@Query("select u from User u where u.id = :id")
-	Optional<User> findById(@Param("id") Long id);
+	Optional<UserPoint> findById(@Param("id") Long id);
 
-	@Query("select u from User u where u.telHash = :telHash")
-	Optional<User> findByTelHash(@Param("telHash")String telHash);
+	@Query("select u from UserPoint u where u.user.id = :userId")
+	List<UserPoint> findByUserId(@Param("userId") Long userId);
 
-	boolean existsByEmail(@Param("email")String email);
-	boolean existsByTelEnc(@Param("telEnc")String telEnc);
-	boolean existsByTelHash(@Param("telHash")String telHash);
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select u from UserPoint u where u.user.id = :userId")
+	List<UserPoint> findByUserIdForUpdate(@Param("userId") Long userId);
 
-	Optional<User> findByEmail(@Param("email") String email);
+	@Query("select u from UserPoint u where u.user.id = :userId and u.pointType = :pointType")
+	Optional<UserPoint> findByUserIdAndPointType(@Param("userId") Long userId, @Param("pointType") String pointType);
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select u from UserPoint u where u.user.id = :userId and u.pointType = :pointType")
+	Optional<UserPoint> findByUserIdAndPointTypeForUpdate(@Param("userId") Long userId, @Param("pointType") String pointType);
+
 }

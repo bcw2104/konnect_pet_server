@@ -10,13 +10,13 @@ import lombok.Setter;
 @Setter
 @Getter
 public class PropertiesDto {
-	private String pKey;
+	private String name;
 
-	private String pValue;
+	private String value;
 
 	public PropertiesDto(Properties properties) {
-		this.pKey = properties.getPKey();
-		this.pValue = properties.getPValue();
+		this.name = properties.getPKey();
+		this.value = properties.getPValue();
 	}
 
 
