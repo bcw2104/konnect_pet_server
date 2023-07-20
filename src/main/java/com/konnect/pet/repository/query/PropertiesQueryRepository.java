@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import com.konnect.pet.entity.Properties;
 import com.konnect.pet.repository.PropertiesRepository;
-import com.mysql.cj.x.protobuf.MysqlxDatatypes.Array;
 
 import lombok.RequiredArgsConstructor;
 
