@@ -30,9 +30,9 @@ public class UserWalkingFootprint extends BaseAutoSetEntity{
 	@JoinColumn(name = "walking_id", foreignKey = @ForeignKey(name = "FK_walking_footprint_walking"), nullable = false)
 	private UserWalkingHistory userWalkingHistory;
 
-	private String longitude;
+	private double longitude;
 
-	private String latitude;
+	private double latitude;
 
 	private int stock;
 }

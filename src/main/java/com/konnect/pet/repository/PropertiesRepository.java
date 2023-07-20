@@ -15,10 +15,12 @@ public interface PropertiesRepository extends JpaRepository<Properties, String>{
 	@Query("select p from Properties p where p.pKey = :key")
 	Optional<Properties> findByKey(@Param("key") String key);
 
+	@Query("select p from Properties p where p.pKey in :keys")
+	List<Properties> fintByKeys(@Param("keys") List<String> keys);
 
 	@Query("select p.pValue from Properties p where p.pKey = :key")
 	Optional<String> findValueByKey(@Param("key") String key);
 
 	@Query("select p from Properties p where p.pKeyGroup = :keyGroup")
-	List<Properties> findByKeyGroup(@Param("keyGroup")String keyGroup);
+	List<Properties> findByKeyGroup(@Param("keyGroup") String keyGroup);
 }

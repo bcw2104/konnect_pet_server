@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konnect.pet.dto.PropertiesDto;
+import com.konnect.pet.dto.UserWalkingFootprintDto;
 import com.konnect.pet.dto.UserWalkingReportDto;
 import com.konnect.pet.dto.WalkingRewardPolicyDto;
 import com.konnect.pet.entity.Properties;
@@ -39,6 +42,7 @@ import com.konnect.pet.repository.UserWalkingHistoryRepository;
 import com.konnect.pet.repository.UserWalkingRewardHistoryRepository;
 import com.konnect.pet.repository.WalkingRewardPolicyRepository;
 import com.konnect.pet.repository.query.UserWalkingRewardHistoryQueryRepository;
+import com.konnect.pet.repository.query.PropertiesQueryRepository;
 import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.utils.Aes256Utils;
 import com.querydsl.core.group.Group;
@@ -58,6 +62,7 @@ public class WalkingService {
 	private final UserWalkingRewardHistoryQueryRepository userWalkingRewardHistoryQueryRepository;
 	private final UserWalkingFootprintRepository userWalkingFootprintRepository;
 	private final PropertiesRepository propertiesRepository;
+	private final PropertiesQueryRepository PropertiesQueryRepository;
 	private final PointService pointService;
 
 	private final ObjectMapper objectMapper;
@@ -66,6 +71,9 @@ public class WalkingService {
 	private String SERVICE_AES_KEY;
 	@Value("${application.aes.service.iv}")
 	private String SERVICE_AES_IV;
+
+	private final int DEFAULT_DISPLAY_FOOTPRINTS_AMOUNT = 50;
+	private final int DEFAULT_DISPLAY_FOOTPRINTS_DISTANCE = 4;
 
 	@Transactional
 	public ResponseDto generateStartWalkingData(User user) {
@@ -227,8 +235,8 @@ public class WalkingService {
 
 				UserWalkingFootprint footprint = new UserWalkingFootprint();
 				footprint.setStock(footprintStock);
-				footprint.setLatitude(footprintCoord.get(0));
-				footprint.setLongitude(footprintCoord.get(1));
+				footprint.setLatitude(Double.parseDouble(footprintCoord.get(0)));
+				footprint.setLongitude(Double.parseDouble(footprintCoord.get(1)));
 				footprint.setUser(user);
 				footprint.setUserWalkingHistory(walkingHistory);
 				footprints.add(footprint);
@@ -251,6 +259,57 @@ public class WalkingService {
 		}
 
 		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingReportDto(userWalkingHistory));
+	}
+
+	public ResponseDto getAroundFootprint(double lat, double lng) {
+		Map<String, String> propertyMap = PropertiesQueryRepository
+				.getPropertyMapByKeys("walking_footprint_display_amount", "walking_footprint_display_distance");
+
+		int displayDistance = DEFAULT_DISPLAY_FOOTPRINTS_DISTANCE;
+		int displayAmount = DEFAULT_DISPLAY_FOOTPRINTS_AMOUNT;
+		try {
+			displayAmount = Integer.parseInt(propertyMap.get("walking_footprint_display_amount"));
+		} catch (Exception e) {
+			log.error("walking_footprint_display_amount props is not number");
+		}
+		try {
+			displayDistance = Integer.parseInt(propertyMap.get("walking_footprint_display_distance"));
+		} catch (Exception e) {
+			log.error("walking_footprint_display_distance props is not number");
+		}
+		Map<String, Double> coordRadius = getCoordRadius(lat, lng, displayDistance);
+
+		double minLat = coordRadius.get("minLat");
+		double maxLat = coordRadius.get("maxLat");
+		double minLng = coordRadius.get("minLng");
+		double maxLng = coordRadius.get("maxLng");
+
+		List<UserWalkingFootprintDto> radiusFootprints = userWalkingFootprintRepository.findAroundByLatLongLimit(maxLat,
+				maxLng, minLat, minLng, PageRequest.of(0, displayAmount)).stream().map(UserWalkingFootprintDto::new).toList();
+
+		return new ResponseDto(ResponseType.SUCCESS, radiusFootprints);
+	}
+
+	private Map<String, Double> getCoordRadius(double lat, double lng, double km) {
+
+		double kmInLongitudeDegree = 111.320D * Math.cos(lat / 180.0 * Math.PI);
+
+		double deltaLat = km / 111.1;
+		double deltaLng = km / kmInLongitudeDegree;
+
+		double minLat = lat - deltaLat;
+		double maxLat = lat + deltaLat;
+		double minLng = lng - deltaLng;
+		double maxLng = lng + deltaLng;
+
+		Map<String, Double> resultMap = new HashMap<String, Double>();
+
+		resultMap.put("minLat", minLat);
+		resultMap.put("maxLat", maxLat);
+		resultMap.put("minLng", minLng);
+		resultMap.put("maxLng", maxLng);
+
+		return resultMap;
 	}
 
 }

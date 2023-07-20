@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konnect.pet.entity.User;
@@ -35,14 +36,28 @@ public class WalkingContainer {
 	public ResponseEntity<?> saveWalking(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 
-		return ResponseEntity.ok(walkingService.saveWalking(user,body));
+		return ResponseEntity.ok(walkingService.saveWalking(user, body));
 	}
 
 	@GetMapping("/v1/report/{id}")
-	public ResponseEntity<?> getWalkingReport(Authentication authentication,@PathVariable("id") Long id) {
+	public ResponseEntity<?> getWalkingReport(Authentication authentication, @PathVariable("id") Long id) {
 		User user = (User) authentication.getPrincipal();
 
-		return ResponseEntity.ok(walkingService.getWalkingHistory(user,id));
+		return ResponseEntity.ok(walkingService.getWalkingHistory(user, id));
+	}
+
+	@GetMapping("/v1/footprints/around")
+	public ResponseEntity<?> getAroundFootprints(Authentication authentication, @RequestParam("lat") double lat,
+			@RequestParam("lng") double lng) {
+
+		return ResponseEntity.ok(walkingService.getAroundFootprint(lat, lng));
+	}
+
+	@PostMapping("/v1/footprints/catch")
+	public ResponseEntity<?> catchFootprints(Authentication authentication, @RequestBody Map<String,Object> body) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(null);
 	}
 
 }
