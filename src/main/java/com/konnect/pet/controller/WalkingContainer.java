@@ -49,8 +49,8 @@ public class WalkingContainer {
 	@GetMapping("/v1/footprints/around")
 	public ResponseEntity<?> getAroundFootprints(Authentication authentication, @RequestParam("lat") double lat,
 			@RequestParam("lng") double lng) {
-
-		return ResponseEntity.ok(walkingService.getAroundFootprint(lat, lng));
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(walkingService.getAroundFootprint(user,lat, lng));
 	}
 
 	@PostMapping("/v1/footprints/catch")

@@ -50,6 +50,12 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 	@Column(length = 50, nullable = false)
 	private String email;
 
+	@Column(length = 15, nullable = true)
+	private String nickname;
+
+	@Column(length = 100, nullable = true)
+	private String profile_img_url;
+
 	@Column(length = 60, nullable = true)
 	private String password;
 
@@ -79,6 +85,9 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 
 	@Column(length = 50)
 	private String residenceCoords;
+
+	@Column(length = 8)
+	private String recommendCode;
 
 	@Column(length = 200)
 	private String deviceToken;

@@ -1,6 +1,7 @@
 package com.konnect.pet.service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import com.konnect.pet.entity.Properties;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserPoint;
 import com.konnect.pet.entity.UserWalkingFootprint;
+import com.konnect.pet.entity.UserWalkingFootprintCatchHistory;
 import com.konnect.pet.entity.UserWalkingHistory;
 import com.konnect.pet.entity.UserWalkingRewardHistory;
 import com.konnect.pet.entity.WalkingRewardPolicy;
@@ -37,6 +39,7 @@ import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.PropertiesRepository;
 import com.konnect.pet.repository.UserPointRepository;
 import com.konnect.pet.repository.UserRepository;
+import com.konnect.pet.repository.UserWalkingFootprintCatchHistoryRepository;
 import com.konnect.pet.repository.UserWalkingFootprintRepository;
 import com.konnect.pet.repository.UserWalkingHistoryRepository;
 import com.konnect.pet.repository.UserWalkingRewardHistoryRepository;
@@ -61,6 +64,7 @@ public class WalkingService {
 	private final UserWalkingRewardHistoryRepository userWalkingRewardHistoryRepository;
 	private final UserWalkingRewardHistoryQueryRepository userWalkingRewardHistoryQueryRepository;
 	private final UserWalkingFootprintRepository userWalkingFootprintRepository;
+	private final UserWalkingFootprintCatchHistoryRepository userWalkingFootprintCatchHistoryRepository;
 	private final PropertiesRepository propertiesRepository;
 	private final PropertiesQueryRepository PropertiesQueryRepository;
 	private final PointService pointService;
@@ -74,6 +78,7 @@ public class WalkingService {
 
 	private final int DEFAULT_DISPLAY_FOOTPRINTS_AMOUNT = 50;
 	private final int DEFAULT_DISPLAY_FOOTPRINTS_DISTANCE = 4;
+	private final int DEFAULT_DISPLAY_FOOTPRINTS_PERIOD = 5;
 
 	@Transactional
 	public ResponseDto generateStartWalkingData(User user) {
@@ -127,6 +132,10 @@ public class WalkingService {
 			List<Object> footprintCoords = objectMapper.readValue(body.get("footprintCoords").toString(),
 					new TypeReference<List<Object>>() {
 					});
+
+			List<Long> catchedFootprints = objectMapper.readValue(body.get("catchedFootprints").toString(),
+					new TypeReference<List<Long>>() {
+			});
 			String savedCoords = body.get("savedCoords").toString();
 
 			log.info("Save walking data - walkingId: {}", id);
@@ -154,11 +163,28 @@ public class WalkingService {
 				provideWalkingReward(user, rewards, walkingHistory);
 			}
 
+			if(!catchedFootprints.isEmpty()) {
+				saveCatchedFootprints(user, catchedFootprints, walkingHistory);
+			}
+
 			return new ResponseDto(ResponseType.SUCCESS);
 		} catch (Exception e) {
 			log.error("Save walking data failed - user: {}, body: {}", user.getId(), body.toString(), e);
 			throw new CustomResponseException(ResponseType.INVALID_PARAMETER, e.getMessage());
 		}
+	}
+
+	private void saveCatchedFootprints(User user, List<Long> catchedFootprints, UserWalkingHistory walkingHistory) {
+		List<UserWalkingFootprintCatchHistory> footprintCatchHistories = new ArrayList<UserWalkingFootprintCatchHistory>();
+		List<UserWalkingFootprint> footprints = userWalkingFootprintRepository.findByIds(catchedFootprints);
+		for(UserWalkingFootprint footprint : footprints) {
+			UserWalkingFootprintCatchHistory history = new UserWalkingFootprintCatchHistory();
+			history.setUser(user);
+			history.setUserWalkingHistory(walkingHistory);
+			history.setUserWalkingFootprint(footprint);
+			footprintCatchHistories.add(history);
+		}
+		userWalkingFootprintCatchHistoryRepository.saveAll(footprintCatchHistories);
 	}
 
 	@Transactional
@@ -250,23 +276,26 @@ public class WalkingService {
 		}
 	}
 
-	public ResponseDto getWalkingHistory(User user, Long historyId) {
-		UserWalkingHistory userWalkingHistory = userWalkingHistoryRepository.findById(historyId)
+	public ResponseDto getWalkingHistory(User user, Long walkingId) {
+		UserWalkingHistory userWalkingHistory = userWalkingHistoryRepository.findWithRewardHistById(walkingId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+		List<UserWalkingFootprintCatchHistory> histories = userWalkingFootprintCatchHistoryRepository.findWithUserByWalkingId(walkingId);
 
 		if (!userWalkingHistory.getUser().getId().equals(user.getId())) {
 			new CustomResponseException(ResponseType.INVALID_PARAMETER);
 		}
 
-		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingReportDto(userWalkingHistory));
+		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingReportDto(userWalkingHistory,histories));
 	}
 
-	public ResponseDto getAroundFootprint(double lat, double lng) {
+	public ResponseDto getAroundFootprint(User user,double lat, double lng) {
 		Map<String, String> propertyMap = PropertiesQueryRepository
-				.getPropertyMapByKeys("walking_footprint_display_amount", "walking_footprint_display_distance");
+				.getPropertyMapByKeys("walking_footprint_display_amount", "walking_footprint_display_distance","walking_footprint_display_period");
 
 		int displayDistance = DEFAULT_DISPLAY_FOOTPRINTS_DISTANCE;
 		int displayAmount = DEFAULT_DISPLAY_FOOTPRINTS_AMOUNT;
+		int displayPeriod = DEFAULT_DISPLAY_FOOTPRINTS_PERIOD;
 		try {
 			displayAmount = Integer.parseInt(propertyMap.get("walking_footprint_display_amount"));
 		} catch (Exception e) {
@@ -277,6 +306,13 @@ public class WalkingService {
 		} catch (Exception e) {
 			log.error("walking_footprint_display_distance props is not number");
 		}
+		try {
+			displayPeriod = Integer.parseInt(propertyMap.get("walking_footprint_display_period"));
+		} catch (Exception e) {
+			log.error("walking_footprint_display_distance props is not number");
+		}
+		LocalDateTime displayDate = LocalDateTime.now().minusDays(displayPeriod).with(LocalTime.MIDNIGHT);
+
 		Map<String, Double> coordRadius = getCoordRadius(lat, lng, displayDistance);
 
 		double minLat = coordRadius.get("minLat");
@@ -284,10 +320,16 @@ public class WalkingService {
 		double minLng = coordRadius.get("minLng");
 		double maxLng = coordRadius.get("maxLng");
 
-		List<UserWalkingFootprintDto> radiusFootprints = userWalkingFootprintRepository.findAroundByLatLongLimit(maxLat,
+		List<UserWalkingFootprintDto> radiusFootprints = userWalkingFootprintRepository.findAroundByLatLongLimit(displayDate,maxLat,
 				maxLng, minLat, minLng, PageRequest.of(0, displayAmount)).stream().map(UserWalkingFootprintDto::new).toList();
+		List<Long> catchedFootprints = userWalkingFootprintCatchHistoryRepository.findFootprintIdByCreatedDateAndUserId(displayDate,user.getId());
 
-		return new ResponseDto(ResponseType.SUCCESS, radiusFootprints);
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap.put("radiusFootprints", radiusFootprints);
+		resultMap.put("catchedFootprints", catchedFootprints);
+
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
 
 	private Map<String, Double> getCoordRadius(double lat, double lng, double km) {

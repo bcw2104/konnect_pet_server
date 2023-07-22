@@ -48,6 +48,9 @@ public class UserWalkingHistory extends BaseAutoSetEntity {
 	@OneToMany(mappedBy = "userWalkingHistory", fetch = FetchType.LAZY)
 	private List<UserWalkingRewardHistory> rewardHistories = new ArrayList<UserWalkingRewardHistory>();
 
+	@OneToMany(mappedBy = "userWalkingHistory", fetch = FetchType.LAZY)
+	private List<UserWalkingFootprintCatchHistory> footprintCatchHistories = new ArrayList<UserWalkingFootprintCatchHistory>();
+
 	public UserWalkingHistory(User user, LocalDateTime startDate) {
 		this.user = user;
 		this.meters = 0;

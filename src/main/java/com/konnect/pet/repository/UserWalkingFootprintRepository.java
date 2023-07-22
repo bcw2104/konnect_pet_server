@@ -1,5 +1,6 @@
 package com.konnect.pet.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,14 +17,17 @@ public interface UserWalkingFootprintRepository extends JpaRepository<UserWalkin
 	@Query("select u from UserWalkingFootprint u where u.id = :id")
 	Optional<UserWalkingFootprint> findById(@Param("id") Long id);
 
+	@Query("select u from UserWalkingFootprint u where u.id in :ids")
+	List<UserWalkingFootprint> findByIds(@Param("ids") List<Long> ids);
+
 	@Query("select u from UserWalkingFootprint u where u.user.id = :userId")
 	List<UserWalkingFootprint> findByUserId(@Param("userId") Long userId);
 
 	@Query("select u from UserWalkingFootprint u where u.userWalkingHistory.id = :walkingId")
 	List<UserWalkingFootprint> findByWalkingId(@Param("walkingId") Long walkingId);
 
-	@Query("select u from UserWalkingFootprint u where u.stock > 0 and u.latitude >= :minLat and u.latitude <= :maxLat "
+	@Query("select u from UserWalkingFootprint u where u.stock > 0 and u.createdDate >= :createdDate and u.latitude >= :minLat and u.latitude <= :maxLat "
 			+ "and u.longitude >= :minLng and u.longitude <= :maxLng")
-	List<UserWalkingFootprint> findAroundByLatLongLimit(@Param("maxLat") double maxLat, @Param("maxLng") double maxLng,
+	List<UserWalkingFootprint> findAroundByLatLongLimit(@Param("createdDate") LocalDateTime createdDate, @Param("maxLat") double maxLat, @Param("maxLng") double maxLng,
 			@Param("minLat") double minLat, @Param("minLng") double minLng, Pageable pageable);
 }

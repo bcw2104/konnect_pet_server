@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.extras.springsecurity6.auth.AuthUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konnect.pet.constant.CommonCodeConst;
@@ -36,6 +37,7 @@ import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.security.JwtTokenProvider;
 import com.konnect.pet.utils.Aes256Utils;
 import com.konnect.pet.utils.Sha256Utils;
+import com.konnect.pet.utils.ValidationUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -204,6 +206,7 @@ public class AuthService {
 			user.setResidenceAddress(requestDto.getAddress());
 			user.setResidenceCoords(requestDto.getCoords());
 			user.setLastLoginDate(LocalDateTime.now());
+			user.setRecommendCode(ValidationUtils.generateRandomString(6, true, true)+ValidationUtils.generateRandomString(2, false, true));
 			user.setMarketingYn(Boolean
 					.parseBoolean(((Map) requestDto.getTermsAgreed().get(CommonCodeConst.MARKETING_TERMS_GROUP_ID))
 							.get("checkedYn").toString()));

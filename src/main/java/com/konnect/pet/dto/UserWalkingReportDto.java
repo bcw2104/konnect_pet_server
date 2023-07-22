@@ -3,6 +3,7 @@ package com.konnect.pet.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.konnect.pet.entity.UserWalkingFootprintCatchHistory;
 import com.konnect.pet.entity.UserWalkingHistory;
 import com.konnect.pet.entity.UserWalkingRewardHistory;
 import com.konnect.pet.enums.code.PointTypeCode;
@@ -27,7 +28,9 @@ public class UserWalkingReportDto {
 
 	private List<UserWalkingRewardDto> rewardHistories;
 
-	public UserWalkingReportDto(UserWalkingHistory history) {
+	private List<UserWalkingFootprintCatchHistoryDto> footprintCatchHistories;
+
+	public UserWalkingReportDto(UserWalkingHistory history, List<UserWalkingFootprintCatchHistory> catchHistory) {
 		this.id = history.getId();
 		this.meters = history.getMeters();
 		this.seconds = history.getSeconds();
@@ -35,6 +38,7 @@ public class UserWalkingReportDto {
 		this.startDate = history.getStartDate();
 		this.endDate = history.getEndDate();
 		this.rewardHistories = history.getRewardHistories().stream().map(UserWalkingRewardDto::new).toList();
+		this.footprintCatchHistories = catchHistory.stream().map(UserWalkingFootprintCatchHistoryDto::new).toList();
 	}
 
 }
@@ -60,3 +64,17 @@ class UserWalkingRewardDto {
 	}
 
 }
+
+@Getter
+@Setter
+class UserWalkingFootprintCatchHistoryDto {
+	private String nickname;
+	private LocalDateTime createdDate;
+
+	public UserWalkingFootprintCatchHistoryDto(UserWalkingFootprintCatchHistory history) {
+		this.nickname = history.getUserWalkingFootprint().getUser().getNickname();
+		this.createdDate = history.getCreatedDate();
+	}
+
+}
+
