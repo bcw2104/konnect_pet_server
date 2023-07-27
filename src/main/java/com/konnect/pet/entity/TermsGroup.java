@@ -51,6 +51,7 @@ public class TermsGroup extends BaseAutoSetEntity{
 
 	private int sortOrder;
 
+	@Builder.Default
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "termsGroup")
 	private List<Terms> terms = new ArrayList<Terms>();
 

@@ -62,6 +62,7 @@ public class UserWalkingRewardHistoryQueryRepository {
 														.goe(startOfMonth))
 										.or(userWalkingRewardHistory.walkingRewardPolicy.peroidType
 												.eq(PeriodCode.INFINITY.getCode()))))))
+				.groupBy(userWalkingRewardHistory.walkingRewardPolicy.id)
 				.transform(GroupBy.groupBy(userWalkingRewardHistory.walkingRewardPolicy.id).as(
 						userWalkingRewardHistory.amount.sum()));
 

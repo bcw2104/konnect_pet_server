@@ -54,7 +54,7 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 	private String nickname;
 
 	@Column(length = 100, nullable = true)
-	private String profile_img_url;
+	private String profileImgUrl;
 
 	@Column(length = 60, nullable = true)
 	private String password;

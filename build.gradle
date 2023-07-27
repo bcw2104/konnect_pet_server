@@ -37,6 +37,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+	// https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3
+	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.514'
 	implementation "com.twilio.sdk:twilio:9.7.0"
 
 	implementation 'org.apache.commons:commons-lang3'
@@ -47,11 +49,11 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
 	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok' 
-	
-	testCompileOnly 'org.projectlombok:lombok' 
-	testAnnotationProcessor 'org.projectlombok:lombok' 
-	
+	annotationProcessor 'org.projectlombok:lombok'
+
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.h2database:h2'
 	runtimeOnly 'com.mysql:mysql-connector-j'

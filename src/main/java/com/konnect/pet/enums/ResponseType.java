@@ -37,7 +37,12 @@ public enum ResponseType {
 	JOIN_WITH_APPLE("9219", "social join user", "Apple 연동 회원입니다. Apple 로그인을 해주세요."),
 	JOIN_WITH_EMAIL("9220", "social join user", "일반 가입 회원입니다. 일반 로그인을 해주세요."),
 
+	//포인트 관련 에러들...
 	NOT_ENOUGH_POINT("9300", "not enough point", "포인트가 부족합니다."),
+
+	//반려견 관련 에러들...
+	TOO_MANY_PET("9400", "too many pet", "반려동물은 최대 5마리 등록하실 수 있습니다."),
+
 	dummy("10000", "dummy","dummy");
 
 	private String code;

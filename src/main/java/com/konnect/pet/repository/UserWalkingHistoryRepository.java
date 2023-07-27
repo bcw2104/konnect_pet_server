@@ -17,7 +17,7 @@ public interface UserWalkingHistoryRepository extends JpaRepository<UserWalkingH
 	Optional<UserWalkingHistory> findById(@Param("id") Long id);
 
 	@Query("select u from UserWalkingHistory u "
-			+ "join fetch u.rewardHistories rh "
+			+ "left join fetch u.rewardHistories rh "
 			+ "where u.id = :id")
 	Optional<UserWalkingHistory> findWithRewardHistById(@Param("id") Long id);
 

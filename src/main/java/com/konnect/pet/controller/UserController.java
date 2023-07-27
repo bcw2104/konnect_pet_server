@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.VerifyType;
 import com.konnect.pet.enums.code.LocationCode;
 import com.konnect.pet.response.ResponseDto;
+import com.konnect.pet.service.UserPetService;
 import com.konnect.pet.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 
 	private final UserService userService;
+	private final UserPetService userPetService;
 
 	@GetMapping("/v1/info")
 	public ResponseEntity<?> userInfo(Authentication authentication) {
@@ -60,20 +63,27 @@ public class UserController {
 	}
 
 	@PostMapping("/v1/verify/sms")
-	public ResponseEntity<?> sendJoinVerifySms(Authentication authentication){
+	public ResponseEntity<?> sendJoinVerifySms(Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(userService.sendVerifyCodeBySms(user, LocationCode.LEAVE));
 	}
 
 	@PostMapping("/v1/verify/sms/check")
-	public ResponseEntity<?> checkJoinVerifySms(@RequestBody Map<String, Object> body){
+	public ResponseEntity<?> checkJoinVerifySms(@RequestBody Map<String, Object> body) {
 		Long reqId = Long.parseLong(body.get("reqId").toString());
 		String tel = body.get("tel").toString();
-		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));
+		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),
+				DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));
 		String verifyCode = body.get("verify").toString();
 
-		return ResponseEntity.ok(userService.validateVerfiyCode(reqId, timestamp, verifyCode, tel,VerifyType.SMS));
+		return ResponseEntity.ok(userService.validateVerfiyCode(reqId, timestamp, verifyCode, tel, VerifyType.SMS));
+	}
+
+	@PutMapping("/v1/pet")
+	public ResponseEntity<?> savePetInfo(Authentication authentication, @RequestBody Map<String, Object> body) {
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(userPetService.addNewPet(user,body));
 	}
 
 }
