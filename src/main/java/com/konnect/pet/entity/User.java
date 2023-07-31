@@ -19,7 +19,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
@@ -49,12 +51,6 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 
 	@Column(length = 50, nullable = false)
 	private String email;
-
-	@Column(length = 15, nullable = true)
-	private String nickname;
-
-	@Column(length = 100, nullable = true)
-	private String profileImgUrl;
 
 	@Column(length = 60, nullable = true)
 	private String password;
@@ -98,7 +94,6 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 
 	@Column(length = 6)
 	private String aktId;
-
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {

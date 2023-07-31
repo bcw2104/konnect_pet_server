@@ -2,13 +2,9 @@ package com.konnect.pet.dto;
 
 import java.util.List;
 
-import com.konnect.pet.entity.User;
-
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
 import lombok.Setter;
 
 @Setter
@@ -21,7 +17,7 @@ public class UserSimpleDto {
 	private String tel;
 	private String platform;
 
-	private String profileImgUrl;
+	private UserProfileDto profile;
 
 	private List<UserPetDto> pets;
 

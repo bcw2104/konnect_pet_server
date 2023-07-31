@@ -68,11 +68,11 @@ class UserWalkingRewardDto {
 @Getter
 @Setter
 class UserWalkingFootprintCatchHistoryDto {
-	private String nickname;
+	private Long footprintId;
 	private LocalDateTime createdDate;
 
 	public UserWalkingFootprintCatchHistoryDto(UserWalkingFootprintCatchHistory history) {
-		this.nickname = history.getUserWalkingFootprint().getUser().getNickname();
+		this.footprintId = history.getUserWalkingFootprint().getId();
 		this.createdDate = history.getCreatedDate();
 	}
 

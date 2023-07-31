@@ -45,10 +45,10 @@ public class UserPet {
 
 	private boolean inoculatedYn;
 
-	@Column(length = 50)
+	@Column(length = 255)
 	private String petDescription;
 
-	@Column(length = 100, nullable = true)
+	@Column(length = 255)
 	private String petImgUrl;
 
 

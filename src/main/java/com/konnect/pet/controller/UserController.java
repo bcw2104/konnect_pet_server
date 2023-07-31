@@ -80,6 +80,12 @@ public class UserController {
 		return ResponseEntity.ok(userService.validateVerfiyCode(reqId, timestamp, verifyCode, tel, VerifyType.SMS));
 	}
 
+	@PostMapping("/v1/profile")
+	public ResponseEntity<?> saveProfileInfo(Authentication authentication, @RequestBody Map<String, Object> body) {
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(userService.saveProfile(user,body));
+	}
+
 	@PutMapping("/v1/pet")
 	public ResponseEntity<?> savePetInfo(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();

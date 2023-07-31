@@ -280,7 +280,7 @@ public class WalkingService {
 		UserWalkingHistory userWalkingHistory = userWalkingHistoryRepository.findWithRewardHistById(walkingId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
-		List<UserWalkingFootprintCatchHistory> histories = userWalkingFootprintCatchHistoryRepository.findWithUserByWalkingId(walkingId);
+		List<UserWalkingFootprintCatchHistory> histories = userWalkingFootprintCatchHistoryRepository.findByWalkingId(walkingId);
 
 		if (!userWalkingHistory.getUser().getId().equals(user.getId())) {
 			new CustomResponseException(ResponseType.INVALID_PARAMETER);

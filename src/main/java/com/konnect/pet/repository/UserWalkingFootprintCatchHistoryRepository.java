@@ -28,7 +28,6 @@ public interface UserWalkingFootprintCatchHistoryRepository extends JpaRepositor
 
 	@Query("select u from UserWalkingFootprintCatchHistory u "
 			+ "join fetch u.userWalkingFootprint f "
-			+ "join fetch f.user fu "
 			+ "where u.userWalkingHistory.id = :walkingId")
-	List<UserWalkingFootprintCatchHistory> findWithUserByWalkingId(@Param("walkingId") Long walkingId);
+	List<UserWalkingFootprintCatchHistory> findByWalkingId(@Param("walkingId") Long walkingId);
 }

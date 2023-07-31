@@ -41,7 +41,7 @@ public enum ResponseType {
 	NOT_ENOUGH_POINT("9300", "not enough point", "포인트가 부족합니다."),
 
 	//반려견 관련 에러들...
-	TOO_MANY_PET("9400", "too many pet", "반려동물은 최대 5마리 등록하실 수 있습니다."),
+	TOO_MANY_PET("9400", "too many pet", "반려동물 등록 횟수를 초과했습니다."),
 
 	dummy("10000", "dummy","dummy");
 

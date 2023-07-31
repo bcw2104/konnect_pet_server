@@ -3,6 +3,7 @@ package com.konnect.pet.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,16 +11,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.konnect.pet.dto.UserPetDto;
+import com.konnect.pet.dto.UserProfileDto;
 import com.konnect.pet.dto.UserSimpleDto;
 import com.konnect.pet.dto.VerifyFormat;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserPet;
+import com.konnect.pet.entity.UserProfile;
 import com.konnect.pet.entity.UserRemoved;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.VerifyType;
 import com.konnect.pet.enums.code.LocationCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.UserPetRepository;
+import com.konnect.pet.repository.UserProfileRepository;
 import com.konnect.pet.repository.UserRemovedRepository;
 import com.konnect.pet.repository.UserRepository;
 import com.konnect.pet.repository.redis.RefreshTokenRepository;
@@ -36,6 +40,7 @@ public class UserService {
 
 	private final UserRepository userRepository;
 	private final UserPetRepository userPetRepository;
+	private final UserProfileRepository userProfileRepository;
 	private final UserRemovedRepository userRemovedRepository;
 	private final VerifyService verifyService;
 	private final RefreshTokenRepository refreshTokenRepository;
@@ -54,12 +59,15 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public ResponseDto getUserSimplenfo(User user) {
 
+		UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
+		UserProfileDto profileDto = null;
+		if (profile != null) {
+			profileDto = new UserProfileDto(profile);
+		}
 		List<UserPetDto> pets = userPetRepository.findByUserId(user.getId()).stream().map(UserPetDto::new).toList();
 		UserSimpleDto simpleDto = UserSimpleDto.builder().userId(user.getId()).email(user.getEmail())
-				.platform(user.getPlatform().name()).tel(user.getTelMask()).profileImgUrl(user.getProfileImgUrl())
-				.pets(pets).residenceAddress(user.getResidenceAddress()).residenceCoords(user.getResidenceCoords())
-				.build();
-
+				.platform(user.getPlatform().name()).tel(user.getTelMask()).profile(profileDto).pets(pets)
+				.residenceAddress(user.getResidenceAddress()).residenceCoords(user.getResidenceCoords()).build();
 
 		return new ResponseDto(ResponseType.SUCCESS, simpleDto);
 	}
@@ -147,6 +155,42 @@ public class UserService {
 		userRemovedRepository.save(userRemoved);
 
 		return new ResponseDto(ResponseType.SUCCESS);
+	}
+
+	@Transactional
+	public ResponseDto saveProfile(User user, Map<String, Object> body) {
+		try {
+			String nickname = body.get("nickname").toString();
+			String gender = body.get("gender").toString();
+			String birthDate = body.get("birthDate").toString();
+			String profileImgUrl = body.get("profileImgUrl") == null ? null : body.get("profileImgUrl").toString();
+			String comment = body.get("comment") == null ? "" : body.get("comment").toString();
+
+			UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
+
+			if (profile != null) {
+				profile.setBirthDate(birthDate);
+				profile.setNickname(nickname);
+				profile.setProfileImgUrl(profileImgUrl);
+				profile.setComment(comment);
+				profile.setGender(gender);
+			} else {
+				profile = new UserProfile();
+				profile.setUser(user);
+				profile.setBirthDate(birthDate);
+				profile.setNickname(nickname);
+				profile.setProfileImgUrl(profileImgUrl);
+				profile.setComment(comment);
+				profile.setGender(gender);
+
+				userProfileRepository.save(profile);
+			}
+			return new ResponseDto(ResponseType.SUCCESS, new UserProfileDto(profile));
+
+		} catch (Exception e) {
+			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+		}
+
 	}
 
 }

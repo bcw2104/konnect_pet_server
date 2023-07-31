@@ -2,10 +2,13 @@ package com.konnect.pet.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.joda.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,8 +48,9 @@ public class S3StorageService {
 			metadata.setContentType(uploadFile.getContentType());
 			metadata.setContentLength(uploadFile.getSize());
 
-			amazonS3Client.putObject(bucket, saveFileName, uploadFile.getInputStream(), metadata);
-			url = bucketUrl + "/" + saveFileName;
+			String path = dirPath + "/" + saveFileName;
+			amazonS3Client.putObject(bucket, path, uploadFile.getInputStream(), metadata);
+			url = bucketUrl + "/" + path;
 		} catch (Exception e) {
 			throw new CustomResponseException(ResponseType.FAIL, e.getMessage());
 		}
@@ -58,6 +62,7 @@ public class S3StorageService {
 	}
 
 	private String getUuid() {
-		return UUID.randomUUID().toString().replaceAll("-", "");
+		String date = LocalDateTime.now().toString("yyyyMMdd");
+		return UUID.randomUUID().toString().replaceAll("-", "") + "_" + date;
 	}
 }

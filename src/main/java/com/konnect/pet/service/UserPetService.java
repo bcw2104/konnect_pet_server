@@ -1,20 +1,20 @@
 package com.konnect.pet.service;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.TemplateEngine;
 
 import com.konnect.pet.dto.UserPetDto;
+import com.konnect.pet.entity.Properties;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserPet;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.ex.CustomResponseException;
+import com.konnect.pet.repository.PropertiesRepository;
 import com.konnect.pet.repository.UserPetRepository;
 import com.konnect.pet.response.ResponseDto;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,11 +24,15 @@ import lombok.extern.slf4j.Slf4j;
 public class UserPetService {
 
 	private final UserPetRepository userPetRepository;
+	private final PropertiesRepository propertiesRepository;
 
+	@Transactional
 	public ResponseDto addNewPet(User user, Map<String, Object> body) {
 		int petCount = userPetRepository.countByUserId(user.getId());
 
-		if (petCount > 5) {
+		int petMaxAddCount = Integer.parseInt(propertiesRepository.findValueByKey("pet_max_add_count").orElse("3"));
+
+		if (petCount > petMaxAddCount) {
 			return new ResponseDto(ResponseType.TOO_MANY_PET);
 		}
 		try {
@@ -39,8 +43,8 @@ public class UserPetService {
 			String birthDate = body.get("birthDate").toString();
 			boolean neuteredYn = Boolean.parseBoolean(body.get("neuteredYn").toString());
 			boolean inoculatedYn = Boolean.parseBoolean(body.get("inoculatedYn").toString());
-			String petImgUrl = body.get("petImgUrl").toString();
-			String petDescription = body.get("petDescription").toString();
+			String petImgUrl = body.get("petImgUrl") == null ? null : body.get("petImgUrl").toString();
+			String petDescription = body.get("petDescription") == null ? "" : body.get("petDescription").toString();
 
 			UserPet pet = new UserPet();
 			pet.setUser(user);
