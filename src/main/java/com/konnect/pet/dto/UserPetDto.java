@@ -10,11 +10,12 @@ import lombok.Setter;
 @Setter
 public class UserPetDto {
 
-	private Long id;
+	private Long petId;
 
 	private String petName;
 
 	private String petType;
+	private String petTypeName;
 
 	private String petSpecies;
 
@@ -31,9 +32,10 @@ public class UserPetDto {
 	private String petImgUrl;
 
 	public UserPetDto(UserPet pet) {
-		this.id = pet.getId();
+		this.petId = pet.getId();
 		this.petName = pet.getPetName();
-		this.petType = PetTypeCode.findByCode(pet.getPetType()).getCodeName();
+		this.petType = pet.getPetType();
+		this.petTypeName = PetTypeCode.findByCode(pet.getPetType()).getCodeName();
 		this.petSpecies = pet.getPetSpecies();
 		this.petGender = pet.getPetGender();
 		this.birthDate = pet.getBirthDate();

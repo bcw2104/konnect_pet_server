@@ -1,6 +1,7 @@
 package com.konnect.pet.service;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -27,14 +28,8 @@ public class UserPetService {
 	private final PropertiesRepository propertiesRepository;
 
 	@Transactional
-	public ResponseDto addNewPet(User user, Map<String, Object> body) {
-		int petCount = userPetRepository.countByUserId(user.getId());
+	public ResponseDto saveOrEditPet(User user, Map<String, Object> body, Long petId) {
 
-		int petMaxAddCount = Integer.parseInt(propertiesRepository.findValueByKey("pet_max_add_count").orElse("3"));
-
-		if (petCount > petMaxAddCount) {
-			return new ResponseDto(ResponseType.TOO_MANY_PET);
-		}
 		try {
 			String petName = body.get("petName").toString();
 			String petType = body.get("petType").toString();
@@ -46,19 +41,46 @@ public class UserPetService {
 			String petImgUrl = body.get("petImgUrl") == null ? null : body.get("petImgUrl").toString();
 			String petDescription = body.get("petDescription") == null ? "" : body.get("petDescription").toString();
 
-			UserPet pet = new UserPet();
-			pet.setUser(user);
-			pet.setBirthDate(birthDate);
-			pet.setInoculatedYn(inoculatedYn);
-			pet.setNeuteredYn(neuteredYn);
-			pet.setPetGender(petGender);
-			pet.setPetType(petType);
-			pet.setPetName(petName);
-			pet.setPetSpecies(petSpecies);
-			pet.setPetDescription(petDescription);
-			pet.setPetImgUrl(petImgUrl);
+			UserPet pet = null;
+			if (petId != null) {
+				pet = userPetRepository.findById(petId).orElse(null);
 
-			userPetRepository.save(pet);
+				if (pet == null || !pet.getUser().getId().equals(user.getId())) {
+					throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+				}
+				pet.setBirthDate(birthDate);
+				pet.setInoculatedYn(inoculatedYn);
+				pet.setNeuteredYn(neuteredYn);
+				pet.setPetGender(petGender);
+				pet.setPetType(petType);
+				pet.setPetName(petName);
+				pet.setPetSpecies(petSpecies);
+				pet.setPetDescription(petDescription);
+				pet.setPetImgUrl(petImgUrl);
+
+			} else {
+				int petCount = userPetRepository.countByUserId(user.getId());
+
+				int petMaxAddCount = Integer
+						.parseInt(propertiesRepository.findValueByKey("pet_max_add_count").orElse("3"));
+
+				if (petCount + 1 > petMaxAddCount) {
+					return new ResponseDto(ResponseType.TOO_MANY_PET);
+				}
+				pet = new UserPet();
+				pet.setUser(user);
+				pet.setBirthDate(birthDate);
+				pet.setInoculatedYn(inoculatedYn);
+				pet.setNeuteredYn(neuteredYn);
+				pet.setPetGender(petGender);
+				pet.setPetType(petType);
+				pet.setPetName(petName);
+				pet.setPetSpecies(petSpecies);
+				pet.setPetDescription(petDescription);
+				pet.setPetImgUrl(petImgUrl);
+
+				userPetRepository.save(pet);
+			}
 
 			return new ResponseDto(ResponseType.SUCCESS, new UserPetDto(pet));
 

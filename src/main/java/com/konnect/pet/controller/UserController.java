@@ -7,6 +7,8 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -83,13 +85,20 @@ public class UserController {
 	@PostMapping("/v1/profile")
 	public ResponseEntity<?> saveProfileInfo(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
-		return ResponseEntity.ok(userService.saveProfile(user,body));
+		return ResponseEntity.ok(userService.saveProfile(user, body));
 	}
 
 	@PutMapping("/v1/pet")
 	public ResponseEntity<?> savePetInfo(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
-		return ResponseEntity.ok(userPetService.addNewPet(user,body));
+		return ResponseEntity.ok(userPetService.saveOrEditPet(user, body, null));
+	}
+
+	@PatchMapping("/v1/pet/{id}")
+	public ResponseEntity<?> savePetInfo(Authentication authentication, @RequestBody Map<String, Object> body,
+			@PathVariable("id") Long id) {
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(userPetService.saveOrEditPet(user, body, id));
 	}
 
 }
