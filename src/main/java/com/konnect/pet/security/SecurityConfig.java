@@ -30,7 +30,7 @@ public class SecurityConfig {
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
 
-	private static final String[] AUTH_WHITELIST = { "/api/auth/**","/api/terms/**","/api/screen/public/**"};
+	private static final String[] AUTH_WHITELIST = { "/api/v1/auth/**","/api/v1/terms/**","/api/v1/common/public/**"};
 
 	@Bean
 	protected SecurityFilterChain config(HttpSecurity http) throws Exception {

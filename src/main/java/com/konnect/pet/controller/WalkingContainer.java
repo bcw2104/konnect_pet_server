@@ -19,41 +19,41 @@ import com.konnect.pet.service.WalkingService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/walking")
+@RequestMapping("/api/v1/walking")
 @RequiredArgsConstructor
 public class WalkingContainer {
 
 	private final WalkingService walkingService;
 
-	@PostMapping("/v1/start")
+	@PostMapping("/start")
 	public ResponseEntity<?> startWalking(Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(walkingService.generateStartWalkingData(user));
 	}
 
-	@PostMapping("/v1/save")
+	@PostMapping("/save")
 	public ResponseEntity<?> saveWalking(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(walkingService.saveWalking(user, body));
 	}
 
-	@GetMapping("/v1/report/{id}")
+	@GetMapping("/report/{id}")
 	public ResponseEntity<?> getWalkingReport(Authentication authentication, @PathVariable("id") Long id) {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(walkingService.getWalkingHistory(user, id));
 	}
 
-	@GetMapping("/v1/footprints/around")
+	@GetMapping("/footprints/around")
 	public ResponseEntity<?> getAroundFootprints(Authentication authentication, @RequestParam("lat") double lat,
 			@RequestParam("lng") double lng) {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(walkingService.getAroundFootprint(user,lat, lng));
 	}
 
-	@PostMapping("/v1/footprints/catch")
+	@PostMapping("/footprints/catch")
 	public ResponseEntity<?> catchFootprints(Authentication authentication, @RequestBody Map<String,Object> body) {
 		User user = (User) authentication.getPrincipal();
 

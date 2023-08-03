@@ -120,7 +120,7 @@ public class JwtTokenProvider {
 
 	// 토큰 정보를 검증하는 메서드
 	public ResponseType validateToken(String token, String requestURI) {
-		boolean isRefesh = requestURI.equals("/api/auth/v1/token/refresh");
+		boolean isRefesh = requestURI.equals("/api/v1/auth/token/refresh");
 
 		try {
 			Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();

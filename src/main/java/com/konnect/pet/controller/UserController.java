@@ -30,33 +30,39 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/user")
+@RequestMapping("/api/v1/user")
 public class UserController {
 
 	private final UserService userService;
 	private final UserPetService userPetService;
 
-	@GetMapping("/v1/info")
+	@GetMapping("/info")
 	public ResponseEntity<?> userInfo(Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(userService.getUserSimplenfo(user));
 	}
 
-	@PostMapping("/v1/device")
+	@PostMapping("/device")
 	public ResponseEntity<?> updateDeviceInfo(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(userService.updateDeviceInfo(user.getId(), body));
 	}
 
-	@PostMapping("/v1/logout")
+	@PostMapping("/logout")
 	public ResponseEntity<?> logout(Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(userService.logout(user.getId()));
 	}
 
-	@PostMapping("/v1/mypage/leave")
+	@GetMapping("/mypage")
+	public ResponseEntity<?> mypage(Authentication authentication) {
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(userService.getMyData(user));
+	}
+
+	@PostMapping("/mypage/leave")
 	public ResponseEntity<?> leaveUser(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 		String smsVerifyKey = body.get("smsVerifyKey").toString();
@@ -64,14 +70,14 @@ public class UserController {
 		return ResponseEntity.ok(userService.removeUser(user.getId(), smsVerifyKey));
 	}
 
-	@PostMapping("/v1/verify/sms")
+	@PostMapping("/verify/sms")
 	public ResponseEntity<?> sendJoinVerifySms(Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(userService.sendVerifyCodeBySms(user, LocationCode.LEAVE));
 	}
 
-	@PostMapping("/v1/verify/sms/check")
+	@PostMapping("/verify/sms/check")
 	public ResponseEntity<?> checkJoinVerifySms(@RequestBody Map<String, Object> body) {
 		Long reqId = Long.parseLong(body.get("reqId").toString());
 		String tel = body.get("tel").toString();
@@ -82,19 +88,19 @@ public class UserController {
 		return ResponseEntity.ok(userService.validateVerfiyCode(reqId, timestamp, verifyCode, tel, VerifyType.SMS));
 	}
 
-	@PostMapping("/v1/profile")
+	@PostMapping("/profile")
 	public ResponseEntity<?> saveProfileInfo(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(userService.saveProfile(user, body));
 	}
 
-	@PutMapping("/v1/pet")
+	@PutMapping("/pet")
 	public ResponseEntity<?> savePetInfo(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(userPetService.saveOrEditPet(user, body, null));
 	}
 
-	@PatchMapping("/v1/pet/{id}")
+	@PatchMapping("/pet/{id}")
 	public ResponseEntity<?> savePetInfo(Authentication authentication, @RequestBody Map<String, Object> body,
 			@PathVariable("id") Long id) {
 		User user = (User) authentication.getPrincipal();

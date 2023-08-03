@@ -19,7 +19,7 @@ public enum PointTypeCode implements CommonCode {
 	private String codeName;
 	private String codeForApp;
 
-	private static final Map<String, PointTypeCode> enumMap = Collections.unmodifiableMap(
+	public static final Map<String, PointTypeCode> enumMap = Collections.unmodifiableMap(
 			Stream.of(values()).collect(Collectors.toMap(PointTypeCode::getCode, Function.identity())));
 
 	private PointTypeCode(String code, String codeName, String codeForApp) {

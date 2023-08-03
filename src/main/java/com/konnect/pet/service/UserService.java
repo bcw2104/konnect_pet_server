@@ -1,6 +1,8 @@
 package com.konnect.pet.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -11,18 +13,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.konnect.pet.dto.UserPetDto;
+import com.konnect.pet.dto.UserPointDto;
 import com.konnect.pet.dto.UserProfileDto;
 import com.konnect.pet.dto.UserSimpleDto;
 import com.konnect.pet.dto.VerifyFormat;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserPet;
+import com.konnect.pet.entity.UserPoint;
 import com.konnect.pet.entity.UserProfile;
 import com.konnect.pet.entity.UserRemoved;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.VerifyType;
 import com.konnect.pet.enums.code.LocationCode;
+import com.konnect.pet.enums.code.PointTypeCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.UserPetRepository;
+import com.konnect.pet.repository.UserPointRepository;
 import com.konnect.pet.repository.UserProfileRepository;
 import com.konnect.pet.repository.UserRemovedRepository;
 import com.konnect.pet.repository.UserRepository;
@@ -42,6 +48,7 @@ public class UserService {
 	private final UserPetRepository userPetRepository;
 	private final UserProfileRepository userProfileRepository;
 	private final UserRemovedRepository userRemovedRepository;
+	private final UserPointRepository userPointRepository;
 	private final VerifyService verifyService;
 	private final RefreshTokenRepository refreshTokenRepository;
 
@@ -191,6 +198,30 @@ public class UserService {
 			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
 		}
 
+	}
+
+	@Transactional(readOnly = true)
+	public ResponseDto getMyData(User user) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		resultMap.put("points", generateFullUserPointMap(user));
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
+	private Map<String, UserPointDto> generateFullUserPointMap(User user) {
+		Map<String, UserPointDto> pointMap = new HashMap<String, UserPointDto>();
+		Map<String, PointTypeCode> pointTypeMap = PointTypeCode.enumMap;
+		for (String code : pointTypeMap.keySet()) {
+			pointMap.put(code, new UserPointDto(pointTypeMap.get(code)));
+		}
+
+		List<UserPoint> userPoints = userPointRepository.findByUserId(user.getId());
+
+		for (UserPoint userPoint : userPoints) {
+			pointMap.put(userPoint.getPointType(), new UserPointDto(userPoint));
+		}
+
+		return pointMap;
 	}
 
 }

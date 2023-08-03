@@ -37,19 +37,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
 	private final AuthService authService;
 	private final VerifyService verifyService;
 
-	@PostMapping("/v1/token/refresh")
+	@PostMapping("/token/refresh")
 	public ResponseEntity<?> tokenRefresh(HttpServletRequest request){
-		
+
 		return ResponseEntity.ok(authService.refreshToken(request));
 	}
 
-	@PostMapping("/v1/login")
+	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody Map<String, Object> body){
 		String email = body.get("email").toString();
 		String password = body.get("password").toString();
@@ -57,7 +57,7 @@ public class AuthController {
 		return ResponseEntity.ok(authService.login(email, password, PlatformType.EMAIL));
 	}
 
-	@PostMapping("/v1/login/social")
+	@PostMapping("/login/social")
 	public ResponseEntity<?> googleLogin(@RequestBody Map<String, Object> body){
 		String token = body.get("token").toString();
 		PlatformType type = PlatformType.valueOf(body.get("type").toString());
@@ -65,20 +65,20 @@ public class AuthController {
 		return ResponseEntity.ok(authService.socialLogin(token,type));
 	}
 
-	@PostMapping("/v1/join")
+	@PostMapping("/join")
 	public ResponseEntity<?> join(@RequestBody AuthRequestDto requestDto){
 
 		return ResponseEntity.ok(authService.join(requestDto));
 	}
 
-	@PostMapping("/v1/join/verify/sms")
+	@PostMapping("/join/verify/sms")
 	public ResponseEntity<?> sendJoinVerifySms(@RequestBody Map<String, Object> body){
 		String tel = body.get("tel").toString();
 
 		return ResponseEntity.ok(verifyService.sendVerifyCodeBySms(tel, LocationCode.SIGNUP));
 	}
 
-	@PostMapping("/v1/join/verify/sms/check")
+	@PostMapping("/join/verify/sms/check")
 	public ResponseEntity<?> checkJoinVerifySms(@RequestBody Map<String, Object> body){
 		Long reqId = Long.parseLong(body.get("reqId").toString());
 		String tel = body.get("tel").toString();
@@ -89,7 +89,7 @@ public class AuthController {
 		return ResponseEntity.ok(verifyService.validateVerfiyCode(reqId, timestamp, verifyCode, tel,VerifyType.SMS));
 	}
 
-	@PostMapping("/v1/join/verify/email")
+	@PostMapping("/join/verify/email")
 	public ResponseEntity<?> sendJoinVerifyEmail(@RequestBody Map<String, Object> body){
 		String email = body.get("email").toString();
 		authService.checkEmailBeforeVerify(email,true);
@@ -97,7 +97,7 @@ public class AuthController {
 		return ResponseEntity.ok(verifyService.sendVerifyCodeByEmail(email, LocationCode.SIGNUP));
 	}
 
-	@PostMapping("/v1/join/verify/email/check")
+	@PostMapping("/join/verify/email/check")
 	public ResponseEntity<?> checkJoinVerifyEmail(@RequestBody Map<String, Object> body){
 		Long reqId = Long.parseLong(body.get("reqId").toString());
 		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));
@@ -107,13 +107,13 @@ public class AuthController {
 		return ResponseEntity.ok(verifyService.validateVerfiyCode(reqId, timestamp, verifyCode,email, VerifyType.EMAIL));
 	}
 
-	@PostMapping("/v1/password/reset")
+	@PostMapping("/password/reset")
 	public ResponseEntity<?> resetPassword(@RequestBody AuthRequestDto requestDto){
 
 		return ResponseEntity.ok(authService.resetPassword(requestDto));
 	}
 
-	@PostMapping("/v1/password/reset/verify/email")
+	@PostMapping("/password/reset/verify/email")
 	public ResponseEntity<?> commonVerifyEmail(@RequestBody Map<String, Object> body){
 		String email = body.get("email").toString();
 		authService.checkEmailBeforeVerify(email,false);
@@ -121,7 +121,7 @@ public class AuthController {
 		return ResponseEntity.ok(verifyService.sendVerifyCodeByEmail(email, LocationCode.PASSWORD_RESET));
 	}
 
-	@PostMapping("/v1/password/reset/verify/email/check")
+	@PostMapping("/password/reset/verify/email/check")
 	public ResponseEntity<?> checkVerifyEmail(@RequestBody Map<String, Object> body){
 		Long reqId = Long.parseLong(body.get("reqId").toString());
 		LocalDateTime timestamp = LocalDateTime.parse(body.get("timestamp").toString(),DateTimeFormatter.ofPattern(("yyyy-MM-dd HH:mm:ss")));

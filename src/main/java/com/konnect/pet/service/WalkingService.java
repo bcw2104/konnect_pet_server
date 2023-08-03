@@ -21,12 +21,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konnect.pet.dto.PropertiesDto;
+import com.konnect.pet.dto.UserWalkingFootprintCatchHistoryDto;
 import com.konnect.pet.dto.UserWalkingFootprintDto;
-import com.konnect.pet.dto.UserWalkingReportDto;
+import com.konnect.pet.dto.UserWalkingHistoryDto;
+import com.konnect.pet.dto.UserWalkingRewardHistoryDto;
 import com.konnect.pet.dto.WalkingRewardPolicyDto;
 import com.konnect.pet.entity.Properties;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserPoint;
+import com.konnect.pet.entity.UserRewardHistory;
 import com.konnect.pet.entity.UserWalkingFootprint;
 import com.konnect.pet.entity.UserWalkingFootprintCatchHistory;
 import com.konnect.pet.entity.UserWalkingHistory;
@@ -34,11 +37,13 @@ import com.konnect.pet.entity.UserWalkingRewardHistory;
 import com.konnect.pet.entity.WalkingRewardPolicy;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.code.PointTypeCode;
+import com.konnect.pet.enums.code.RewardTypeCode;
 import com.konnect.pet.enums.code.WalkingRewardProvideTypeCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.PropertiesRepository;
 import com.konnect.pet.repository.UserPointRepository;
 import com.konnect.pet.repository.UserRepository;
+import com.konnect.pet.repository.UserRewardHistoryRepository;
 import com.konnect.pet.repository.UserWalkingFootprintCatchHistoryRepository;
 import com.konnect.pet.repository.UserWalkingFootprintRepository;
 import com.konnect.pet.repository.UserWalkingHistoryRepository;
@@ -59,6 +64,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WalkingService {
 
 	private final UserRepository userRepository;
+	private final UserRewardHistoryRepository userRewardHistoryRepository;
 	private final UserWalkingHistoryRepository userWalkingHistoryRepository;
 	private final WalkingRewardPolicyRepository walkingRewardPolicyRepository;
 	private final UserWalkingRewardHistoryRepository userWalkingRewardHistoryRepository;
@@ -135,7 +141,7 @@ public class WalkingService {
 
 			List<Long> catchedFootprints = objectMapper.readValue(body.get("catchedFootprints").toString(),
 					new TypeReference<List<Long>>() {
-			});
+					});
 			String savedCoords = body.get("savedCoords").toString();
 
 			log.info("Save walking data - walkingId: {}", id);
@@ -163,7 +169,7 @@ public class WalkingService {
 				provideWalkingReward(user, rewards, walkingHistory);
 			}
 
-			if(!catchedFootprints.isEmpty()) {
+			if (!catchedFootprints.isEmpty()) {
 				saveCatchedFootprints(user, catchedFootprints, walkingHistory);
 			}
 
@@ -177,7 +183,7 @@ public class WalkingService {
 	private void saveCatchedFootprints(User user, List<Long> catchedFootprints, UserWalkingHistory walkingHistory) {
 		List<UserWalkingFootprintCatchHistory> footprintCatchHistories = new ArrayList<UserWalkingFootprintCatchHistory>();
 		List<UserWalkingFootprint> footprints = userWalkingFootprintRepository.findByIds(catchedFootprints);
-		for(UserWalkingFootprint footprint : footprints) {
+		for (UserWalkingFootprint footprint : footprints) {
 			UserWalkingFootprintCatchHistory history = new UserWalkingFootprintCatchHistory();
 			history.setUser(user);
 			history.setUserWalkingHistory(walkingHistory);
@@ -198,6 +204,8 @@ public class WalkingService {
 				.findUserCurrentRewardTotalAmount(user.getId());
 
 		List<UserWalkingRewardHistory> rewardHistories = new ArrayList<UserWalkingRewardHistory>();
+
+		Map<String, Integer> totalRewardAmountMap = new HashMap<String, Integer>();
 		for (Long k : rewardPolicyMap.keySet()) {
 			if (rewards.get(k) == null)
 				continue;
@@ -214,6 +222,7 @@ public class WalkingService {
 
 			rewardAmount = Math.min(Math.min(maxAmountPerWalking, rewardAmount),
 					maxAmountPerPeriod - currentTotalAmount);
+
 			if (rewardAmount > 0) {
 				UserWalkingRewardHistory rewardHistory = new UserWalkingRewardHistory();
 				rewardHistory.setAmount(rewardAmount);
@@ -230,6 +239,13 @@ public class WalkingService {
 
 					pointService.increaseUserPoint(user, PointTypeCode.findByCode(policy.getPointType()), rewardAmount);
 
+					String pointType = policy.getPointType();
+					if (totalRewardAmountMap.get(pointType) == null) {
+						totalRewardAmountMap.put(pointType, rewardAmount);
+					} else {
+						int total = totalRewardAmountMap.get(pointType);
+						totalRewardAmountMap.put(pointType, total + rewardAmount);
+					}
 				} else {
 					rewardHistory.setPaymentYn(false);
 				}
@@ -239,6 +255,19 @@ public class WalkingService {
 
 		}
 
+		List<UserRewardHistory> rewardHistories2 = new ArrayList<UserRewardHistory>();
+		for (String pointType : totalRewardAmountMap.keySet()) {
+
+			UserRewardHistory rewardHistory = new UserRewardHistory();
+			rewardHistory.setAmount(totalRewardAmountMap.get(pointType));
+			rewardHistory.setPointType(pointType);
+			rewardHistory.setUser(user);
+			rewardHistory.setRewardType(RewardTypeCode.WALKING.getCode());
+
+			rewardHistories2.add(rewardHistory);
+		}
+
+		userRewardHistoryRepository.saveAll(rewardHistories2);
 		userWalkingRewardHistoryRepository.saveAll(rewardHistories);
 	}
 
@@ -280,18 +309,17 @@ public class WalkingService {
 		UserWalkingHistory userWalkingHistory = userWalkingHistoryRepository.findWithRewardHistById(walkingId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
-		List<UserWalkingFootprintCatchHistory> histories = userWalkingFootprintCatchHistoryRepository.findByWalkingId(walkingId);
-
 		if (!userWalkingHistory.getUser().getId().equals(user.getId())) {
 			new CustomResponseException(ResponseType.INVALID_PARAMETER);
 		}
 
-		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingReportDto(userWalkingHistory,histories));
+		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingHistoryDto(userWalkingHistory));
 	}
 
-	public ResponseDto getAroundFootprint(User user,double lat, double lng) {
-		Map<String, String> propertyMap = PropertiesQueryRepository
-				.getPropertyMapByKeys("walking_footprint_display_amount", "walking_footprint_display_distance","walking_footprint_display_period");
+	public ResponseDto getAroundFootprint(User user, double lat, double lng) {
+		Map<String, String> propertyMap = PropertiesQueryRepository.getPropertyMapByKeys(
+				"walking_footprint_display_amount", "walking_footprint_display_distance",
+				"walking_footprint_display_period");
 
 		int displayDistance = DEFAULT_DISPLAY_FOOTPRINTS_DISTANCE;
 		int displayAmount = DEFAULT_DISPLAY_FOOTPRINTS_AMOUNT;
@@ -320,10 +348,11 @@ public class WalkingService {
 		double minLng = coordRadius.get("minLng");
 		double maxLng = coordRadius.get("maxLng");
 
-		List<UserWalkingFootprintDto> radiusFootprints = userWalkingFootprintRepository.findAroundByLatLongLimit(displayDate,maxLat,
-				maxLng, minLat, minLng, PageRequest.of(0, displayAmount)).stream().map(UserWalkingFootprintDto::new).toList();
-		List<Long> catchedFootprints = userWalkingFootprintCatchHistoryRepository.findFootprintIdByCreatedDateAndUserId(displayDate,user.getId());
-
+		List<UserWalkingFootprintDto> radiusFootprints = userWalkingFootprintRepository
+				.findAroundByLatLongLimit(displayDate, maxLat, maxLng, minLat, minLng, PageRequest.of(0, displayAmount))
+				.stream().map(UserWalkingFootprintDto::new).toList();
+		List<Long> catchedFootprints = userWalkingFootprintCatchHistoryRepository
+				.findFootprintIdByCreatedDateAndUserId(displayDate, user.getId());
 
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap.put("radiusFootprints", radiusFootprints);

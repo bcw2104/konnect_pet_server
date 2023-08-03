@@ -23,11 +23,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/screen")
-public class ScreenController {
+@RequestMapping("/api/v1/common")
+public class CommonController {
 	private final CommonCodeService commonCodeService;
-	
-	@GetMapping("/public/v1/nations")
+
+	@GetMapping("/public/nations")
 	public ResponseEntity<?> screenSignupStep1(){
 
 		Map<String,Object> result = new HashMap<String, Object>();

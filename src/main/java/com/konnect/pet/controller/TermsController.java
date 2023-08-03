@@ -14,21 +14,21 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/terms")
+@RequestMapping("/api/v1/terms")
 public class TermsController {
 	private final TermsService termsService;
 
-	@GetMapping("/v1/group/signup")
+	@GetMapping("/group/signup")
 	public ResponseEntity<?> signupTerms(){
 		return ResponseEntity.ok(termsService.getTermsGroupByLocationCodeAndVisibleYn(LocationCode.SIGNUP,true));
 	}
-	
-	@GetMapping("/v1/group/all")
+
+	@GetMapping("/group/all")
 	public ResponseEntity<?> allTerms(){
 		return ResponseEntity.ok(termsService.getTermsGroupByLocationCodeAndVisibleYn(null,true));
 	}
 
-	@GetMapping("/v1/group/{groupId}/lastest")
+	@GetMapping("/group/{groupId}/lastest")
 	public ResponseEntity<?> termDetail(@PathVariable("groupId") Long termGroupId){
 		return ResponseEntity.ok(termsService.getLastestTermsByTermsGroupId(termGroupId));
 	}
