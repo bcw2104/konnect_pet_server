@@ -21,6 +21,7 @@ import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.VerifyType;
 import com.konnect.pet.enums.code.LocationCode;
 import com.konnect.pet.response.ResponseDto;
+import com.konnect.pet.service.NotificationService;
 import com.konnect.pet.service.UserPetService;
 import com.konnect.pet.service.UserService;
 
@@ -33,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/user")
 public class UserController {
 
+	private final NotificationService notificationService;
 	private final UserService userService;
 	private final UserPetService userPetService;
 
@@ -105,6 +107,12 @@ public class UserController {
 			@PathVariable("id") Long id) {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(userPetService.saveOrEditPet(user, body, id));
+	}
+	
+	@GetMapping("/noti")
+	public ResponseEntity<?> notification(Authentication authentication) {
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(notificationService.getRecentUserNotifications(user));
 	}
 
 }

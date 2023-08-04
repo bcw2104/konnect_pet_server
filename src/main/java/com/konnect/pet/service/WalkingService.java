@@ -36,6 +36,7 @@ import com.konnect.pet.entity.UserWalkingHistory;
 import com.konnect.pet.entity.UserWalkingRewardHistory;
 import com.konnect.pet.entity.WalkingRewardPolicy;
 import com.konnect.pet.enums.ResponseType;
+import com.konnect.pet.enums.code.NotificationTypeCode;
 import com.konnect.pet.enums.code.PointTypeCode;
 import com.konnect.pet.enums.code.RewardTypeCode;
 import com.konnect.pet.enums.code.WalkingRewardProvideTypeCode;
@@ -63,6 +64,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class WalkingService {
 
+	private final NotificationService notificationService;
+	
 	private final UserRepository userRepository;
 	private final UserRewardHistoryRepository userRewardHistoryRepository;
 	private final UserWalkingHistoryRepository userWalkingHistoryRepository;
@@ -143,10 +146,12 @@ public class WalkingService {
 					new TypeReference<List<Long>>() {
 					});
 			String savedCoords = body.get("savedCoords").toString();
-
+			LocalDateTime endDate = LocalDateTime.now();
+			try {
+				endDate = LocalDateTime.parse(body.get("endDate").toString());
+			} catch (Exception e) {}
+			
 			log.info("Save walking data - walkingId: {}", id);
-
-			LocalDateTime now = LocalDateTime.now();
 
 			UserWalkingHistory walkingHistory = userWalkingHistoryRepository.findByIdForUpdate(id).orElseThrow(
 					() -> new CustomResponseException(ResponseType.INVALID_PARAMETER, "walking history not found"));
@@ -159,7 +164,7 @@ public class WalkingService {
 			walkingHistory.setSeconds(seconds);
 			walkingHistory.setRoutes(savedCoords);
 			walkingHistory.setUser(user);
-			walkingHistory.setEndDate(now);
+			walkingHistory.setEndDate(endDate);
 
 			if (!footprintCoords.isEmpty()) {
 				createFootprint(user, footprintCoords, walkingHistory);
@@ -172,6 +177,8 @@ public class WalkingService {
 			if (!catchedFootprints.isEmpty()) {
 				saveCatchedFootprints(user, catchedFootprints, walkingHistory);
 			}
+			
+			notificationService.createMacroUserNotificationLog(user, NotificationTypeCode.WAKLING_FINISHED);
 
 			return new ResponseDto(ResponseType.SUCCESS);
 		} catch (Exception e) {
