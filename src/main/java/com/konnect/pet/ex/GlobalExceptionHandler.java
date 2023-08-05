@@ -18,13 +18,13 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(AccessDeniedException.class)
 	protected ResponseEntity<?> handleAccessDeniedException(AccessDeniedException e) {
-		log.error("message: {}, class: {}", e.getMessage(), AccessDeniedException.class, e);
+		log.error("message: {}, class: {}", e.getMessage(), AccessDeniedException.class);
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ResponseDto(ResponseType.INVALID_ACCESS_TOKEN));
 	}
 
 	@ExceptionHandler(AuthenticationException.class)
 	protected ResponseEntity<?> handleAuthenticationException(AuthenticationException e) {
-		log.error("message: {}, class: {}", e.getMessage(), AuthenticationException.class, e);
+		log.error("message: {}, class: {}", e.getMessage(), AuthenticationException.class);
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseDto(ResponseType.UNAUTHORIZED));
 	}
 

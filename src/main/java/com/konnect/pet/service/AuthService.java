@@ -20,6 +20,7 @@ import com.konnect.pet.constant.CommonCodeConst;
 import com.konnect.pet.dto.AuthRequestDto;
 import com.konnect.pet.dto.JwtTokenDto;
 import com.konnect.pet.dto.VerifyFormat;
+import com.konnect.pet.entity.EventRewardPolicy;
 import com.konnect.pet.entity.TermsGroup;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserTermsAgreement;
@@ -28,7 +29,9 @@ import com.konnect.pet.enums.PlatformType;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.Roles;
 import com.konnect.pet.enums.VerifyType;
+import com.konnect.pet.enums.code.PointHistoryTypeCode;
 import com.konnect.pet.ex.CustomResponseException;
+import com.konnect.pet.repository.EventRewardPolicyRepository;
 import com.konnect.pet.repository.TermsGroupRepository;
 import com.konnect.pet.repository.UserRepository;
 import com.konnect.pet.repository.UserTermsAggrementRepository;
@@ -55,6 +58,7 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final ExternalApiService apiService;
 	private final VerifyService verifyService;
+	private final EventService eventService;
 
 	private final RefreshTokenRepository refreshTokenRepository;
 
@@ -229,6 +233,8 @@ public class AuthService {
 			});
 
 			userTermsAggrementRepository.saveAll(agreements);
+
+			eventService.provideEventReward(user, PointHistoryTypeCode.WELCOME);
 
 			JwtTokenDto token = tokenProvider.generateToken(user.getId());
 

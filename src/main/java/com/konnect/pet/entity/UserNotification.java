@@ -22,26 +22,26 @@ public class UserNotification extends BaseAutoSetAdminEntity{
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="noti_id")
 	private Long id;
-	
+
 	@Column(length = 3,nullable = false)
 	private String category;
-	
+
 	@Column(length = 300,nullable = false)
 	private String title;
-	
+
 	@Column(length = 2000,nullable = false)
 	private String content;
-	
+
 	private LocalDateTime startDate;
-	
+
 	private LocalDateTime endDate;
-	
+
 	private boolean activeYn;
 
 	@Column(length = 3,nullable = false)
 	private String notiType;
 
-	@Column(length = 3,nullable = false)
+	@Column(length = 3)
 	private String landingType;
 
 	@Column(length = 300)

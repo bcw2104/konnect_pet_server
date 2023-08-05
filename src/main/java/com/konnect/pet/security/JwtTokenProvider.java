@@ -1,6 +1,8 @@
 package com.konnect.pet.security;
 
 import java.security.Key;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -17,11 +19,15 @@ import org.springframework.util.StringUtils;
 
 import com.konnect.pet.dto.JwtTokenDto;
 import com.konnect.pet.entity.User;
+import com.konnect.pet.entity.UserPointHistory;
 import com.konnect.pet.entity.redis.RefreshToken;
 import com.konnect.pet.enums.ResponseType;
+import com.konnect.pet.enums.code.PointHistoryTypeCode;
 import com.konnect.pet.ex.CustomResponseException;
+import com.konnect.pet.repository.UserPointHistoryRepository;
 import com.konnect.pet.repository.UserRepository;
 import com.konnect.pet.repository.redis.RefreshTokenRepository;
+import com.konnect.pet.service.EventService;
 import com.konnect.pet.utils.ValidationUtils;
 
 import io.jsonwebtoken.Claims;
@@ -45,7 +51,9 @@ public class JwtTokenProvider {
 	private final CustomUserDetailsService customUserDetailsService;
 
 	private final UserRepository userRepository;
+	private final UserPointHistoryRepository userPointHistoryRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
+	private final EventService eventService;
 
 	@Value("${application.jwt.access.exp}")
 	private Long ACCESS_TOKEN_EXP;
@@ -54,11 +62,14 @@ public class JwtTokenProvider {
 
 	public JwtTokenProvider(@Value("${application.jwt.secret}") String TOKEN_SECRET,
 			CustomUserDetailsService customUserDetailsService, RefreshTokenRepository refreshTokenRepository,
-			UserRepository userRepository) {
+			UserRepository userRepository, UserPointHistoryRepository userPointHistoryRepository,
+			EventService eventService) {
 		this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(TOKEN_SECRET));
 		this.customUserDetailsService = customUserDetailsService;
 		this.refreshTokenRepository = refreshTokenRepository;
 		this.userRepository = userRepository;
+		this.userPointHistoryRepository = userPointHistoryRepository;
+		this.eventService = eventService;
 	}
 
 	// 유저 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
@@ -89,6 +100,12 @@ public class JwtTokenProvider {
 		user.setAktId(atkId);
 
 		log.info("Generate User Token - userId: {}", userId);
+
+		int historyCount = userPointHistoryRepository.countAfterDateByPointTypeAndUserId(userId,
+				PointHistoryTypeCode.ATTENDANCE.getCode(), LocalDateTime.now().with(LocalTime.MIDNIGHT));
+		if (historyCount == 0) {
+			eventService.provideEventReward(user, PointHistoryTypeCode.ATTENDANCE);
+		}
 
 		return JwtTokenDto.builder().grantType("Bearer").accessToken(accessToken).refreshToken(refreshToken)
 				.accessTokenExpireAt(accessTokenExpireAt.getTime()).refreshTokenExpireAt(refreshTokenExpireAt.getTime())

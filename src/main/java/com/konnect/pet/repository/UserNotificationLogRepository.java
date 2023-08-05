@@ -16,7 +16,7 @@ public interface UserNotificationLogRepository extends JpaRepository<UserNotific
 
 	@Query("select n from UserNotificationLog n where n.id = :id")
 	Optional<UserNotificationLog> findById(@Param("id") Long id);
-	
-	@Query("select n from UserNotificationLog n where n.user.id = :id")
+
+	@Query("select n from UserNotificationLog n where n.user.id = :userId")
 	List<UserNotificationLog> findByUserId(@Param("userId") Long userId);
 }

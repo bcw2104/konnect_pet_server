@@ -9,27 +9,28 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Getter
 @Setter
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_point_type_user_id", columnNames = { "user_id","pointType" })})
-public class UserPoint extends BaseAutoSetEntity{
+@Getter
+public class UserPointHistory extends BaseAutoSetEntity {
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "point_id")
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "history_id")
 	private Long id;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_point_user"), nullable = false)
-	private User user;
 
 	private int balance;
 
 	@Column(length = 3, nullable = false)
 	private String pointType;
+
+	@Column(length = 3, nullable = false)
+	private String historyType;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_point_history_user"), nullable = false)
+	private User user;
 }

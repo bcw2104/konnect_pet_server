@@ -23,7 +23,7 @@ public class UserWalkingRewardHistoryDto {
 		PointTypeCode pointTypeCode = PointTypeCode.findByCode(history.getPointType());
 		this.amount = history.getAmount();
 		this.paymentYn = history.isPaymentYn();
-		this.pointType = history.getPointType();
+		this.pointType = pointTypeCode.getCode();
 		this.pointTypeName = pointTypeCode.getCodeName();
 		this.pointTypeSymbol = pointTypeCode.getCodeForApp();
 		this.policyName = history.getPolicyName();

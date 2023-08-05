@@ -17,6 +17,7 @@ import lombok.Setter;
 public class UserProfile extends BaseAutoSetEntity{
 
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "profile_id")
 	private Long id;
 
 	@ManyToOne

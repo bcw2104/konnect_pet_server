@@ -204,7 +204,8 @@ public class UserService {
 	public ResponseDto getMyData(User user) {
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 
-		resultMap.put("points", generateFullUserPointMap(user));
+		Map<String, UserPointDto> pointMap = generateFullUserPointMap(user);
+		resultMap.put("point", pointMap.get(PointTypeCode.POINT.getCode()));
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
 

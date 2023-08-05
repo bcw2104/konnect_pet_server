@@ -37,6 +37,7 @@ import com.konnect.pet.entity.UserWalkingRewardHistory;
 import com.konnect.pet.entity.WalkingRewardPolicy;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.code.NotificationTypeCode;
+import com.konnect.pet.enums.code.PointHistoryTypeCode;
 import com.konnect.pet.enums.code.PointTypeCode;
 import com.konnect.pet.enums.code.RewardTypeCode;
 import com.konnect.pet.enums.code.WalkingRewardProvideTypeCode;
@@ -65,7 +66,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WalkingService {
 
 	private final NotificationService notificationService;
-	
+
 	private final UserRepository userRepository;
 	private final UserRewardHistoryRepository userRewardHistoryRepository;
 	private final UserWalkingHistoryRepository userWalkingHistoryRepository;
@@ -149,8 +150,9 @@ public class WalkingService {
 			LocalDateTime endDate = LocalDateTime.now();
 			try {
 				endDate = LocalDateTime.parse(body.get("endDate").toString());
-			} catch (Exception e) {}
-			
+			} catch (Exception e) {
+			}
+
 			log.info("Save walking data - walkingId: {}", id);
 
 			UserWalkingHistory walkingHistory = userWalkingHistoryRepository.findByIdForUpdate(id).orElseThrow(
@@ -177,7 +179,7 @@ public class WalkingService {
 			if (!catchedFootprints.isEmpty()) {
 				saveCatchedFootprints(user, catchedFootprints, walkingHistory);
 			}
-			
+
 			notificationService.createMacroUserNotificationLog(user, NotificationTypeCode.WAKLING_FINISHED);
 
 			return new ResponseDto(ResponseType.SUCCESS);
@@ -244,7 +246,10 @@ public class WalkingService {
 				if (policy.getRewardProvideType().equals(WalkingRewardProvideTypeCode.REALTIME.getCode())) {
 					rewardHistory.setPaymentYn(true);
 
-					pointService.increaseUserPoint(user, PointTypeCode.findByCode(policy.getPointType()), rewardAmount);
+					PointTypeCode pointTypeCode = PointTypeCode.findByCode(policy.getPointType());
+					pointService.increaseUserPoint(user, pointTypeCode, rewardAmount);
+
+					pointService.createPointHistory(user, pointTypeCode, PointHistoryTypeCode.WALKING, rewardAmount);
 
 					String pointType = policy.getPointType();
 					if (totalRewardAmountMap.get(pointType) == null) {
