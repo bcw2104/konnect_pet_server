@@ -19,11 +19,13 @@ import org.springframework.util.StringUtils;
 
 import com.konnect.pet.dto.JwtTokenDto;
 import com.konnect.pet.entity.User;
+import com.konnect.pet.entity.UserDailyAccessLog;
 import com.konnect.pet.entity.UserPointHistory;
 import com.konnect.pet.entity.redis.RefreshToken;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.code.PointHistoryTypeCode;
 import com.konnect.pet.ex.CustomResponseException;
+import com.konnect.pet.repository.UserDailyAccessLogRepository;
 import com.konnect.pet.repository.UserPointHistoryRepository;
 import com.konnect.pet.repository.UserRepository;
 import com.konnect.pet.repository.redis.RefreshTokenRepository;
@@ -53,6 +55,7 @@ public class JwtTokenProvider {
 	private final UserRepository userRepository;
 	private final UserPointHistoryRepository userPointHistoryRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
+	private final UserDailyAccessLogRepository userDailyAccessLogRepository;
 	private final EventService eventService;
 
 	@Value("${application.jwt.access.exp}")
@@ -63,6 +66,7 @@ public class JwtTokenProvider {
 	public JwtTokenProvider(@Value("${application.jwt.secret}") String TOKEN_SECRET,
 			CustomUserDetailsService customUserDetailsService, RefreshTokenRepository refreshTokenRepository,
 			UserRepository userRepository, UserPointHistoryRepository userPointHistoryRepository,
+			UserDailyAccessLogRepository userDailyAccessLogRepository,
 			EventService eventService) {
 		this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(TOKEN_SECRET));
 		this.customUserDetailsService = customUserDetailsService;
@@ -70,6 +74,7 @@ public class JwtTokenProvider {
 		this.userRepository = userRepository;
 		this.userPointHistoryRepository = userPointHistoryRepository;
 		this.eventService = eventService;
+		this.userDailyAccessLogRepository = userDailyAccessLogRepository;
 	}
 
 	// 유저 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
@@ -101,10 +106,16 @@ public class JwtTokenProvider {
 
 		log.info("Generate User Token - userId: {}", userId);
 
-		int historyCount = userPointHistoryRepository.countAfterDateByPointTypeAndUserId(userId,
-				PointHistoryTypeCode.ATTENDANCE.getCode(), LocalDateTime.now().with(LocalTime.MIDNIGHT));
-		if (historyCount == 0) {
+		Optional<UserDailyAccessLog> dailyAccessLog = userDailyAccessLogRepository.findAfterByUserId(user.getId(), LocalDateTime.now().with(LocalTime.MIDNIGHT));
+		if (dailyAccessLog.isEmpty()) {
 			eventService.provideEventReward(user, PointHistoryTypeCode.ATTENDANCE);
+			
+			UserDailyAccessLog accessLog = new UserDailyAccessLog();
+			accessLog.setUser(user);
+			accessLog.setDeviceModel(user.getDeviceModel());
+			accessLog.setDeviceOs(user.getDeviceOs());
+			accessLog.setDeviceOsVersion(user.getDeviceOsVersion());
+			userDailyAccessLogRepository.save(accessLog);
 		}
 
 		return JwtTokenDto.builder().grantType("Bearer").accessToken(accessToken).refreshToken(refreshToken)

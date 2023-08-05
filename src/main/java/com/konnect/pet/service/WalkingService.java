@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -21,15 +19,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konnect.pet.dto.PropertiesDto;
-import com.konnect.pet.dto.UserWalkingFootprintCatchHistoryDto;
 import com.konnect.pet.dto.UserWalkingFootprintDto;
 import com.konnect.pet.dto.UserWalkingHistoryDto;
-import com.konnect.pet.dto.UserWalkingRewardHistoryDto;
 import com.konnect.pet.dto.WalkingRewardPolicyDto;
-import com.konnect.pet.entity.Properties;
 import com.konnect.pet.entity.User;
-import com.konnect.pet.entity.UserPoint;
-import com.konnect.pet.entity.UserRewardHistory;
 import com.konnect.pet.entity.UserWalkingFootprint;
 import com.konnect.pet.entity.UserWalkingFootprintCatchHistory;
 import com.konnect.pet.entity.UserWalkingHistory;
@@ -39,23 +32,19 @@ import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.code.NotificationTypeCode;
 import com.konnect.pet.enums.code.PointHistoryTypeCode;
 import com.konnect.pet.enums.code.PointTypeCode;
-import com.konnect.pet.enums.code.RewardTypeCode;
 import com.konnect.pet.enums.code.WalkingRewardProvideTypeCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.PropertiesRepository;
-import com.konnect.pet.repository.UserPointRepository;
 import com.konnect.pet.repository.UserRepository;
-import com.konnect.pet.repository.UserRewardHistoryRepository;
 import com.konnect.pet.repository.UserWalkingFootprintCatchHistoryRepository;
 import com.konnect.pet.repository.UserWalkingFootprintRepository;
 import com.konnect.pet.repository.UserWalkingHistoryRepository;
 import com.konnect.pet.repository.UserWalkingRewardHistoryRepository;
 import com.konnect.pet.repository.WalkingRewardPolicyRepository;
-import com.konnect.pet.repository.query.UserWalkingRewardHistoryQueryRepository;
 import com.konnect.pet.repository.query.PropertiesQueryRepository;
+import com.konnect.pet.repository.query.UserWalkingRewardHistoryQueryRepository;
 import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.utils.Aes256Utils;
-import com.querydsl.core.group.Group;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +57,6 @@ public class WalkingService {
 	private final NotificationService notificationService;
 
 	private final UserRepository userRepository;
-	private final UserRewardHistoryRepository userRewardHistoryRepository;
 	private final UserWalkingHistoryRepository userWalkingHistoryRepository;
 	private final WalkingRewardPolicyRepository walkingRewardPolicyRepository;
 	private final UserWalkingRewardHistoryRepository userWalkingRewardHistoryRepository;
@@ -249,7 +237,6 @@ public class WalkingService {
 					PointTypeCode pointTypeCode = PointTypeCode.findByCode(policy.getPointType());
 					pointService.increaseUserPoint(user, pointTypeCode, rewardAmount);
 
-					pointService.createPointHistory(user, pointTypeCode, PointHistoryTypeCode.WALKING, rewardAmount);
 
 					String pointType = policy.getPointType();
 					if (totalRewardAmountMap.get(pointType) == null) {
@@ -266,20 +253,11 @@ public class WalkingService {
 			}
 
 		}
-
-		List<UserRewardHistory> rewardHistories2 = new ArrayList<UserRewardHistory>();
+		
 		for (String pointType : totalRewardAmountMap.keySet()) {
-
-			UserRewardHistory rewardHistory = new UserRewardHistory();
-			rewardHistory.setAmount(totalRewardAmountMap.get(pointType));
-			rewardHistory.setPointType(pointType);
-			rewardHistory.setUser(user);
-			rewardHistory.setRewardType(RewardTypeCode.WALKING.getCode());
-
-			rewardHistories2.add(rewardHistory);
+			pointService.createPointHistory(user, PointTypeCode.findByCode(pointType), PointHistoryTypeCode.WALKING, totalRewardAmountMap.get(pointType));
 		}
 
-		userRewardHistoryRepository.saveAll(rewardHistories2);
 		userWalkingRewardHistoryRepository.saveAll(rewardHistories);
 	}
 
