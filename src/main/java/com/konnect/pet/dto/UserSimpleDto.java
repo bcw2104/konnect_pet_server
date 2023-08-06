@@ -21,6 +21,7 @@ public class UserSimpleDto {
 
 	private List<UserPetDto> pets;
 
+	private String residenceCity;
 	private String residenceAddress;
 	private String residenceCoords;
 }

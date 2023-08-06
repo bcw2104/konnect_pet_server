@@ -53,11 +53,11 @@ public class WalkingContainer {
 		return ResponseEntity.ok(walkingService.getAroundFootprint(user,lat, lng));
 	}
 
-	@PostMapping("/footprints/catch")
-	public ResponseEntity<?> catchFootprints(Authentication authentication, @RequestBody Map<String,Object> body) {
+	@PostMapping("/footprints/{id}")
+	public ResponseEntity<?> getFootprintInfo(Authentication authentication,@PathVariable("id") Long footprintId) {
 		User user = (User) authentication.getPrincipal();
 
-		return ResponseEntity.ok(null);
+		return ResponseEntity.ok(walkingService.getFootprintInfo(footprintId));
 	}
 
 }

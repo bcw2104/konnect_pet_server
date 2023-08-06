@@ -17,6 +17,12 @@ public interface UserWalkingFootprintRepository extends JpaRepository<UserWalkin
 	@Query("select u from UserWalkingFootprint u where u.id = :id")
 	Optional<UserWalkingFootprint> findById(@Param("id") Long id);
 
+	@Query("select uf from UserWalkingFootprint uf "
+			+ "join fetch uf.user u "
+			+ "join fetch u.userPets up "
+			+ "where uf.id = :id")
+	Optional<UserWalkingFootprint> findWithUserAndPetById(@Param("id") Long id);
+
 	@Query("select u from UserWalkingFootprint u where u.id in :ids")
 	List<UserWalkingFootprint> findByIds(@Param("ids") List<Long> ids);
 

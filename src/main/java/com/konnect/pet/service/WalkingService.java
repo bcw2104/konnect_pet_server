@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -19,10 +20,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konnect.pet.dto.PropertiesDto;
+import com.konnect.pet.dto.UserWalkingFootprintDetailDto;
 import com.konnect.pet.dto.UserWalkingFootprintDto;
 import com.konnect.pet.dto.UserWalkingHistoryDto;
 import com.konnect.pet.dto.WalkingRewardPolicyDto;
 import com.konnect.pet.entity.User;
+import com.konnect.pet.entity.UserProfile;
 import com.konnect.pet.entity.UserWalkingFootprint;
 import com.konnect.pet.entity.UserWalkingFootprintCatchHistory;
 import com.konnect.pet.entity.UserWalkingHistory;
@@ -35,6 +38,7 @@ import com.konnect.pet.enums.code.PointTypeCode;
 import com.konnect.pet.enums.code.WalkingRewardProvideTypeCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.PropertiesRepository;
+import com.konnect.pet.repository.UserProfileRepository;
 import com.konnect.pet.repository.UserRepository;
 import com.konnect.pet.repository.UserWalkingFootprintCatchHistoryRepository;
 import com.konnect.pet.repository.UserWalkingFootprintRepository;
@@ -42,7 +46,7 @@ import com.konnect.pet.repository.UserWalkingHistoryRepository;
 import com.konnect.pet.repository.UserWalkingRewardHistoryRepository;
 import com.konnect.pet.repository.WalkingRewardPolicyRepository;
 import com.konnect.pet.repository.query.PropertiesQueryRepository;
-import com.konnect.pet.repository.query.UserWalkingRewardHistoryQueryRepository;
+import com.konnect.pet.repository.query.UserWalkingQueryRepository;
 import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.utils.Aes256Utils;
 
@@ -57,10 +61,11 @@ public class WalkingService {
 	private final NotificationService notificationService;
 
 	private final UserRepository userRepository;
+	private final UserProfileRepository userProfileRepository;
 	private final UserWalkingHistoryRepository userWalkingHistoryRepository;
 	private final WalkingRewardPolicyRepository walkingRewardPolicyRepository;
 	private final UserWalkingRewardHistoryRepository userWalkingRewardHistoryRepository;
-	private final UserWalkingRewardHistoryQueryRepository userWalkingRewardHistoryQueryRepository;
+	private final UserWalkingQueryRepository userWalkingQueryRepository;
 	private final UserWalkingFootprintRepository userWalkingFootprintRepository;
 	private final UserWalkingFootprintCatchHistoryRepository userWalkingFootprintCatchHistoryRepository;
 	private final PropertiesRepository propertiesRepository;
@@ -197,7 +202,7 @@ public class WalkingService {
 		Map<Long, WalkingRewardPolicy> rewardPolicyMap = new HashMap<Long, WalkingRewardPolicy>();
 		rewardPolicies.forEach(ele -> rewardPolicyMap.put(ele.getId(), ele));
 
-		Map<Long, Integer> rewardTotalAmounts = userWalkingRewardHistoryQueryRepository
+		Map<Long, Integer> rewardTotalAmounts = userWalkingQueryRepository
 				.findUserCurrentRewardTotalAmount(user.getId());
 
 		List<UserWalkingRewardHistory> rewardHistories = new ArrayList<UserWalkingRewardHistory>();
@@ -237,7 +242,6 @@ public class WalkingService {
 					PointTypeCode pointTypeCode = PointTypeCode.findByCode(policy.getPointType());
 					pointService.increaseUserPoint(user, pointTypeCode, rewardAmount);
 
-
 					String pointType = policy.getPointType();
 					if (totalRewardAmountMap.get(pointType) == null) {
 						totalRewardAmountMap.put(pointType, rewardAmount);
@@ -253,9 +257,10 @@ public class WalkingService {
 			}
 
 		}
-		
+
 		for (String pointType : totalRewardAmountMap.keySet()) {
-			pointService.createPointHistory(user, PointTypeCode.findByCode(pointType), PointHistoryTypeCode.WALKING, totalRewardAmountMap.get(pointType));
+			pointService.createPointHistory(user, PointTypeCode.findByCode(pointType), PointHistoryTypeCode.WALKING,
+					totalRewardAmountMap.get(pointType));
 		}
 
 		userWalkingRewardHistoryRepository.saveAll(rewardHistories);
@@ -371,6 +376,15 @@ public class WalkingService {
 		resultMap.put("maxLng", maxLng);
 
 		return resultMap;
+	}
+
+	public ResponseDto getFootprintInfo(Long footprintId) {
+		UserWalkingFootprint footprint = userWalkingFootprintRepository.findWithUserAndPetById(footprintId)
+				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+		UserProfile profile = userProfileRepository.findByUserId(footprint.getUser().getId()).orElse(new UserProfile());
+
+		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingFootprintDetailDto(footprint, profile));
 	}
 
 }

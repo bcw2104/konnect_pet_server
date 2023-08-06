@@ -16,6 +16,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -77,6 +78,9 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 	private String deviceModel;
 
 	@Column(length = 255)
+	private String residenceCity;
+
+	@Column(length = 255)
 	private String residenceAddress;
 
 	@Column(length = 50)
@@ -94,6 +98,9 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 
 	@Column(length = 6)
 	private String aktId;
+
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+	private List<UserPet> userPets = new ArrayList<UserPet>();
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -129,6 +136,5 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 	public boolean isEnabled() {
 		return true;
 	}
-
 
 }
