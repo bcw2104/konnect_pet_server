@@ -1,5 +1,6 @@
 package com.konnect.pet.service;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 
@@ -35,6 +36,7 @@ public class UserPetService {
 			String petType = body.get("petType").toString();
 			String petSpecies = body.get("petSpecies").toString();
 			String petGender = body.get("petGender").toString();
+			BigDecimal petWeight = new BigDecimal(body.get("petWeight").toString());
 			String birthDate = body.get("birthDate").toString();
 			boolean neuteredYn = Boolean.parseBoolean(body.get("neuteredYn").toString());
 			boolean inoculatedYn = Boolean.parseBoolean(body.get("inoculatedYn").toString());
@@ -52,6 +54,7 @@ public class UserPetService {
 				pet.setInoculatedYn(inoculatedYn);
 				pet.setNeuteredYn(neuteredYn);
 				pet.setPetGender(petGender);
+				pet.setPetWeight(petWeight);
 				pet.setPetType(petType);
 				pet.setPetName(petName);
 				pet.setPetSpecies(petSpecies);
@@ -73,6 +76,7 @@ public class UserPetService {
 				pet.setInoculatedYn(inoculatedYn);
 				pet.setNeuteredYn(neuteredYn);
 				pet.setPetGender(petGender);
+				pet.setPetWeight(petWeight);
 				pet.setPetType(petType);
 				pet.setPetName(petName);
 				pet.setPetSpecies(petSpecies);

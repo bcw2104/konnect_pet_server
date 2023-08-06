@@ -1,5 +1,7 @@
 package com.konnect.pet.dto;
 
+import java.math.BigDecimal;
+
 import com.konnect.pet.entity.UserPet;
 import com.konnect.pet.enums.code.PetTypeCode;
 
@@ -21,6 +23,7 @@ public class UserPetDto {
 
 	private String petGender;
 
+	private BigDecimal petWeight;
 	private String birthDate;
 
 	private boolean neuteredYn;
@@ -37,6 +40,7 @@ public class UserPetDto {
 		this.petType = pet.getPetType();
 		this.petTypeName = PetTypeCode.findByCode(pet.getPetType()).getCodeName();
 		this.petSpecies = pet.getPetSpecies();
+		this.petWeight = pet.getPetWeight();
 		this.petGender = pet.getPetGender();
 		this.birthDate = pet.getBirthDate();
 		this.neuteredYn = pet.isNeuteredYn();

@@ -106,10 +106,10 @@ public class JwtTokenProvider {
 
 		log.info("Generate User Token - userId: {}", userId);
 
-		Optional<UserDailyAccessLog> dailyAccessLog = userDailyAccessLogRepository.findAfterByUserId(user.getId(), LocalDateTime.now().with(LocalTime.MIDNIGHT));
-		if (dailyAccessLog.isEmpty()) {
+		int dailyCount = userDailyAccessLogRepository.countAfterByUserId(user.getId(), LocalDateTime.now().with(LocalTime.MIDNIGHT));
+		if (dailyCount == 0) {
 			eventService.provideEventReward(user, PointHistoryTypeCode.ATTENDANCE);
-			
+
 			UserDailyAccessLog accessLog = new UserDailyAccessLog();
 			accessLog.setUser(user);
 			accessLog.setDeviceModel(user.getDeviceModel());

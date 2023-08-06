@@ -1,5 +1,7 @@
 package com.konnect.pet.entity;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -37,6 +39,9 @@ public class UserPet {
 
 	@Column(length = 1, nullable = false)
 	private String petGender;
+
+	@Column(precision = 10, scale = 2 ,nullable = false)
+	private BigDecimal petWeight;
 
 	@Column(length = 8, nullable = false)
 	private String birthDate;
