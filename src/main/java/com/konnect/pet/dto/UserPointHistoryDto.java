@@ -1,5 +1,7 @@
 package com.konnect.pet.dto;
 
+import java.time.LocalDateTime;
+
 import com.konnect.pet.entity.UserPointHistory;
 import com.konnect.pet.enums.code.PointHistoryTypeCode;
 import com.konnect.pet.enums.code.PointTypeCode;
@@ -21,6 +23,8 @@ public class UserPointHistoryDto {
 
 	private String historyType;
 	private String historyTypeName;
+	
+	private LocalDateTime createdDate;
 
 	public UserPointHistoryDto(UserPointHistory history) {
 		PointTypeCode pointTypeCode = PointTypeCode.findByCode(history.getPointType());
@@ -33,6 +37,7 @@ public class UserPointHistoryDto {
 		this.pointTypeSymbol = pointTypeCode.getCodeForApp();
 		this.historyType = pointHistoryTypeCode.getCode();
 		this.historyTypeName = pointHistoryTypeCode.getCodeForApp();
+		this.createdDate = history.getCreatedDate();
 	}
 
 }
