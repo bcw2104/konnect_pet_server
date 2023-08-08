@@ -8,7 +8,11 @@ import lombok.Getter;
 @Getter
 public enum NotificationTypeCode implements CommonCode{
 	WELCOME("001","welcome"),
-	WAKLING_FINISHED("002","walking finished");
+	WAKLING_FINISHED("002","walking finished"),
+
+	//커뮤니티 관련 코드
+	REQUEST_FRIEND("100","friend request"),
+	DUMMY("999","DUMMY");
 
 	private String code;
 	private String codeName;

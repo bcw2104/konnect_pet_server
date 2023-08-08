@@ -22,7 +22,7 @@ public class EventService {
 	private final PointService pointService;
 	private final EventRewardPolicyRepository eventRewardPolicyRepository;
 
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	@Transactional
 	public void provideEventReward(User user, PointHistoryTypeCode typeCode) {
 		List<EventRewardPolicy> rewardPolicies = eventRewardPolicyRepository
 				.findActiveByHistoryType(typeCode.getCode());

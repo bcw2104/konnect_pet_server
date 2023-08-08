@@ -26,6 +26,7 @@ import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.VerifyType;
 import com.konnect.pet.enums.code.LocationCode;
 import com.konnect.pet.enums.code.PointTypeCode;
+import com.konnect.pet.enums.code.UserStatusCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.UserPetRepository;
 import com.konnect.pet.repository.UserPointRepository;
@@ -74,7 +75,8 @@ public class UserService {
 		List<UserPetDto> pets = userPetRepository.findByUserId(user.getId()).stream().map(UserPetDto::new).toList();
 		UserSimpleDto simpleDto = UserSimpleDto.builder().userId(user.getId()).email(user.getEmail())
 				.platform(user.getPlatform().name()).tel(user.getTelMask()).profile(profileDto).pets(pets)
-				.residenceAddress(user.getResidenceAddress()).residenceCoords(user.getResidenceCoords()).build();
+				.residenceCity(user.getResidenceCity()).residenceAddress(user.getResidenceAddress())
+				.residenceCoords(user.getResidenceCoords()).build();
 
 		return new ResponseDto(ResponseType.SUCCESS, simpleDto);
 	}
@@ -158,6 +160,7 @@ public class UserService {
 		user.setDeviceOs(null);
 		user.setDeviceOsVersion(null);
 		user.setDeviceToken(null);
+		user.setStatus(UserStatusCode.REMOVED.getCode());
 
 		userRemovedRepository.save(userRemoved);
 

@@ -25,6 +25,7 @@ import com.konnect.pet.dto.UserWalkingFootprintDto;
 import com.konnect.pet.dto.UserWalkingHistoryDto;
 import com.konnect.pet.dto.WalkingRewardPolicyDto;
 import com.konnect.pet.entity.User;
+import com.konnect.pet.entity.UserFriend;
 import com.konnect.pet.entity.UserProfile;
 import com.konnect.pet.entity.UserWalkingFootprint;
 import com.konnect.pet.entity.UserWalkingFootprintCatchHistory;
@@ -35,9 +36,11 @@ import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.code.NotificationTypeCode;
 import com.konnect.pet.enums.code.PointHistoryTypeCode;
 import com.konnect.pet.enums.code.PointTypeCode;
+import com.konnect.pet.enums.code.UserStatusCode;
 import com.konnect.pet.enums.code.WalkingRewardProvideTypeCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.PropertiesRepository;
+import com.konnect.pet.repository.UserFriendRepository;
 import com.konnect.pet.repository.UserProfileRepository;
 import com.konnect.pet.repository.UserRepository;
 import com.konnect.pet.repository.UserWalkingFootprintCatchHistoryRepository;
@@ -61,6 +64,7 @@ public class WalkingService {
 	private final NotificationService notificationService;
 
 	private final UserRepository userRepository;
+	private final UserFriendRepository userFriendRepository;
 	private final UserProfileRepository userProfileRepository;
 	private final UserWalkingHistoryRepository userWalkingHistoryRepository;
 	private final WalkingRewardPolicyRepository walkingRewardPolicyRepository;
@@ -344,7 +348,8 @@ public class WalkingService {
 		double maxLng = coordRadius.get("maxLng");
 
 		List<UserWalkingFootprintDto> radiusFootprints = userWalkingFootprintRepository
-				.findAroundByLatLongLimit(displayDate, maxLat, maxLng, minLat, minLng, PageRequest.of(0, displayAmount))
+				.findAroundByLatLongLimit(displayDate, maxLat, maxLng, minLat, minLng, UserStatusCode.REMOVED.getCode(),
+						PageRequest.of(0, displayAmount))
 				.stream().map(UserWalkingFootprintDto::new).toList();
 		List<Long> catchedFootprints = userWalkingFootprintCatchHistoryRepository
 				.findFootprintIdByCreatedDateAndUserId(displayDate, user.getId());
@@ -378,13 +383,16 @@ public class WalkingService {
 		return resultMap;
 	}
 
-	public ResponseDto getFootprintInfo(Long footprintId) {
+	public ResponseDto getFootprintInfo(User user,Long footprintId) {
 		UserWalkingFootprint footprint = userWalkingFootprintRepository.findWithUserAndPetById(footprintId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
+		UserFriend friend = userFriendRepository.findByFromUserIdAndToUserId(user.getId(), footprint.getUser().getId())
+				.orElse(null);
+		
 		UserProfile profile = userProfileRepository.findByUserId(footprint.getUser().getId()).orElse(new UserProfile());
 
-		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingFootprintDetailDto(footprint, profile));
+		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingFootprintDetailDto(footprint, profile,friend));
 	}
 
 }

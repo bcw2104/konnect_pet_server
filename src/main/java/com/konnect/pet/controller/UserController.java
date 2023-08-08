@@ -16,14 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.konnect.pet.dto.PageRequestDto;
-import com.konnect.pet.dto.UserSimpleDto;
 import com.konnect.pet.entity.User;
-import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.VerifyType;
 import com.konnect.pet.enums.code.LocationCode;
 import com.konnect.pet.enums.code.PointTypeCode;
-import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.service.NotificationService;
 import com.konnect.pet.service.PointService;
 import com.konnect.pet.service.UserPetService;

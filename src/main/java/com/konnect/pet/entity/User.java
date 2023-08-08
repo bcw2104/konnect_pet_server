@@ -99,6 +99,9 @@ public class User extends BaseAutoSetEntity implements UserDetails {
 	@Column(length = 6)
 	private String aktId;
 
+	@Column(length = 3, nullable = false)
+	private String status;
+
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<UserPet> userPets = new ArrayList<UserPet>();
 

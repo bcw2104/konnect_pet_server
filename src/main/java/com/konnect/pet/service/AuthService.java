@@ -30,6 +30,7 @@ import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.Roles;
 import com.konnect.pet.enums.VerifyType;
 import com.konnect.pet.enums.code.PointHistoryTypeCode;
+import com.konnect.pet.enums.code.UserStatusCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.EventRewardPolicyRepository;
 import com.konnect.pet.repository.TermsGroupRepository;
@@ -72,7 +73,7 @@ public class AuthService {
 	public ResponseDto refreshToken(HttpServletRequest request) {
 		String refreshToken = tokenProvider.resolveToken(request);
 
-		if(refreshToken == null) {
+		if (refreshToken == null) {
 			new CustomResponseException(HttpStatus.FORBIDDEN, ResponseType.INVALID_REFRESH_TOKEN);
 		}
 
@@ -105,7 +106,7 @@ public class AuthService {
 
 			}
 		} catch (Exception e) {
-			log.info(e.getMessage(),e);
+			log.info(e.getMessage(), e);
 			throw new CustomResponseException(ResponseType.SERVER_ERROR);
 		}
 
@@ -208,13 +209,15 @@ public class AuthService {
 			user.setPlatform(requestDto.getPlatform());
 			user.setNationCode(requestDto.getNationCode());
 			user.setResidenceAddress(requestDto.getAddress());
+			user.setResidenceCity(requestDto.getCity());
 			user.setResidenceCoords(requestDto.getCoords());
 			user.setLastLoginDate(LocalDateTime.now());
-			user.setRecommendCode(ValidationUtils.generateRandomString(6, true, true)+ValidationUtils.generateRandomString(2, false, true));
+			user.setRecommendCode(ValidationUtils.generateRandomString(6, true, true)
+					+ ValidationUtils.generateRandomString(2, false, true));
 			user.setMarketingYn(Boolean
 					.parseBoolean(((Map) requestDto.getTermsAgreed().get(CommonCodeConst.MARKETING_TERMS_GROUP_ID))
 							.get("checkedYn").toString()));
-
+			user.setStatus(UserStatusCode.ACTIVE.getCode());
 			userRepository.save(user);
 
 			List<UserTermsAgreement> agreements = new ArrayList<UserTermsAgreement>();

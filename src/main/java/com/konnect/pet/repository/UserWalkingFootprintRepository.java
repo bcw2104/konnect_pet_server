@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.konnect.pet.entity.UserWalkingFootprint;
 import com.konnect.pet.entity.UserWalkingHistory;
+import com.konnect.pet.enums.code.UserStatusCode;
 
 public interface UserWalkingFootprintRepository extends JpaRepository<UserWalkingFootprint, Long> {
 
@@ -32,8 +33,8 @@ public interface UserWalkingFootprintRepository extends JpaRepository<UserWalkin
 	@Query("select u from UserWalkingFootprint u where u.userWalkingHistory.id = :walkingId")
 	List<UserWalkingFootprint> findByWalkingId(@Param("walkingId") Long walkingId);
 
-	@Query("select u from UserWalkingFootprint u where u.stock > 0 and u.createdDate >= :createdDate and u.latitude >= :minLat and u.latitude <= :maxLat "
+	@Query("select u from UserWalkingFootprint u join u.user uu where uu.status <> :removedStatus and u.stock > 0 and u.createdDate >= :createdDate and u.latitude >= :minLat and u.latitude <= :maxLat "
 			+ "and u.longitude >= :minLng and u.longitude <= :maxLng")
 	List<UserWalkingFootprint> findAroundByLatLongLimit(@Param("createdDate") LocalDateTime createdDate, @Param("maxLat") double maxLat, @Param("maxLng") double maxLng,
-			@Param("minLat") double minLat, @Param("minLng") double minLng, Pageable pageable);
+			@Param("minLat") double minLat, @Param("minLng") double minLng,@Param("removedStatus") String removedStatus, Pageable pageable);
 }

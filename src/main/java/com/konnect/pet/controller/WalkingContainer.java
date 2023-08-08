@@ -55,7 +55,8 @@ public class WalkingContainer {
 
 	@GetMapping("/footprints/{id}")
 	public ResponseEntity<?> getFootprintInfo(Authentication authentication,@PathVariable("id") Long footprintId) {
-		return ResponseEntity.ok(walkingService.getFootprintInfo(footprintId));
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(walkingService.getFootprintInfo(user,footprintId));
 	}
 
 }

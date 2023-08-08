@@ -15,6 +15,7 @@ public enum ResponseType {
 	INVALID_REQUEST("9101", "invalid request","잠시 후 다시 시도해주세요."),
 	INVALID_PARAMETER("9102", "invalid parameter", "잠시 후 다시 시도해주세요."),
 	INVALID_TEL("9103", "invalid tel number", "유효하지 않은 전화번호입니다."),
+	DUPLICATED_REQUEST("9104", "duplicated request", "중복된 요청입니다."),
 
 	//인증 실패 92XX
 	AUTH_FAIL("9200", "auth failed", "인증에 실패했습니다."),
@@ -46,6 +47,8 @@ public enum ResponseType {
 
 	//반려견 관련 에러들...
 	TOO_MANY_PET("9400", "too many pet", "반려동물 등록 횟수를 초과했습니다."),
+
+	//커뮤니티 관련 에러들...
 
 	dummy("10000", "dummy","dummy");
 

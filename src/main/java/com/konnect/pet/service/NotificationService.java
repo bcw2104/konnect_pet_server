@@ -26,27 +26,27 @@ public class NotificationService {
 	private final UserNotificationRepository userNotificationRepository;
 	private final UserNotificationLogRepository userNotificationLogRepository;
 	private final UserNotificationQueryRepository userNotificationQueryRepository;
-	
+
 	public ResponseDto getRecentUserNotifications(User user){
 		List<UserNotificationDto> notifications = userNotificationQueryRepository.findUserNotifications(user.getId(),10);
-		
+
 		return new ResponseDto(ResponseType.SUCCESS,notifications);
 	}
-	
+
 	public UserNotificationLog createMacroUserNotificationLog(User user,NotificationTypeCode type) {
 		List<UserNotification> notifications = userNotificationRepository.findActiveByNotiType(type.getCode());
-		
+
 		if(notifications.isEmpty()) {
 			return null;
 		}
-		
+
 		UserNotificationLog log = new UserNotificationLog();
 		log.setUser(user);
 		log.setUserNotification(notifications.get(0));
 		log.setVisitedYn(false);
-		
+
 		userNotificationLogRepository.save(log);
-		
+
 		return log;
 	}
 }

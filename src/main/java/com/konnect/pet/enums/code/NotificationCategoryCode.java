@@ -10,7 +10,8 @@ public enum NotificationCategoryCode implements CommonCode{
 	ACCOUNT("001","account"),
 	WALKING("002","walking"),
 	SHOPING("003","shoping"),
-	MARKETING("004","marketing");
+	COMMUNITY("004","community"),
+	MARKETING("999","marketing");
 
 	private String code;
 	private String codeName;

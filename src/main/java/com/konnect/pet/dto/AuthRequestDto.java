@@ -22,6 +22,7 @@ public class AuthRequestDto {
 	private String nationCode;
 
 	private String address;
+	private String city;
 	private String coords;
 
 	private String password;
