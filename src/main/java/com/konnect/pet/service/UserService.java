@@ -28,6 +28,7 @@ import com.konnect.pet.enums.code.LocationCode;
 import com.konnect.pet.enums.code.PointTypeCode;
 import com.konnect.pet.enums.code.UserStatusCode;
 import com.konnect.pet.ex.CustomResponseException;
+import com.konnect.pet.repository.UserNotificationLogRepository;
 import com.konnect.pet.repository.UserPetRepository;
 import com.konnect.pet.repository.UserPointRepository;
 import com.konnect.pet.repository.UserProfileRepository;
@@ -50,6 +51,7 @@ public class UserService {
 	private final UserProfileRepository userProfileRepository;
 	private final UserRemovedRepository userRemovedRepository;
 	private final UserPointRepository userPointRepository;
+	private final UserNotificationLogRepository userNotificationLogRepository;
 	private final VerifyService verifyService;
 	private final RefreshTokenRepository refreshTokenRepository;
 
@@ -208,7 +210,10 @@ public class UserService {
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 
 		Map<String, UserPointDto> pointMap = generateFullUserPointMap(user);
+		int newNotiCount = userNotificationLogRepository.countByUserIdAndVisitedYnIsFalse(user.getId());
+
 		resultMap.put("point", pointMap.get(PointTypeCode.POINT.getCode()));
+		resultMap.put("newNotiCount", newNotiCount);
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
 

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,4 +20,5 @@ public interface UserNotificationRepository extends JpaRepository<UserNotificati
 	@Query("select n from UserNotification n "
 			+ "where n.notiType = :notiType and n.activeYn = true and n.startDate <= now() and n.endDate >= now()")
 	List<UserNotification> findActiveByNotiType(@Param("notiType") String notiType);
+
 }

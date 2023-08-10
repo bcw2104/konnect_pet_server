@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.konnect.pet.dto.PageRequestDto;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.enums.VerifyType;
 import com.konnect.pet.enums.code.LocationCode;
@@ -25,6 +26,7 @@ import com.konnect.pet.service.PointService;
 import com.konnect.pet.service.UserPetService;
 import com.konnect.pet.service.UserService;
 
+import io.lettuce.core.dynamic.annotation.Param;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -111,9 +113,9 @@ public class UserController {
 	}
 
 	@GetMapping("/noti")
-	public ResponseEntity<?> notification(Authentication authentication) {
+	public ResponseEntity<?> notification(Authentication authentication, PageRequestDto pageDto) {
 		User user = (User) authentication.getPrincipal();
-		return ResponseEntity.ok(notificationService.getRecentUserNotifications(user));
+		return ResponseEntity.ok(notificationService.getRecentUserNotifications(user, pageDto));
 	}
 
 	@GetMapping("/point/history")

@@ -1,9 +1,13 @@
 package com.konnect.pet.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.konnect.pet.dto.PageRequestDto;
 import com.konnect.pet.dto.UserNotificationDto;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserNotification;
@@ -27,16 +31,33 @@ public class NotificationService {
 	private final UserNotificationLogRepository userNotificationLogRepository;
 	private final UserNotificationQueryRepository userNotificationQueryRepository;
 
-	public ResponseDto getRecentUserNotifications(User user){
-		List<UserNotificationDto> notifications = userNotificationQueryRepository.findUserNotifications(user.getId(),10);
+	@Transactional
+	public ResponseDto getRecentUserNotifications(User user, PageRequestDto pageDto) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
 
-		return new ResponseDto(ResponseType.SUCCESS,notifications);
+		int limit = pageDto.getSize() + 1;
+		int offset = (pageDto.getPage() - 1) * pageDto.getSize();
+
+		List<UserNotificationDto> notifications = userNotificationQueryRepository.findUserNotifications(user.getId(),
+				limit, offset);
+		userNotificationLogRepository.updateVisitedYn(user.getId());
+
+		boolean hasNext = false;
+		if (notifications.size() == limit) {
+			notifications.remove(limit - 1);
+			hasNext = true;
+		}
+		resultMap.put("notifications", notifications);
+		resultMap.put("hasNext", hasNext);
+
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
 
-	public UserNotificationLog createMacroUserNotificationLog(User user,NotificationTypeCode type) {
+	@Transactional
+	public UserNotificationLog createMacroUserNotificationLog(User user, NotificationTypeCode type) {
 		List<UserNotification> notifications = userNotificationRepository.findActiveByNotiType(type.getCode());
 
-		if(notifications.isEmpty()) {
+		if (notifications.isEmpty()) {
 			return null;
 		}
 

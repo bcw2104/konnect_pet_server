@@ -1,7 +1,10 @@
 package com.konnect.pet.dto;
 
+import java.time.LocalDateTime;
+
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserNotification;
+import com.konnect.pet.enums.code.NotificationCategoryCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
@@ -14,9 +17,10 @@ import lombok.Setter;
 @Setter
 @Getter
 public class UserNotificationDto {
-	private Long notiId;
+	private Long id;
 
 	private String category;
+	private String categoryName;
 
 	private String title;
 
@@ -30,16 +34,20 @@ public class UserNotificationDto {
 
 	private boolean visitedYn;
 
-	public UserNotificationDto(Long notiId, String category, String title, String content,
-			String notiType, String landingType, String landingUrl, boolean visitedYn) {
-		this.notiId = notiId;
+	private LocalDateTime createdDate;
+
+	public UserNotificationDto(Long notiId, String category, String title, String content, String notiType,
+			String landingType, String landingUrl, boolean visitedYn, LocalDateTime createdDate) {
+		this.id = notiId;
 		this.category = category;
+		this.categoryName = NotificationCategoryCode.findByCode(category).getCodeForApp();
 		this.title = title;
 		this.content = content;
 		this.notiType = notiType;
 		this.landingType = landingType;
 		this.landingUrl = landingUrl;
 		this.visitedYn = visitedYn;
+		this.createdDate = createdDate;
 	}
 
 }

@@ -23,7 +23,7 @@ public class UserPointHistoryDto {
 
 	private String historyType;
 	private String historyTypeName;
-	
+
 	private LocalDateTime createdDate;
 
 	public UserPointHistoryDto(UserPointHistory history) {

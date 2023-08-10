@@ -19,7 +19,7 @@ public class UserNotificationQueryRepository {
 
 	private final JPAQueryFactory queryFactory;
 
-	public List<UserNotificationDto> findUserNotifications(Long userId, int limit) {
+	public List<UserNotificationDto> findUserNotifications(Long userId, int limit,int offset) {
 		return queryFactory
 				.select(Projections.constructor(UserNotificationDto.class
 						,userNotificationLog.id
@@ -30,11 +30,13 @@ public class UserNotificationQueryRepository {
 						,userNotificationLog.userNotification.landingType
 						,userNotificationLog.userNotification.landingUrl
 						,userNotificationLog.visitedYn
+						,userNotificationLog.createdDate
 						))
 				.from(userNotificationLog).join(userNotificationLog.userNotification ,userNotification)
 				.where(userNotificationLog.user.id.eq(userId))
 				.orderBy(userNotificationLog.id.desc())
 				.limit(limit)
+				.offset(offset)
 				.fetch();
 	}
 }

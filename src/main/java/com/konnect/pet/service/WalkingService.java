@@ -186,6 +186,7 @@ public class WalkingService {
 		}
 	}
 
+	@Transactional
 	private void saveCatchedFootprints(User user, List<Long> catchedFootprints, UserWalkingHistory walkingHistory) {
 		List<UserWalkingFootprintCatchHistory> footprintCatchHistories = new ArrayList<UserWalkingFootprintCatchHistory>();
 		List<UserWalkingFootprint> footprints = userWalkingFootprintRepository.findByIds(catchedFootprints);
@@ -304,6 +305,7 @@ public class WalkingService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	public ResponseDto getWalkingHistory(User user, Long walkingId) {
 		UserWalkingHistory userWalkingHistory = userWalkingHistoryRepository.findWithRewardHistById(walkingId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
@@ -315,6 +317,7 @@ public class WalkingService {
 		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingHistoryDto(userWalkingHistory));
 	}
 
+	@Transactional(readOnly = true)
 	public ResponseDto getAroundFootprint(User user, double lat, double lng) {
 		Map<String, String> propertyMap = PropertiesQueryRepository.getPropertyMapByKeys(
 				"walking_footprint_display_amount", "walking_footprint_display_distance",
@@ -383,13 +386,14 @@ public class WalkingService {
 		return resultMap;
 	}
 
+	@Transactional(readOnly = true)
 	public ResponseDto getFootprintInfo(User user,Long footprintId) {
 		UserWalkingFootprint footprint = userWalkingFootprintRepository.findWithUserAndPetById(footprintId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
 		UserFriend friend = userFriendRepository.findByFromUserIdAndToUserId(user.getId(), footprint.getUser().getId())
 				.orElse(null);
-		
+
 		UserProfile profile = userProfileRepository.findByUserId(footprint.getUser().getId()).orElse(new UserProfile());
 
 		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingFootprintDetailDto(footprint, profile,friend));

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.konnect.pet.dto.PickerItemDto;
 import com.konnect.pet.dto.TermsDto;
@@ -26,11 +27,15 @@ public class TermsService {
 	private final TermsQueryRepository termsQueryRepository;
 	private final TermsGroupRepository termsGroupRepository;
 
+	@Transactional(readOnly = true)
 	public ResponseDto getLastestTermsByTermsGroupId(Long termsGroupId) {
-		return new ResponseDto(ResponseType.SUCCESS, termsQueryRepository.findLastestTermsByTermsGroupsId(termsGroupId));
+		return new ResponseDto(ResponseType.SUCCESS,
+				termsQueryRepository.findLastestTermsByTermsGroupsId(termsGroupId));
 	}
 
+	@Transactional(readOnly = true)
 	public ResponseDto getTermsGroupByLocationCodeAndVisibleYn(LocationCode locationCode, boolean visibleYn) {
-		return new ResponseDto(ResponseType.SUCCESS, termsQueryRepository.findTermsGroupByLocationCodeAndVisibleYn(locationCode,visibleYn));
+		return new ResponseDto(ResponseType.SUCCESS,
+				termsQueryRepository.findTermsGroupByLocationCodeAndVisibleYn(locationCode, visibleYn));
 	}
 }
