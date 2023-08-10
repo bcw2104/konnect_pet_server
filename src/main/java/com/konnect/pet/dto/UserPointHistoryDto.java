@@ -26,18 +26,19 @@ public class UserPointHistoryDto {
 
 	private LocalDateTime createdDate;
 
-	public UserPointHistoryDto(UserPointHistory history) {
-		PointTypeCode pointTypeCode = PointTypeCode.findByCode(history.getPointType());
-		PointHistoryTypeCode pointHistoryTypeCode = PointHistoryTypeCode.findByCode(history.getHistoryType());
+	public UserPointHistoryDto(Long id, int balance, String pointType, String historyType, LocalDateTime createdDate) {
 
-		this.id = history.getId();
-		this.balance = history.getBalance();
+		PointTypeCode pointTypeCode = PointTypeCode.findByCode(pointType);
+		PointHistoryTypeCode pointHistoryTypeCode = PointHistoryTypeCode.findByCode(historyType);
+
+		this.id = id;
+		this.balance = balance;
 		this.pointType = pointTypeCode.getCode();
 		this.pointTypeName = pointTypeCode.getCodeName();
 		this.pointTypeSymbol = pointTypeCode.getCodeForApp();
 		this.historyType = pointHistoryTypeCode.getCode();
 		this.historyTypeName = pointHistoryTypeCode.getCodeForApp();
-		this.createdDate = history.getCreatedDate();
+		this.createdDate = createdDate;
 	}
 
 }

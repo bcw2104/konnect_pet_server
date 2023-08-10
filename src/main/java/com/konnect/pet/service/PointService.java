@@ -2,12 +2,15 @@ package com.konnect.pet.service;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.konnect.pet.dto.PageRequestDto;
 import com.konnect.pet.dto.UserPointHistoryDto;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserPoint;
@@ -17,6 +20,7 @@ import com.konnect.pet.enums.code.PointHistoryTypeCode;
 import com.konnect.pet.enums.code.PointTypeCode;
 import com.konnect.pet.repository.UserPointHistoryRepository;
 import com.konnect.pet.repository.UserPointRepository;
+import com.konnect.pet.repository.query.UserPointQueryRepository;
 import com.konnect.pet.response.ResponseDto;
 
 import lombok.RequiredArgsConstructor;
@@ -28,16 +32,28 @@ import lombok.extern.slf4j.Slf4j;
 public class PointService {
 
 	private final UserPointRepository userPointRepository;
+	private final UserPointQueryRepository userPointQueryRepository;
 	private final UserPointHistoryRepository userPointHistoryRepository;
 
 	@Transactional(readOnly = true)
-	public ResponseDto getPointHistory(PointTypeCode pointType, User user) {
-		LocalDateTime afterDate = LocalDateTime.now().minusMonths(5).with(LocalTime.MIDNIGHT);
-		List<UserPointHistoryDto> pointHists = userPointHistoryRepository
-				.findByPointTypeAndUserIdOrderByIdDesc(user.getId(), pointType.getCode(), afterDate).stream()
-				.map(UserPointHistoryDto::new).toList();
+	public ResponseDto getPointHistory(PointTypeCode pointType, String type, PageRequestDto pageDto, User user) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
 
-		return new ResponseDto(ResponseType.SUCCESS, pointHists);
+		int limit = pageDto.getSize() + 1;
+		int offset = (pageDto.getPage() - 1) * pageDto.getSize();
+
+		List<UserPointHistoryDto> pointHists = userPointQueryRepository.findUserPointHistories(user.getId(),
+				pointType.getCode(), type, limit, offset);
+
+		boolean hasNext = false;
+		if (pointHists.size() == limit) {
+			pointHists.remove(limit - 1);
+			hasNext = true;
+		}
+		resultMap.put("histories", pointHists);
+		resultMap.put("hasNext", hasNext);
+
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
 
 	@Transactional

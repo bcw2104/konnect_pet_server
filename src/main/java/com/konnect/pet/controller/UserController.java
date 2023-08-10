@@ -119,9 +119,10 @@ public class UserController {
 	}
 
 	@GetMapping("/point/history")
-	public ResponseEntity<?> pointHistory(Authentication authentication, @RequestParam("point") String pointType) {
+	public ResponseEntity<?> pointHistory(Authentication authentication, @RequestParam("point") String pointType,
+			@RequestParam("type") String type, PageRequestDto pageDto) {
 		User user = (User) authentication.getPrincipal();
-		return ResponseEntity.ok(pointService.getPointHistory(PointTypeCode.findByCode(pointType), user));
+		return ResponseEntity.ok(pointService.getPointHistory(PointTypeCode.findByCode(pointType),type,pageDto, user));
 	}
 
 }

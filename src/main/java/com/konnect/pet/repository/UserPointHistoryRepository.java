@@ -20,8 +20,4 @@ public interface UserPointHistoryRepository extends JpaRepository<UserPointHisto
 	int countAfterDateByPointTypeAndUserId(@Param("userId") Long userId, @Param("pointType") String pointType,
 			@Param("afterDate") LocalDateTime afterDate);
 
-	@Query("select ph from UserPointHistory ph where ph.user.id = :userId and ph.pointType = :pointType and ph.createdDate >= :afterDate order by ph.id desc")
-	List<UserPointHistory> findByPointTypeAndUserIdOrderByIdDesc(@Param("userId") Long userId,
-			@Param("pointType") String pointType, @Param("afterDate") LocalDateTime afterDate);
-
 }
