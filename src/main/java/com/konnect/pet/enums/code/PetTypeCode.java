@@ -34,4 +34,10 @@ public enum PetTypeCode implements CommonCode{
 	public static PetTypeCode findByCode(String code) {
 		return enumMap.get(code);
 	}
+
+	@Override
+	public String getCodeForApp() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

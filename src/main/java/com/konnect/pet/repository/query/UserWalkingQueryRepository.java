@@ -2,9 +2,11 @@ package com.konnect.pet.repository.query;
 
 import static com.konnect.pet.entity.QUser.user;
 import static com.konnect.pet.entity.QUserWalkingFootprint.userWalkingFootprint;
+import static com.konnect.pet.entity.QUserWalkingHistory.userWalkingHistory;
 import static com.konnect.pet.entity.QUserWalkingRewardHistory.userWalkingRewardHistory;
 import static com.konnect.pet.entity.QWalkingRewardPolicy.walkingRewardPolicy;
 
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -16,7 +18,10 @@ import org.springframework.stereotype.Repository;
 import com.konnect.pet.dto.UserWalkingFootprintDetailDto;
 import com.konnect.pet.entity.QUser;
 import com.konnect.pet.entity.QUserWalkingFootprint;
+import com.konnect.pet.entity.QUserWalkingHistory;
+import com.konnect.pet.entity.UserWalkingHistory;
 import com.konnect.pet.enums.code.PeriodCode;
+import com.querydsl.core.group.Group;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -54,6 +59,15 @@ public class UserWalkingQueryRepository {
 				.groupBy(userWalkingRewardHistory.walkingRewardPolicy.id)
 				.transform(GroupBy.groupBy(userWalkingRewardHistory.walkingRewardPolicy.id)
 						.as(userWalkingRewardHistory.amount.sum()));
+
+	}
+
+	public Map<Long, Group> findUserWalkingSummary(Long userId) {
+
+		return queryFactory.from(userWalkingHistory)
+				.where(userWalkingHistory.user.id.eq(userId))
+				.transform(GroupBy.groupBy(userWalkingHistory.user.id)
+						.as(userWalkingHistory.id.count(),userWalkingHistory.meters.sum(),userWalkingHistory.seconds.sum()));
 
 	}
 }

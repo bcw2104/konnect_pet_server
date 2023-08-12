@@ -1,6 +1,7 @@
 package com.konnect.pet.enums.code;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -21,6 +22,8 @@ public enum PointTypeCode implements CommonCode {
 
 	public static final Map<String, PointTypeCode> enumMap = Collections.unmodifiableMap(
 			Stream.of(values()).collect(Collectors.toMap(PointTypeCode::getCode, Function.identity())));
+
+	public static final List<PointTypeCode> enumList = Collections.unmodifiableList(Stream.of(values()).toList());
 
 	private PointTypeCode(String code, String codeName, String codeForApp) {
 		this.code = code;

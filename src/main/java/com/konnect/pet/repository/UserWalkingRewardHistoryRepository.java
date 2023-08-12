@@ -20,4 +20,7 @@ public interface UserWalkingRewardHistoryRepository extends JpaRepository<UserWa
 
 	@Query("select u from UserWalkingRewardHistory u where u.walkingRewardPolicy.id = :policyId")
 	List<UserWalkingRewardHistory> findByWalkingId(@Param("policyId") Long policyId);
+
+	@Query("select sum(u.amount) from UserWalkingRewardHistory u where u.user.id = :userId")
+	Long sumRewardByUserId(@Param("userId") Long userId);
 }

@@ -26,17 +26,23 @@ public class UserWalkingHistoryDto {
 
 	private LocalDateTime endDate;
 
+	private Integer maxFootprintAmount;
+
+	private List<EnumCodeDto> pointTypes;
+
 	private List<UserWalkingRewardHistoryDto> rewardHistories;
 
 	private List<UserWalkingFootprintCatchHistoryDto> footprintCatchHistories;
 
-	public UserWalkingHistoryDto(UserWalkingHistory history) {
+	public UserWalkingHistoryDto(UserWalkingHistory history, Integer maxFootprintAmount) {
 		this.id = history.getId();
 		this.meters = history.getMeters();
 		this.seconds = history.getSeconds();
 		this.routes = history.getRoutes();
 		this.startDate = history.getStartDate();
 		this.endDate = history.getEndDate();
+		this.maxFootprintAmount = maxFootprintAmount;
+		this.pointTypes = PointTypeCode.enumList.stream().map(EnumCodeDto::new).toList();
 		this.rewardHistories = history.getRewardHistories().stream().map(UserWalkingRewardHistoryDto::new).toList();
 		this.footprintCatchHistories = history.getFootprintCatchHistories().stream()
 				.map(UserWalkingFootprintCatchHistoryDto::new).toList();

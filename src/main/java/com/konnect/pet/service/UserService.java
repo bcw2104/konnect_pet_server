@@ -76,9 +76,9 @@ public class UserService {
 		}
 		List<UserPetDto> pets = userPetRepository.findByUserId(user.getId()).stream().map(UserPetDto::new).toList();
 		UserSimpleDto simpleDto = UserSimpleDto.builder().userId(user.getId()).email(user.getEmail())
-				.platform(user.getPlatform().name()).tel(user.getTelMask()).profile(profileDto).pets(pets)
-				.residenceCity(user.getResidenceCity()).residenceAddress(user.getResidenceAddress())
-				.residenceCoords(user.getResidenceCoords()).build();
+				.platform(user.getPlatform().name()).tel(user.getTelMask()).createdDate(user.getCreatedDate())
+				.profile(profileDto).pets(pets).residenceCity(user.getResidenceCity())
+				.residenceAddress(user.getResidenceAddress()).residenceCoords(user.getResidenceCoords()).build();
 
 		return new ResponseDto(ResponseType.SUCCESS, simpleDto);
 	}

@@ -18,4 +18,10 @@ public enum LocationCode implements CommonCode{
 		this.code = code;
 		this.codeName = codeName;
 	}
+
+	@Override
+	public String getCodeForApp() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

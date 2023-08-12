@@ -1,5 +1,8 @@
 package com.konnect.pet.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -23,6 +26,7 @@ import com.konnect.pet.dto.PropertiesDto;
 import com.konnect.pet.dto.UserWalkingFootprintDetailDto;
 import com.konnect.pet.dto.UserWalkingFootprintDto;
 import com.konnect.pet.dto.UserWalkingHistoryDto;
+import com.konnect.pet.dto.UserWalkingHistoryListDto;
 import com.konnect.pet.dto.WalkingRewardPolicyDto;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserFriend;
@@ -52,6 +56,7 @@ import com.konnect.pet.repository.query.PropertiesQueryRepository;
 import com.konnect.pet.repository.query.UserWalkingQueryRepository;
 import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.utils.Aes256Utils;
+import com.querydsl.core.group.Group;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -278,7 +283,7 @@ public class WalkingService {
 		int footprintStock = Integer
 				.parseInt(propertiesRepository.findValueByKey("walking_footprint_stock").orElse("3"));
 
-		int footPrintLength = footprintCoords.size() > maxFootprintAmount ? maxFootprintAmount : footprintCoords.size();
+		int footPrintLength = Math.min(maxFootprintAmount, footprintCoords.size());
 
 		List<UserWalkingFootprint> footprints = new ArrayList<UserWalkingFootprint>();
 		for (int i = 0; i < footPrintLength; i++) {
@@ -310,11 +315,13 @@ public class WalkingService {
 		UserWalkingHistory userWalkingHistory = userWalkingHistoryRepository.findWithRewardHistById(walkingId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
+		int maxFootprintAmount = Integer.parseInt(propertiesRepository.findValueByKey("walking_footprint_max_amount").orElse("5"));
+
 		if (!userWalkingHistory.getUser().getId().equals(user.getId())) {
 			new CustomResponseException(ResponseType.INVALID_PARAMETER);
 		}
 
-		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingHistoryDto(userWalkingHistory));
+		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingHistoryDto(userWalkingHistory, maxFootprintAmount));
 	}
 
 	@Transactional(readOnly = true)
@@ -387,7 +394,7 @@ public class WalkingService {
 	}
 
 	@Transactional(readOnly = true)
-	public ResponseDto getFootprintInfo(User user,Long footprintId) {
+	public ResponseDto getFootprintInfo(User user, Long footprintId) {
 		UserWalkingFootprint footprint = userWalkingFootprintRepository.findWithUserAndPetById(footprintId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
@@ -396,7 +403,47 @@ public class WalkingService {
 
 		UserProfile profile = userProfileRepository.findByUserId(footprint.getUser().getId()).orElse(new UserProfile());
 
-		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingFootprintDetailDto(footprint, profile,friend));
+		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingFootprintDetailDto(footprint, profile, friend));
+	}
+
+	@Transactional(readOnly = true)
+	public ResponseDto getWalkingSummary(User user) {
+		Map<Long, Group> summary = userWalkingQueryRepository.findUserWalkingSummary(user.getId());
+		Long totalPoint = userWalkingRewardHistoryRepository.sumRewardByUserId(user.getId());
+		Group group = summary.get(user.getId());
+
+		Object[] aggregations = group.toArray();
+
+		Long totalCount = Long.parseLong(aggregations[1].toString());
+		BigDecimal totalDistance = new BigDecimal(Long.parseLong(aggregations[2].toString()))
+				.divide(new BigDecimal(1000), 1, RoundingMode.FLOOR);
+		BigDecimal totalHours = new BigDecimal(Long.parseLong(aggregations[3].toString())).divide(new BigDecimal(3600),
+				1, RoundingMode.FLOOR);
+
+		LocalDateTime now = LocalDateTime.now().with(LocalTime.MIDNIGHT);
+		LocalDateTime createdDate = user.getCreatedDate().with(LocalTime.MIDNIGHT);
+
+		long diffDays = Math.abs(Duration.between(now, createdDate).toDays());
+		long weeks = (diffDays == 0 ? 0 : (diffDays - 1) / 7) + 1;
+
+		BigDecimal weekAvg = new BigDecimal(totalCount).divide(new BigDecimal(weeks), 1, RoundingMode.FLOOR);
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		resultMap.put("totalPoint", totalPoint);
+		resultMap.put("totalCount", totalCount);
+		resultMap.put("totalDistance", totalDistance);
+		resultMap.put("totalHours", totalHours);
+		resultMap.put("weekAvg", weekAvg);
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
+	@Transactional(readOnly = true)
+	public ResponseDto getWalkingHistories(User user, LocalDateTime startDate, LocalDateTime endDate) {
+		List<UserWalkingHistoryListDto> histories = userWalkingHistoryRepository
+				.findByUserIdAndStartDate(user.getId(), startDate, endDate).stream().map(UserWalkingHistoryListDto::new)
+				.toList();
+
+		return new ResponseDto(ResponseType.SUCCESS, histories);
 	}
 
 }

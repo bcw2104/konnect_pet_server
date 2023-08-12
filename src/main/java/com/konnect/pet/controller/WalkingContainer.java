@@ -1,5 +1,6 @@
 package com.konnect.pet.controller;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.service.WalkingService;
 
+import io.lettuce.core.dynamic.annotation.Param;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -50,13 +52,26 @@ public class WalkingContainer {
 	public ResponseEntity<?> getAroundFootprints(Authentication authentication, @RequestParam("lat") double lat,
 			@RequestParam("lng") double lng) {
 		User user = (User) authentication.getPrincipal();
-		return ResponseEntity.ok(walkingService.getAroundFootprint(user,lat, lng));
+		return ResponseEntity.ok(walkingService.getAroundFootprint(user, lat, lng));
 	}
 
 	@GetMapping("/footprints/{id}")
-	public ResponseEntity<?> getFootprintInfo(Authentication authentication,@PathVariable("id") Long footprintId) {
+	public ResponseEntity<?> getFootprintInfo(Authentication authentication, @PathVariable("id") Long footprintId) {
 		User user = (User) authentication.getPrincipal();
-		return ResponseEntity.ok(walkingService.getFootprintInfo(user,footprintId));
+		return ResponseEntity.ok(walkingService.getFootprintInfo(user, footprintId));
+	}
+
+	@GetMapping("/summary")
+	public ResponseEntity<?> getWalkingSummary(Authentication authentication) {
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(walkingService.getWalkingSummary(user));
+	}
+
+	@GetMapping("/history")
+	public ResponseEntity<?> getWalkingHistory(Authentication authentication,
+			@RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(walkingService.getWalkingHistories(user, LocalDateTime.parse(startDate), LocalDateTime.parse(endDate)));
 	}
 
 }
