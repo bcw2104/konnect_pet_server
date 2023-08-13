@@ -29,6 +29,7 @@ import com.konnect.pet.enums.PlatformType;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.Roles;
 import com.konnect.pet.enums.VerifyType;
+import com.konnect.pet.enums.code.NotificationTypeCode;
 import com.konnect.pet.enums.code.PointHistoryTypeCode;
 import com.konnect.pet.enums.code.UserStatusCode;
 import com.konnect.pet.ex.CustomResponseException;
@@ -60,6 +61,7 @@ public class AuthService {
 	private final ExternalApiService apiService;
 	private final VerifyService verifyService;
 	private final EventService eventService;
+	private final NotificationService notificationService;
 
 	private final RefreshTokenRepository refreshTokenRepository;
 
@@ -238,6 +240,8 @@ public class AuthService {
 			userTermsAggrementRepository.saveAll(agreements);
 
 			eventService.provideEventReward(user, PointHistoryTypeCode.WELCOME);
+
+			notificationService.createMacroUserNotificationLog(user, NotificationTypeCode.WELCOME);
 
 			JwtTokenDto token = tokenProvider.generateToken(user.getId());
 
