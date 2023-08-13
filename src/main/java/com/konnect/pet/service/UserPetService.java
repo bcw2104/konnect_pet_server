@@ -93,4 +93,25 @@ public class UserPetService {
 		}
 
 	}
+
+	@Transactional
+	public ResponseDto removePet(User user, Long petId) {
+
+		try {
+			UserPet pet = null;
+			pet = userPetRepository.findById(petId).orElse(null);
+
+			if (pet == null || !pet.getUser().getId().equals(user.getId())) {
+				throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+			}
+
+			userPetRepository.delete(pet);
+
+			return new ResponseDto(ResponseType.SUCCESS, new UserPetDto(pet));
+
+		} catch (Exception e) {
+			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+		}
+
+	}
 }

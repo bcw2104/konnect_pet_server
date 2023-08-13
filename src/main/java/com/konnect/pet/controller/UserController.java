@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -112,6 +113,12 @@ public class UserController {
 		return ResponseEntity.ok(userPetService.saveOrEditPet(user, body, id));
 	}
 
+	@DeleteMapping("/pet/{id}")
+	public ResponseEntity<?> deletePetInfo(Authentication authentication, @PathVariable("id") Long id) {
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(userPetService.removePet(user, id));
+	}
+
 	@GetMapping("/noti")
 	public ResponseEntity<?> notification(Authentication authentication, PageRequestDto pageDto) {
 		User user = (User) authentication.getPrincipal();
@@ -122,7 +129,8 @@ public class UserController {
 	public ResponseEntity<?> pointHistory(Authentication authentication, @RequestParam("point") String pointType,
 			@RequestParam("type") String type, PageRequestDto pageDto) {
 		User user = (User) authentication.getPrincipal();
-		return ResponseEntity.ok(pointService.getPointHistory(PointTypeCode.findByCode(pointType),type,pageDto, user));
+		return ResponseEntity
+				.ok(pointService.getPointHistory(PointTypeCode.findByCode(pointType), type, pageDto, user));
 	}
 
 }
