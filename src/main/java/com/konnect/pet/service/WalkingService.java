@@ -315,7 +315,8 @@ public class WalkingService {
 		UserWalkingHistory userWalkingHistory = userWalkingHistoryRepository.findWithRewardHistById(walkingId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
-		int maxFootprintAmount = Integer.parseInt(propertiesRepository.findValueByKey("walking_footprint_max_amount").orElse("5"));
+		int maxFootprintAmount = Integer
+				.parseInt(propertiesRepository.findValueByKey("walking_footprint_max_amount").orElse("5"));
 
 		if (!userWalkingHistory.getUser().getId().equals(user.getId())) {
 			new CustomResponseException(ResponseType.INVALID_PARAMETER);
@@ -412,6 +413,16 @@ public class WalkingService {
 		Long totalPoint = userWalkingRewardHistoryRepository.sumRewardByUserId(user.getId());
 		Group group = summary.get(user.getId());
 
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		if (group == null) {
+			resultMap.put("totalPoint", 0);
+			resultMap.put("totalCount", 0);
+			resultMap.put("totalDistance", 0);
+			resultMap.put("totalHours", 0);
+			resultMap.put("weekAvg", 0);
+			return new ResponseDto(ResponseType.SUCCESS, resultMap);
+		}
 		Object[] aggregations = group.toArray();
 
 		Long totalCount = Long.parseLong(aggregations[1].toString());
@@ -427,7 +438,6 @@ public class WalkingService {
 		long weeks = (diffDays == 0 ? 0 : (diffDays - 1) / 7) + 1;
 
 		BigDecimal weekAvg = new BigDecimal(totalCount).divide(new BigDecimal(weeks), 1, RoundingMode.FLOOR);
-		Map<String, Object> resultMap = new HashMap<String, Object>();
 
 		resultMap.put("totalPoint", totalPoint);
 		resultMap.put("totalCount", totalCount);
