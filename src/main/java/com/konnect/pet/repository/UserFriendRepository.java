@@ -21,9 +21,9 @@ public interface UserFriendRepository extends JpaRepository<UserFriend, Long> {
 	Optional<UserFriend> findByFromUserIdAndToUserId(@Param("fromUserId") Long fromUserId,
 			@Param("toUserId") Long toUserId);
 
-	@Query("select u from UserFriend u join fetch u.toUser where u.fromUser.id = :userId")
-	List<UserFriend> findByFromUserId(@Param("userId") Long userId);
+	@Query("select u from UserFriend u join fetch u.toUser where u.fromUser.id = :userId and u.status = :status")
+	List<UserFriend> findByFromUserIdAndStatus(@Param("userId") Long userId, @Param("status") String status);
 
-	@Query("select u from UserFriend u join fetch u.toUser where u.toUser.id = :userId and u.status = :status")
+	@Query("select u from UserFriend u join fetch u.fromUser where u.toUser.id = :userId and u.status = :status")
 	List<UserFriend> findByToUserIdAndStatus(@Param("userId") Long userId, @Param("status") String status);
 }

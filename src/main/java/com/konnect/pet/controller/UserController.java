@@ -65,7 +65,7 @@ public class UserController {
 	@GetMapping("/mypage")
 	public ResponseEntity<?> mypage(Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
-		return ResponseEntity.ok(userService.getMyData(user));
+		return ResponseEntity.ok(userService.getMypageData(user));
 	}
 
 	@PostMapping("/mypage/leave")

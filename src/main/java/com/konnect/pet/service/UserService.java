@@ -1,24 +1,22 @@
 package com.konnect.pet.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.konnect.pet.dto.BannerDto;
 import com.konnect.pet.dto.UserPetDto;
 import com.konnect.pet.dto.UserPointDto;
 import com.konnect.pet.dto.UserProfileDto;
 import com.konnect.pet.dto.UserSimpleDto;
 import com.konnect.pet.dto.VerifyFormat;
 import com.konnect.pet.entity.User;
-import com.konnect.pet.entity.UserPet;
 import com.konnect.pet.entity.UserPoint;
 import com.konnect.pet.entity.UserProfile;
 import com.konnect.pet.entity.UserRemoved;
@@ -28,6 +26,7 @@ import com.konnect.pet.enums.code.LocationCode;
 import com.konnect.pet.enums.code.PointTypeCode;
 import com.konnect.pet.enums.code.UserStatusCode;
 import com.konnect.pet.ex.CustomResponseException;
+import com.konnect.pet.repository.BannerRepository;
 import com.konnect.pet.repository.UserNotificationLogRepository;
 import com.konnect.pet.repository.UserPetRepository;
 import com.konnect.pet.repository.UserPointRepository;
@@ -54,6 +53,7 @@ public class UserService {
 	private final UserNotificationLogRepository userNotificationLogRepository;
 	private final VerifyService verifyService;
 	private final RefreshTokenRepository refreshTokenRepository;
+	private final BannerRepository bannerRepository;
 
 	@Value("${application.aes.privacy.key}")
 	private String PRIVACY_AES_KEY;
@@ -206,13 +206,16 @@ public class UserService {
 	}
 
 	@Transactional(readOnly = true)
-	public ResponseDto getMyData(User user) {
+	public ResponseDto getMypageData(User user) {
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 
 		Map<String, UserPointDto> pointMap = generateFullUserPointMap(user);
 		int newNotiCount = userNotificationLogRepository.countByUserIdAndVisitedYnIsFalse(user.getId());
 
+		List<BannerDto> banners = bannerRepository.findActive().stream().map(BannerDto::new).toList();
+
 		resultMap.put("point", pointMap.get(PointTypeCode.POINT.getCode()));
+		resultMap.put("banners", banners);
 		resultMap.put("newNotiCount", newNotiCount);
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
@@ -232,5 +235,4 @@ public class UserService {
 
 		return pointMap;
 	}
-
 }

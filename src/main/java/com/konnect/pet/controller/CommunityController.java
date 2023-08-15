@@ -2,12 +2,14 @@ package com.konnect.pet.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.konnect.pet.dto.PageRequestDto;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.service.CommonCodeService;
 import com.konnect.pet.service.CommunityService;
@@ -31,4 +33,15 @@ public class CommunityController {
 		return ResponseEntity.ok(communityService.requestFriend(user, toUserId));
 	}
 
+	@GetMapping("/friend")
+	public ResponseEntity<?> friends(Authentication authentication) {
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(communityService.getFriends(user));
+	}
+
+	@GetMapping("/friend/pending")
+	public ResponseEntity<?> pendingFriends(Authentication authentication) {
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(communityService.getPendingFriends(user));
+	}
 }

@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.konnect.pet.dto.PageRequestDto;
+import com.konnect.pet.dto.UserFriendDto;
 import com.konnect.pet.dto.UserPetDto;
 import com.konnect.pet.dto.UserPointDto;
 import com.konnect.pet.dto.UserProfileDto;
@@ -36,6 +38,7 @@ import com.konnect.pet.repository.UserPointRepository;
 import com.konnect.pet.repository.UserProfileRepository;
 import com.konnect.pet.repository.UserRemovedRepository;
 import com.konnect.pet.repository.UserRepository;
+import com.konnect.pet.repository.query.UserFriendQueryRepository;
 import com.konnect.pet.repository.redis.RefreshTokenRepository;
 import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.utils.Aes256Utils;
@@ -50,6 +53,7 @@ public class CommunityService {
 
 	private final UserRepository userRepository;
 	private final UserPetRepository userPetRepository;
+	private final UserFriendQueryRepository userFriendQueryRepository;
 	private final UserProfileRepository userProfileRepository;
 	private final UserFriendRepository userFriendRepository;
 
@@ -74,6 +78,30 @@ public class CommunityService {
 
 		return new ResponseDto(ResponseType.SUCCESS);
 
+	}
+
+	@Transactional(readOnly = true)
+	public ResponseDto getFriends(User user) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		List<UserFriendDto> friends = userFriendQueryRepository.findUserFriends(user.getId());
+
+		resultMap.put("friends", friends);
+
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
+	@Transactional(readOnly = true)
+	public ResponseDto getPendingFriends(User user) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		List<UserFriendDto> requestFriends = userFriendQueryRepository.findRequestFriends(user.getId());
+		List<UserFriendDto> requestedFriends = userFriendQueryRepository.findRequestedFriends(user.getId());
+
+		resultMap.put("request", requestFriends);
+		resultMap.put("requested", requestedFriends);
+
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
 
 }
