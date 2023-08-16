@@ -3,8 +3,6 @@ package com.konnect.pet.repository.query;
 import static com.konnect.pet.entity.QUserFriend.userFriend;
 import static com.konnect.pet.entity.QUserProfile.userProfile;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
@@ -23,7 +21,7 @@ public class UserFriendQueryRepository {
 
 	public List<UserFriendDto> findUserFriends(Long userId) {
 		return queryFactory
-				.select(Projections.constructor(UserFriendDto.class, userFriend.id, userFriend.fromUser.id,
+				.select(Projections.constructor(UserFriendDto.class, userFriend.id, userFriend.toUser.id,
 						userProfile.nickname, userProfile.birthDate, userProfile.gender, userProfile.profileImgUrl,
 						userFriend.status, userFriend.createdDate))
 				.from(userFriend).join(userProfile).on(userFriend.toUser.id.eq(userProfile.user.id))
@@ -35,7 +33,7 @@ public class UserFriendQueryRepository {
 	public List<UserFriendDto> findRequestFriends(Long userId) {
 
 		return queryFactory
-				.select(Projections.constructor(UserFriendDto.class, userFriend.id, userFriend.fromUser.id,
+				.select(Projections.constructor(UserFriendDto.class, userFriend.id, userFriend.toUser.id,
 						userProfile.nickname, userProfile.birthDate, userProfile.gender, userProfile.profileImgUrl,
 						userFriend.status, userFriend.createdDate))
 				.from(userFriend).join(userProfile).on(userFriend.toUser.id.eq(userProfile.user.id))

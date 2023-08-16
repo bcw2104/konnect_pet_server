@@ -31,6 +31,7 @@ import com.konnect.pet.enums.code.LocationCode;
 import com.konnect.pet.enums.code.NotificationTypeCode;
 import com.konnect.pet.enums.code.PointTypeCode;
 import com.konnect.pet.enums.code.ProcessStatusCode;
+import com.konnect.pet.enums.code.UserStatusCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.UserFriendRepository;
 import com.konnect.pet.repository.UserPetRepository;
@@ -64,6 +65,10 @@ public class CommunityService {
 		User toUser = userRepository.findById(toUserId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
+		if (toUser.getStatus().equals(UserStatusCode.REMOVED.getCode())) {
+			return new ResponseDto(ResponseType.LEAVED_USER);
+		}
+
 		UserFriend friend = userFriendRepository.findByFromUserIdAndToUserId(user.getId(), toUserId).orElse(null);
 		UserFriend toFriend = userFriendRepository.findByFromUserIdAndToUserId(toUserId, user.getId()).orElse(null);
 
@@ -74,13 +79,11 @@ public class CommunityService {
 			} else if (toFriend.getStatus().equals(ProcessStatusCode.PENDING.getCode())) {
 				friend.setStatus(ProcessStatusCode.PERMITTED.getCode());
 				toFriend.setStatus(ProcessStatusCode.PERMITTED.getCode());
-				notificationService.createMacroUserNotificationLog(toFriend.getFromUser(),
-						NotificationTypeCode.ACCEPT_FRIEND);
+				notificationService.createMacroUserNotificationLog(toUser, NotificationTypeCode.ACCEPT_FRIEND);
 				return new ResponseDto(ResponseType.SUCCESS, ProcessStatusCode.PERMITTED.getCode());
 			} else {
 				friend.setStatus(ProcessStatusCode.PENDING.getCode());
 				toFriend.setStatus(ProcessStatusCode.NONE.getCode());
-				return new ResponseDto(ResponseType.SUCCESS, ProcessStatusCode.PENDING.getCode());
 			}
 		} else if (toFriend != null) {
 			toFriend.setStatus(ProcessStatusCode.NONE.getCode());
@@ -147,15 +150,22 @@ public class CommunityService {
 			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
 		}
 
+		User toUser = userRepository.findById(toUserId)
+				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+		if (toUser.getStatus().equals(UserStatusCode.REMOVED.getCode())) {
+			return new ResponseDto(ResponseType.LEAVED_USER);
+		}
+
 		UserFriend friend = userFriendRepository.findByFromUserIdAndToUserId(user.getId(), toUserId).orElse(null);
 		UserFriend toFriend = userFriendRepository.findByFromUserIdAndToUserId(toUserId, user.getId()).orElse(null);
 
 		if (code.equals(ProcessStatusCode.CANCELED)) {
 			if (friend == null || toFriend == null
 					|| (!friend.getStatus().equals(ProcessStatusCode.PERMITTED.getCode())
-							|| !toFriend.getStatus().equals(ProcessStatusCode.PERMITTED.getCode())
-									&& !friend.getStatus().equals(ProcessStatusCode.PENDING.getCode())
-									&& !toFriend.getStatus().equals(ProcessStatusCode.PENDING.getCode()))) {
+							|| !toFriend.getStatus().equals(ProcessStatusCode.PERMITTED.getCode()))
+							&& !friend.getStatus().equals(ProcessStatusCode.PENDING.getCode())
+							&& !toFriend.getStatus().equals(ProcessStatusCode.PENDING.getCode())) {
 
 				return new ResponseDto(ResponseType.DUPLICATED_REQUEST, code.getCode());
 			}
@@ -169,8 +179,7 @@ public class CommunityService {
 		friend.setStatus(code.getCode());
 
 		if (code.getCode().equals(ProcessStatusCode.PERMITTED.getCode())) {
-			notificationService.createMacroUserNotificationLog(friend.getFromUser(),
-					NotificationTypeCode.ACCEPT_FRIEND);
+			notificationService.createMacroUserNotificationLog(toUser, NotificationTypeCode.ACCEPT_FRIEND);
 		}
 		return new ResponseDto(ResponseType.SUCCESS, code.getCode());
 	}

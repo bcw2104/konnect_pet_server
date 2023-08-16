@@ -41,6 +41,7 @@ public enum ResponseType {
 	JOIN_WITH_FACEBOOK("9218", "social join user", "Facebook 연동 회원입니다. Facebook 로그인을 해주세요."),
 	JOIN_WITH_APPLE("9219", "social join user", "Apple 연동 회원입니다. Apple 로그인을 해주세요."),
 	JOIN_WITH_EMAIL("9220", "social join user", "일반 가입 회원입니다. 일반 로그인을 해주세요."),
+	LEAVED_USER("9221", "leaved user", "탈퇴한 회원입니다."),
 
 	//포인트 관련 에러들...
 	NOT_ENOUGH_POINT("9300", "not enough point", "포인트가 부족합니다."),
