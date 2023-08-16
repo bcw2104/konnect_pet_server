@@ -12,6 +12,7 @@ public enum NotificationTypeCode implements CommonCode{
 
 	//커뮤니티 관련 코드
 	REQUEST_FRIEND("100","friend request"),
+	ACCEPT_FRIEND("101","friend request accepted"),
 	DUMMY("999","DUMMY");
 
 	private String code;

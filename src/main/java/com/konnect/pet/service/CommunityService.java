@@ -63,20 +63,56 @@ public class CommunityService {
 	public ResponseDto requestFriend(User user, Long toUserId) {
 		User toUser = userRepository.findById(toUserId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
-		UserFriend friend = new UserFriend();
-		friend.setFromUser(user);
-		friend.setToUser(toUser);
-		friend.setStatus(ProcessStatusCode.PENDING.getCode());
 
-		try {
-			userFriendRepository.save(friend);
+		UserFriend friend = userFriendRepository.findByFromUserIdAndToUserId(user.getId(), toUserId).orElse(null);
+		UserFriend toFriend = userFriendRepository.findByFromUserIdAndToUserId(toUserId, user.getId()).orElse(null);
 
-		} catch (Exception e) {
-			throw new CustomResponseException(ResponseType.DUPLICATED_REQUEST);
+		if (toFriend != null && friend != null) {
+			if (toFriend.getStatus().equals(ProcessStatusCode.PERMITTED.getCode())
+					&& friend.getStatus().equals(ProcessStatusCode.PERMITTED.getCode())) {
+				return new ResponseDto(ResponseType.SUCCESS, ProcessStatusCode.PERMITTED.getCode());
+			} else if (toFriend.getStatus().equals(ProcessStatusCode.PENDING.getCode())) {
+				friend.setStatus(ProcessStatusCode.PERMITTED.getCode());
+				toFriend.setStatus(ProcessStatusCode.PERMITTED.getCode());
+				notificationService.createMacroUserNotificationLog(toFriend.getFromUser(),
+						NotificationTypeCode.ACCEPT_FRIEND);
+				return new ResponseDto(ResponseType.SUCCESS, ProcessStatusCode.PERMITTED.getCode());
+			} else {
+				friend.setStatus(ProcessStatusCode.PENDING.getCode());
+				toFriend.setStatus(ProcessStatusCode.NONE.getCode());
+				return new ResponseDto(ResponseType.SUCCESS, ProcessStatusCode.PENDING.getCode());
+			}
+		} else if (toFriend != null) {
+			toFriend.setStatus(ProcessStatusCode.NONE.getCode());
+			UserFriend newFriend = new UserFriend();
+			newFriend.setFromUser(user);
+			newFriend.setToUser(toUser);
+			newFriend.setStatus(ProcessStatusCode.PENDING.getCode());
+			userFriendRepository.save(newFriend);
+		} else if (friend != null) {
+			friend.setStatus(ProcessStatusCode.PENDING.getCode());
+
+			UserFriend toNewFriend = new UserFriend();
+			toNewFriend.setFromUser(toUser);
+			toNewFriend.setToUser(user);
+			toNewFriend.setStatus(ProcessStatusCode.NONE.getCode());
+			userFriendRepository.save(toNewFriend);
+		} else {
+			UserFriend newFriend = new UserFriend();
+			newFriend.setFromUser(user);
+			newFriend.setToUser(toUser);
+			newFriend.setStatus(ProcessStatusCode.PENDING.getCode());
+			userFriendRepository.save(newFriend);
+
+			UserFriend toNewFriend = new UserFriend();
+			toNewFriend.setFromUser(toUser);
+			toNewFriend.setToUser(user);
+			toNewFriend.setStatus(ProcessStatusCode.NONE.getCode());
+			userFriendRepository.save(toNewFriend);
 		}
 		notificationService.createMacroUserNotificationLog(toUser, NotificationTypeCode.REQUEST_FRIEND);
 
-		return new ResponseDto(ResponseType.SUCCESS);
+		return new ResponseDto(ResponseType.SUCCESS, ProcessStatusCode.PENDING.getCode());
 
 	}
 
@@ -102,6 +138,41 @@ public class CommunityService {
 		resultMap.put("requested", requestedFriends);
 
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
+	@Transactional
+	public ResponseDto replyFriend(User user, Long toUserId, ProcessStatusCode code) {
+		if (!code.equals(ProcessStatusCode.PERMITTED) && !code.equals(ProcessStatusCode.CANCELED)
+				&& !code.equals(ProcessStatusCode.DENIED)) {
+			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+		}
+
+		UserFriend friend = userFriendRepository.findByFromUserIdAndToUserId(user.getId(), toUserId).orElse(null);
+		UserFriend toFriend = userFriendRepository.findByFromUserIdAndToUserId(toUserId, user.getId()).orElse(null);
+
+		if (code.equals(ProcessStatusCode.CANCELED)) {
+			if (friend == null || toFriend == null
+					|| (!friend.getStatus().equals(ProcessStatusCode.PERMITTED.getCode())
+							|| !toFriend.getStatus().equals(ProcessStatusCode.PERMITTED.getCode())
+									&& !friend.getStatus().equals(ProcessStatusCode.PENDING.getCode())
+									&& !toFriend.getStatus().equals(ProcessStatusCode.PENDING.getCode()))) {
+
+				return new ResponseDto(ResponseType.DUPLICATED_REQUEST, code.getCode());
+			}
+		} else {
+			if (friend == null || toFriend == null || (!friend.getStatus().equals(ProcessStatusCode.PENDING.getCode())
+					&& !toFriend.getStatus().equals(ProcessStatusCode.PENDING.getCode()))) {
+				return new ResponseDto(ResponseType.DUPLICATED_REQUEST, code.getCode());
+			}
+		}
+		toFriend.setStatus(code.getCode());
+		friend.setStatus(code.getCode());
+
+		if (code.getCode().equals(ProcessStatusCode.PERMITTED.getCode())) {
+			notificationService.createMacroUserNotificationLog(friend.getFromUser(),
+					NotificationTypeCode.ACCEPT_FRIEND);
+		}
+		return new ResponseDto(ResponseType.SUCCESS, code.getCode());
 	}
 
 }

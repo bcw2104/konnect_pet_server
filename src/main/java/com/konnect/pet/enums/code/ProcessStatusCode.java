@@ -14,8 +14,10 @@ public enum ProcessStatusCode {
 	PENDING("001", "Pending"),
 	PERMITTED("002", "Permitted"),
 	DENIED("003", "Denied"),
-	CANCELED("004", "Canceled");
+	CANCELED("004", "Canceled"),
+	FORBIDDEN("005", "Forbidden"),
 
+	UNSET("999", "Unset");
 	private String code;
 	private String codeName;
 
