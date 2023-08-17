@@ -316,7 +316,7 @@ public class WalkingService {
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
 		int maxFootprintAmount = Integer
-				.parseInt(propertiesRepository.findValueByKey("walking_footprint_max_amount").orElse("5"));
+				.parseInt(propertiesRepository.findValueByKey("walking_footprint_catch_amount").orElse("5"));
 
 		if (!userWalkingHistory.getUser().getId().equals(user.getId())) {
 			new CustomResponseException(ResponseType.INVALID_PARAMETER);
