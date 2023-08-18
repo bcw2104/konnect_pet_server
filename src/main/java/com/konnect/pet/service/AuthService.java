@@ -17,6 +17,7 @@ import org.thymeleaf.extras.springsecurity6.auth.AuthUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konnect.pet.constant.CommonCodeConst;
+import com.konnect.pet.constant.ServiceConst;
 import com.konnect.pet.dto.AuthRequestDto;
 import com.konnect.pet.dto.JwtTokenDto;
 import com.konnect.pet.dto.VerifyFormat;
@@ -36,7 +37,7 @@ import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.EventRewardPolicyRepository;
 import com.konnect.pet.repository.TermsGroupRepository;
 import com.konnect.pet.repository.UserRepository;
-import com.konnect.pet.repository.UserTermsAggrementRepository;
+import com.konnect.pet.repository.UserTermsAgreementRepository;
 import com.konnect.pet.repository.redis.RefreshTokenRepository;
 import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.security.JwtTokenProvider;
@@ -54,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthService {
 
 	private final UserRepository userRepository;
-	private final UserTermsAggrementRepository userTermsAggrementRepository;
+	private final UserTermsAgreementRepository userTermsAggrementRepository;
 	private final TermsGroupRepository termsGroupRepository;
 	private final JwtTokenProvider tokenProvider;
 	private final PasswordEncoder passwordEncoder;
@@ -216,8 +217,8 @@ public class AuthService {
 			user.setLastLoginDate(LocalDateTime.now());
 			user.setRecommendCode(ValidationUtils.generateRandomString(6, true, true)
 					+ ValidationUtils.generateRandomString(2, false, true));
-			user.setMarketingYn(Boolean
-					.parseBoolean(((Map) requestDto.getTermsAgreed().get(CommonCodeConst.MARKETING_TERMS_GROUP_ID))
+			user.setMarketingYn(
+					Boolean.parseBoolean(((Map) requestDto.getTermsAgreed().get(ServiceConst.MARKETING_TERMS_GROUP_ID))
 							.get("checkedYn").toString()));
 			user.setStatus(UserStatusCode.ACTIVE.getCode());
 			userRepository.save(user);
@@ -228,12 +229,11 @@ public class AuthService {
 				Map ele = (Map) value;
 				boolean agreement = Boolean.parseBoolean(ele.get("checkedYn").toString());
 
-				if (agreement) {
-					Optional<TermsGroup> termsGroupOpt = termsGroupRepository.findById(key);
+				Optional<TermsGroup> termsGroupOpt = termsGroupRepository.findById(key);
 
-					if (termsGroupOpt.isPresent()) {
-						agreements.add(UserTermsAgreement.builder().user(user).termsGroup(termsGroupOpt.get()).build());
-					}
+				if (termsGroupOpt.isPresent()) {
+					agreements.add(UserTermsAgreement.builder().user(user).agreedYn(agreement)
+							.termsGroup(termsGroupOpt.get()).build());
 				}
 			});
 

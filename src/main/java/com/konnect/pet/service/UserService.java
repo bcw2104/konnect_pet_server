@@ -7,21 +7,26 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.konnect.pet.constant.ServiceConst;
 import com.konnect.pet.dto.BannerDto;
+import com.konnect.pet.dto.JwtTokenDto;
 import com.konnect.pet.dto.UserFriendDto;
 import com.konnect.pet.dto.UserPetDto;
 import com.konnect.pet.dto.UserPointDto;
 import com.konnect.pet.dto.UserProfileDto;
 import com.konnect.pet.dto.UserSimpleDto;
 import com.konnect.pet.dto.VerifyFormat;
+import com.konnect.pet.entity.TermsGroup;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserFriend;
 import com.konnect.pet.entity.UserPoint;
 import com.konnect.pet.entity.UserProfile;
 import com.konnect.pet.entity.UserRemoved;
+import com.konnect.pet.entity.UserTermsAgreement;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.VerifyType;
 import com.konnect.pet.enums.code.LocationCode;
@@ -30,6 +35,7 @@ import com.konnect.pet.enums.code.ProcessStatusCode;
 import com.konnect.pet.enums.code.UserStatusCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.BannerRepository;
+import com.konnect.pet.repository.TermsGroupRepository;
 import com.konnect.pet.repository.UserFriendRepository;
 import com.konnect.pet.repository.UserNotificationLogRepository;
 import com.konnect.pet.repository.UserPetRepository;
@@ -37,6 +43,7 @@ import com.konnect.pet.repository.UserPointRepository;
 import com.konnect.pet.repository.UserProfileRepository;
 import com.konnect.pet.repository.UserRemovedRepository;
 import com.konnect.pet.repository.UserRepository;
+import com.konnect.pet.repository.UserTermsAgreementRepository;
 import com.konnect.pet.repository.UserWalkingFootprintRepository;
 import com.konnect.pet.repository.redis.RefreshTokenRepository;
 import com.konnect.pet.response.ResponseDto;
@@ -54,6 +61,7 @@ public class UserService {
 	private final UserPetRepository userPetRepository;
 	private final UserProfileRepository userProfileRepository;
 	private final UserRemovedRepository userRemovedRepository;
+	private final UserTermsAgreementRepository userTermsAgreementRepository;
 	private final UserWalkingFootprintRepository userWalkingFootprintRepository;
 	private final UserPointRepository userPointRepository;
 	private final UserFriendRepository userFriendRepository;
@@ -61,6 +69,8 @@ public class UserService {
 	private final VerifyService verifyService;
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final BannerRepository bannerRepository;
+	private final TermsGroupRepository termsGroupRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	@Value("${application.aes.privacy.key}")
 	private String PRIVACY_AES_KEY;
@@ -85,9 +95,24 @@ public class UserService {
 		UserSimpleDto simpleDto = UserSimpleDto.builder().userId(user.getId()).email(user.getEmail())
 				.platform(user.getPlatform().name()).tel(user.getTelMask()).createdDate(user.getCreatedDate())
 				.profile(profileDto).pets(pets).residenceCity(user.getResidenceCity())
-				.residenceAddress(user.getResidenceAddress()).residenceCoords(user.getResidenceCoords()).build();
+				.residenceAddress(user.getResidenceAddress()).residenceCoords(user.getResidenceCoords())
+				.marketingYn(user.isMarketingYn()).build();
 
 		return new ResponseDto(ResponseType.SUCCESS, simpleDto);
+	}
+
+	@Transactional
+	public ResponseDto changePassword(User user, String password, String newPassword) {
+		if (!passwordEncoder.matches(password, user.getPassword())) {
+			return new ResponseDto(ResponseType.INVALID_PASSWORD);
+		}
+
+		user = userRepository.findById(user.getId())
+				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+		user.setPassword(passwordEncoder.encode(newPassword));
+
+		return new ResponseDto(ResponseType.SUCCESS);
 	}
 
 	@Transactional
@@ -128,6 +153,34 @@ public class UserService {
 			user.setDeviceOsVersion(deviceOsVersion);
 		if (!StringUtils.isEmpty(deviceToken))
 			user.setDeviceToken(deviceToken);
+
+		return new ResponseDto(ResponseType.SUCCESS);
+	}
+
+	@Transactional
+	public ResponseDto changeMarketingYn(Long userId, boolean marketingYn) {
+		log.info("change user marketing agreement - userId: {}, marketingYn: {}", userId, marketingYn);
+
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+		TermsGroup termsGroup = termsGroupRepository.findById(ServiceConst.MARKETING_TERMS_GROUP_ID)
+				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+		UserTermsAgreement marketingAggreement = userTermsAgreementRepository
+				.findByUserIdAndTermsGroupId(userId, termsGroup.getId()).orElse(null);
+
+		user.setMarketingYn(marketingYn);
+
+		if (marketingAggreement == null) {
+			UserTermsAgreement newAgreement = new UserTermsAgreement();
+			newAgreement.setUser(user);
+			newAgreement.setTermsGroup(termsGroup);
+			newAgreement.setAgreedYn(marketingYn);
+			userTermsAgreementRepository.save(newAgreement);
+		} else {
+			marketingAggreement.setAgreedYn(marketingYn);
+		}
 
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
@@ -227,7 +280,8 @@ public class UserService {
 
 		List<BannerDto> banners = bannerRepository.findActive().stream().map(BannerDto::new).toList();
 
-		int friendCount = userFriendRepository.countByFromUserIdAndStatus(user.getId(),ProcessStatusCode.PERMITTED.getCode());
+		int friendCount = userFriendRepository.countByFromUserIdAndStatus(user.getId(),
+				ProcessStatusCode.PERMITTED.getCode());
 
 		resultMap.put("point", pointMap.get(PointTypeCode.POINT.getCode()));
 		resultMap.put("banners", banners);

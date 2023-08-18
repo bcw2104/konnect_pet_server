@@ -48,6 +48,15 @@ public class UserController {
 		return ResponseEntity.ok(userService.getUserSimplenfo(user));
 	}
 
+	@PatchMapping("/password")
+	public ResponseEntity<?> password(Authentication authentication, @RequestBody Map<String, Object> body) {
+		User user = (User) authentication.getPrincipal();
+		String password = body.get("prev").toString();
+		String newPassword = body.get("new").toString();
+
+		return ResponseEntity.ok(userService.changePassword(user, password, newPassword));
+	}
+
 	@PostMapping("/device")
 	public ResponseEntity<?> updateDeviceInfo(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
@@ -66,6 +75,14 @@ public class UserController {
 	public ResponseEntity<?> mypage(Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(userService.getMypageData(user));
+	}
+
+	@PatchMapping("/mypage/marketing")
+	public ResponseEntity<?> marketing(Authentication authentication, @RequestBody Map<String, Object> body) {
+		User user = (User) authentication.getPrincipal();
+		boolean marketingYn = Boolean.parseBoolean(body.get("marketingYn").toString());
+
+		return ResponseEntity.ok(userService.changeMarketingYn(user.getId(), marketingYn));
 	}
 
 	@PostMapping("/mypage/leave")

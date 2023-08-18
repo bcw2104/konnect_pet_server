@@ -1,6 +1,5 @@
 package com.konnect.pet.entity;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,17 +31,20 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @ToString
-public class UserTermsAgreement extends BaseAutoSetEntity{
+public class UserTermsAgreement extends BaseAutoSetEntity {
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "agreement_id")
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="terms_group_id", foreignKey = @ForeignKey(name = "FK_agreement_terms_group"),nullable = false)
+	@JoinColumn(name = "terms_group_id", foreignKey = @ForeignKey(name = "FK_agreement_terms_group"), nullable = false)
 	private TermsGroup termsGroup;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="user_id", foreignKey = @ForeignKey(name = "FK_agreement_user"),nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_agreement_user"), nullable = false)
 	private User user;
+
+	private boolean agreedYn;
 }

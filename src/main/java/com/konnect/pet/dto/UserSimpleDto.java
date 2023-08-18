@@ -26,4 +26,6 @@ public class UserSimpleDto {
 	private String residenceCity;
 	private String residenceAddress;
 	private String residenceCoords;
+
+	private boolean marketingYn;
 }

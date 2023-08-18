@@ -27,6 +27,8 @@ public enum ResponseType {
 
 	INVALID_REFRESH_TOKEN("9203", "invalid refresh token", "로그인이 필요한 서비스입니다."),
 
+	INVALID_PASSWORD("9204", "invalid password", "비밀번호가 일치하지 않습니다."),
+
 	LOGIN_FAIL("9210", "login failed", "아이디 또는 비밀번호가 일치하지 않습니다."),
 	VERIFY_FAIL("9211", "invalid verify code", "인증번호가 일치하지 않습니다."),
 	VERIFY_TIMEOUT("9212", "verify timeout", "인증 유효시간을 초과했습니다."),

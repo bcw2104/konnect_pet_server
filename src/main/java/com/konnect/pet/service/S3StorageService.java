@@ -55,7 +55,7 @@ public class S3StorageService {
 		}
 
 		Map<String, String> resultMap = new HashMap<String, String>();
-		resultMap.put("imagePath", path);
+		resultMap.put("imagePath", "/" + path);
 
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
