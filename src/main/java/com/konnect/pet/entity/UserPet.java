@@ -54,7 +54,7 @@ public class UserPet {
 	private String petDescription;
 
 	@Column(length = 255)
-	private String petImgUrl;
+	private String petImgPath;
 
 
 }

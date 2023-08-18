@@ -35,7 +35,7 @@ public class UserProfile extends BaseAutoSetEntity{
 	private String gender;
 
 	@Column(length = 255)
-	private String profileImgUrl;
+	private String profileImgPath;
 
 	@Column(length = 255)
 	private String comment;

@@ -21,7 +21,7 @@ public class Banner extends BaseAutoSetAdminEntity {
 	private Long id;
 
 	@Column(length = 255)
-	private String imgUrl;
+	private String imgPath;
 
 	@Column(length = 300)
 	private String landingUrl;

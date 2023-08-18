@@ -32,7 +32,7 @@ public class UserPetDto {
 
 	private String petDescription;
 
-	private String petImgUrl;
+	private String petImgPath;
 
 	public UserPetDto(UserPet pet) {
 		this.petId = pet.getId();
@@ -46,7 +46,7 @@ public class UserPetDto {
 		this.neuteredYn = pet.isNeuteredYn();
 		this.inoculatedYn = pet.isInoculatedYn();
 		this.petDescription = pet.getPetDescription();
-		this.petImgUrl = pet.getPetImgUrl();
+		this.petImgPath = pet.getPetImgPath();
 	}
 
 

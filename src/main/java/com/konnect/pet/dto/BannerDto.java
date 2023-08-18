@@ -10,12 +10,12 @@ import lombok.Setter;
 public class BannerDto {
 
 	private Long bannerId;
-	private String imgUrl;
+	private String imgPath;
 	private String landingUrl;
 
 	public BannerDto(Banner banner) {
 		this.bannerId = banner.getId();
-		this.imgUrl = banner.getImgUrl();
+		this.imgPath = banner.getImgPath();
 		this.landingUrl = banner.getLandingUrl();
 	}
 

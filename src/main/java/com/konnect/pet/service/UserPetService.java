@@ -40,7 +40,7 @@ public class UserPetService {
 			String birthDate = body.get("birthDate").toString();
 			boolean neuteredYn = Boolean.parseBoolean(body.get("neuteredYn").toString());
 			boolean inoculatedYn = Boolean.parseBoolean(body.get("inoculatedYn").toString());
-			String petImgUrl = body.get("petImgUrl") == null ? null : body.get("petImgUrl").toString();
+			String petImgPath = body.get("petImgPath") == null ? null : body.get("petImgPath").toString();
 			String petDescription = body.get("petDescription") == null ? "" : body.get("petDescription").toString();
 
 			UserPet pet = null;
@@ -59,7 +59,7 @@ public class UserPetService {
 				pet.setPetName(petName);
 				pet.setPetSpecies(petSpecies);
 				pet.setPetDescription(petDescription);
-				pet.setPetImgUrl(petImgUrl);
+				pet.setPetImgPath(petImgPath);
 
 			} else {
 				int petCount = userPetRepository.countByUserId(user.getId());
@@ -81,7 +81,7 @@ public class UserPetService {
 				pet.setPetName(petName);
 				pet.setPetSpecies(petSpecies);
 				pet.setPetDescription(petDescription);
-				pet.setPetImgUrl(petImgUrl);
+				pet.setPetImgPath(petImgPath);
 
 				userPetRepository.save(pet);
 			}

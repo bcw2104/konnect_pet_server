@@ -188,7 +188,7 @@ public class UserService {
 			String nickname = body.get("nickname").toString();
 			String gender = body.get("gender").toString();
 			String birthDate = body.get("birthDate").toString();
-			String profileImgUrl = body.get("profileImgUrl") == null ? null : body.get("profileImgUrl").toString();
+			String profileImgPath = body.get("profileImgPath") == null ? null : body.get("profileImgPath").toString();
 			String comment = body.get("comment") == null ? "" : body.get("comment").toString();
 
 			UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
@@ -196,7 +196,7 @@ public class UserService {
 			if (profile != null) {
 				profile.setBirthDate(birthDate);
 				profile.setNickname(nickname);
-				profile.setProfileImgUrl(profileImgUrl);
+				profile.setProfileImgPath(profileImgPath);
 				profile.setComment(comment);
 				profile.setGender(gender);
 			} else {
@@ -204,7 +204,7 @@ public class UserService {
 				profile.setUser(user);
 				profile.setBirthDate(birthDate);
 				profile.setNickname(nickname);
-				profile.setProfileImgUrl(profileImgUrl);
+				profile.setProfileImgPath(profileImgPath);
 				profile.setComment(comment);
 				profile.setGender(gender);
 

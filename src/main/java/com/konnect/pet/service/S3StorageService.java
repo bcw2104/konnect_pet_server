@@ -39,7 +39,7 @@ public class S3StorageService {
 
 	public ResponseDto uploadOnS3(MultipartFile uploadFile, String dirPath) {
 		String origName = uploadFile.getOriginalFilename();
-		String url;
+		String path = null;
 		try {
 			final String ext = origName.substring(origName.lastIndexOf('.'));
 			final String saveFileName = getUuid() + ext;
@@ -48,15 +48,14 @@ public class S3StorageService {
 			metadata.setContentType(uploadFile.getContentType());
 			metadata.setContentLength(uploadFile.getSize());
 
-			String path = dirPath + "/" + saveFileName;
+			path = dirPath + "/" + saveFileName;
 			amazonS3Client.putObject(bucket, path, uploadFile.getInputStream(), metadata);
-			url = bucketUrl + "/" + path;
 		} catch (Exception e) {
 			throw new CustomResponseException(ResponseType.FAIL, e.getMessage());
 		}
 
 		Map<String, String> resultMap = new HashMap<String, String>();
-		resultMap.put("imageUrl", url);
+		resultMap.put("imagePath", path);
 
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
