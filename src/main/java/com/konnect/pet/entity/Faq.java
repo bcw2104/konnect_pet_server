@@ -1,6 +1,7 @@
 package com.konnect.pet.entity;
 
-import java.time.LocalDateTime;
+import org.hibernate.annotations.ColumnDefault;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,30 +14,25 @@ import lombok.Setter;
 @Entity
 @Setter
 @Getter
-public class EventRewardPolicy extends BaseAutoSetAdminEntity {
+public class Faq extends BaseAutoSetAdminEntity {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "event_id")
+	@Column(name = "faq_id")
 	private Long id;
 
 	@Column(length = 255, nullable = false)
-	private String title;
+	private String question;
 
-	@Column(length = 2000, nullable = false)
-	private String content;
+	@Column(length = 1000, nullable = false)
+	private String answer;
 
-	private LocalDateTime startDate;
+	@Column(length = 3, nullable = false)
+	private String category;
 
-	private LocalDateTime endDate;
-
+	@ColumnDefault("true")
 	private boolean activeYn;
 
-	private int balance;
-
-	@Column(length = 3, nullable = false)
-	private String pointType;
-
-	@Column(length = 3, nullable = false)
-	private String historyType;
-
+	@ColumnDefault("0")
+	private Integer sortOrder;
 }

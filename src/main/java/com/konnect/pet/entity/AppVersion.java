@@ -13,17 +13,18 @@ import lombok.Setter;
 @Setter
 @Getter
 @Entity
-public class AppVersion extends BaseAutoSetAdminEntity{
+public class AppVersion extends BaseAutoSetAdminEntity {
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="version_id")
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "version_id")
 	private Long id;
-	
+
 	@Column(length = 5, nullable = false)
 	private String version;
-	
-	private boolean isForced;
-	
+
+	private boolean forcedYn;
+
 	private LocalDateTime releasedDate;
-	
+
 }

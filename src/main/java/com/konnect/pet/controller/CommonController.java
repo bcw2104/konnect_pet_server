@@ -7,12 +7,15 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konnect.pet.constant.CommonCodeConst;
 import com.konnect.pet.dto.PickerItemDto;
+import com.konnect.pet.entity.AppVersion;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.response.ResponseDto;
+import com.konnect.pet.service.AppService;
 import com.konnect.pet.service.CommonCodeService;
 import com.konnect.pet.service.UserService;
 import com.konnect.pet.service.VerifyService;
@@ -26,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/common")
 public class CommonController {
 	private final CommonCodeService commonCodeService;
+	private final AppService appService;
 
 	@GetMapping("/public/nations")
 	public ResponseEntity<?> screenSignupStep1(){
@@ -35,10 +39,12 @@ public class CommonController {
 		List<PickerItemDto> nationCodes = commonCodeService.getPickerItemByCodeGroup(CommonCodeConst.COUNTRY_CD);
 		result.put("nationCodes",nationCodes);
 
-		ResponseDto responseDto = new ResponseDto(ResponseType.SUCCESS,result);
-		responseDto.setResult(result);
+		return ResponseEntity.ok(new ResponseDto(ResponseType.SUCCESS,result));
+	}
 
-		return ResponseEntity.ok(responseDto);
+	@GetMapping("/public/app")
+	public ResponseEntity<?> getAppInfo(@RequestParam("version") String version){
+		return ResponseEntity.ok(appService.getAppInfo(version));
 	}
 
 

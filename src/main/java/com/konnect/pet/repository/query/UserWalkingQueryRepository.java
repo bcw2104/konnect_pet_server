@@ -11,11 +11,13 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
 import com.konnect.pet.dto.UserWalkingFootprintDetailDto;
+import com.konnect.pet.dto.UserWalkingHistoryListDto;
 import com.konnect.pet.entity.QUser;
 import com.konnect.pet.entity.QUserWalkingFootprint;
 import com.konnect.pet.entity.QUserWalkingHistory;
@@ -64,10 +66,23 @@ public class UserWalkingQueryRepository {
 
 	public Map<Long, Group> findUserWalkingSummary(Long userId) {
 
-		return queryFactory.from(userWalkingHistory)
-				.where(userWalkingHistory.user.id.eq(userId))
-				.transform(GroupBy.groupBy(userWalkingHistory.user.id)
-						.as(userWalkingHistory.id.count(),userWalkingHistory.meters.sum(),userWalkingHistory.seconds.sum()));
+		return queryFactory.from(userWalkingHistory).where(userWalkingHistory.user.id.eq(userId))
+				.transform(GroupBy.groupBy(userWalkingHistory.user.id).as(userWalkingHistory.id.count(),
+						userWalkingHistory.meters.sum(), userWalkingHistory.seconds.sum()));
 
 	}
+
+	public List<UserWalkingHistoryListDto> findUserWalkingHistory(Long userId, LocalDateTime startDate,
+			LocalDateTime endDate) {
+
+		return queryFactory
+				.select(Projections.constructor(UserWalkingHistoryListDto.class, userWalkingHistory.id,
+						userWalkingHistory.meters, userWalkingHistory.seconds, userWalkingHistory.startDate,
+						userWalkingHistory.endDate))
+				.from(userWalkingHistory).where(userWalkingHistory.user.id.eq(userId),
+						userWalkingHistory.startDate.goe(startDate), userWalkingHistory.endDate.loe(endDate))
+				.fetch();
+
+	}
+
 }

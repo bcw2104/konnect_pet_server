@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konnect.pet.dto.PageRequestDto;
+import com.konnect.pet.dto.UserAppSettingDto;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.enums.VerifyType;
 import com.konnect.pet.enums.code.LocationCode;
@@ -75,6 +76,12 @@ public class UserController {
 	public ResponseEntity<?> mypage(Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(userService.getMypageData(user));
+	}
+
+	@PutMapping("/mypage/settings")
+	public ResponseEntity<?> settingP(Authentication authentication, @RequestBody UserAppSettingDto settingDto) {
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(userService.changeAppSetting(user, settingDto));
 	}
 
 	@PatchMapping("/mypage/marketing")

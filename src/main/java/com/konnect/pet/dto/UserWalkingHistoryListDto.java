@@ -32,4 +32,13 @@ public class UserWalkingHistoryListDto {
 		this.endDate = history.getEndDate();
 	}
 
+	public UserWalkingHistoryListDto(Long id, int meters, int seconds, LocalDateTime startDate, LocalDateTime endDate) {
+		this.id = id;
+		this.meters = meters;
+		this.seconds = seconds;
+		this.startDate = startDate;
+		this.endDate = endDate;
+	}
+
+
 }

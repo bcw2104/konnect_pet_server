@@ -23,6 +23,8 @@ public class UserSimpleDto {
 
 	private List<UserPetDto> pets;
 
+	private UserAppSettingDto appSettings;
+
 	private String residenceCity;
 	private String residenceAddress;
 	private String residenceCoords;

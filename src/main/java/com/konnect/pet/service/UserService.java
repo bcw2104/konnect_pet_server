@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.konnect.pet.constant.ServiceConst;
 import com.konnect.pet.dto.BannerDto;
 import com.konnect.pet.dto.JwtTokenDto;
+import com.konnect.pet.dto.UserAppSettingDto;
 import com.konnect.pet.dto.UserFriendDto;
 import com.konnect.pet.dto.UserPetDto;
 import com.konnect.pet.dto.UserPointDto;
@@ -22,6 +23,7 @@ import com.konnect.pet.dto.UserSimpleDto;
 import com.konnect.pet.dto.VerifyFormat;
 import com.konnect.pet.entity.TermsGroup;
 import com.konnect.pet.entity.User;
+import com.konnect.pet.entity.UserAppSetting;
 import com.konnect.pet.entity.UserFriend;
 import com.konnect.pet.entity.UserPoint;
 import com.konnect.pet.entity.UserProfile;
@@ -36,6 +38,7 @@ import com.konnect.pet.enums.code.UserStatusCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.BannerRepository;
 import com.konnect.pet.repository.TermsGroupRepository;
+import com.konnect.pet.repository.UserAppSettingRepository;
 import com.konnect.pet.repository.UserFriendRepository;
 import com.konnect.pet.repository.UserNotificationLogRepository;
 import com.konnect.pet.repository.UserPetRepository;
@@ -57,6 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserService {
 
+	private final UserAppSettingRepository userAppSettingRepository;
 	private final UserRepository userRepository;
 	private final UserPetRepository userPetRepository;
 	private final UserProfileRepository userProfileRepository;
@@ -83,8 +87,16 @@ public class UserService {
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional
 	public ResponseDto getUserSimplenfo(User user) {
+
+		UserAppSetting setting = userAppSettingRepository.findByUserId(user.getId()).orElse(null);
+		if (setting == null) {
+			setting = new UserAppSetting();
+			setting.setUser(user);
+			setting.initSetting();
+			userAppSettingRepository.save(setting);
+		}
 
 		UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
 		UserProfileDto profileDto = null;
@@ -96,7 +108,7 @@ public class UserService {
 				.platform(user.getPlatform().name()).tel(user.getTelMask()).createdDate(user.getCreatedDate())
 				.profile(profileDto).pets(pets).residenceCity(user.getResidenceCity())
 				.residenceAddress(user.getResidenceAddress()).residenceCoords(user.getResidenceCoords())
-				.marketingYn(user.isMarketingYn()).build();
+				.marketingYn(user.isMarketingYn()).appSettings(new UserAppSettingDto(setting)).build();
 
 		return new ResponseDto(ResponseType.SUCCESS, simpleDto);
 	}
@@ -305,4 +317,29 @@ public class UserService {
 
 		return pointMap;
 	}
+
+	@Transactional
+	public ResponseDto changeAppSetting(User user, UserAppSettingDto settingDto) {
+		UserAppSetting appSetting = userAppSettingRepository.findByUserIdForUpdate(user.getId()).orElse(null);
+
+		if (appSetting == null) {
+			appSetting = new UserAppSetting();
+			appSetting.setCommunityYn(settingDto.isCommunityYn());
+			appSetting.setMessageYn(settingDto.isMessageYn());
+			appSetting.setFriendYn(settingDto.isFriendYn());
+			appSetting.setServiceYn(settingDto.isServiceYn());
+			appSetting.setWalkingYn(settingDto.isWalkingYn());
+			userAppSettingRepository.save(appSetting);
+		} else {
+			appSetting.setCommunityYn(settingDto.isCommunityYn());
+			appSetting.setMessageYn(settingDto.isMessageYn());
+			appSetting.setFriendYn(settingDto.isFriendYn());
+			appSetting.setServiceYn(settingDto.isServiceYn());
+			appSetting.setWalkingYn(settingDto.isWalkingYn());
+		}
+
+		return new ResponseDto(ResponseType.SUCCESS);
+
+	}
+
 }

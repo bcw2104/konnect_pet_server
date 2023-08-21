@@ -1,6 +1,5 @@
 package com.konnect.pet.entity;
 
-
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -26,22 +25,23 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @ToString
-public class Terms extends BaseAutoSetEntity{
+public class Terms extends BaseAutoSetEntity {
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "terms_id")
 	private Long id;
 
 	@Column(length = 30, nullable = false)
 	private String termsName;
 
-	@Column(length = 2000, nullable = false)
+	@Column(columnDefinition = "TEXT", nullable = false)
 	private String termsContent;
 
 	private boolean visibleYn;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="terms_group_id", foreignKey = @ForeignKey(name = "FK_terms_terms_group"),nullable = false)
+	@JoinColumn(name = "terms_group_id", foreignKey = @ForeignKey(name = "FK_terms_terms_group"), nullable = false)
 	private TermsGroup termsGroup;
 
 	@Column(updatable = false, nullable = false)

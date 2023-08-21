@@ -38,7 +38,7 @@ public class UserWalkingHistory extends BaseAutoSetEntity {
 
 	private int seconds;
 
-	@Column(length = 2000)
+	@Column(columnDefinition = "TEXT")
 	private String routes;
 
 	private LocalDateTime startDate;

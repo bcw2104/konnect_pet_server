@@ -26,10 +26,10 @@ public class UserNotification extends BaseAutoSetAdminEntity{
 	@Column(length = 3,nullable = false)
 	private String category;
 
-	@Column(length = 300,nullable = false)
+	@Column(length = 255,nullable = false)
 	private String title;
 
-	@Column(length = 2000,nullable = false)
+	@Column(length = 255,nullable = false)
 	private String content;
 
 	private LocalDateTime startDate;
@@ -44,6 +44,6 @@ public class UserNotification extends BaseAutoSetAdminEntity{
 	@Column(length = 3)
 	private String landingType;
 
-	@Column(length = 300)
+	@Column(length = 255)
 	private String landingUrl;
 }

@@ -23,7 +23,7 @@ public class Banner extends BaseAutoSetAdminEntity {
 	@Column(length = 255)
 	private String imgPath;
 
-	@Column(length = 300)
+	@Column(length = 255)
 	private String landingUrl;
 
 	private LocalDateTime startDate;

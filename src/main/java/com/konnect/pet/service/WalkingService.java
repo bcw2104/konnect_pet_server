@@ -449,9 +449,7 @@ public class WalkingService {
 
 	@Transactional(readOnly = true)
 	public ResponseDto getWalkingHistories(User user, LocalDateTime startDate, LocalDateTime endDate) {
-		List<UserWalkingHistoryListDto> histories = userWalkingHistoryRepository
-				.findByUserIdAndStartDate(user.getId(), startDate, endDate).stream().map(UserWalkingHistoryListDto::new)
-				.toList();
+		List<UserWalkingHistoryListDto> histories = userWalkingQueryRepository.findUserWalkingHistory(user.getId(), startDate, endDate);
 
 		return new ResponseDto(ResponseType.SUCCESS, histories);
 	}
