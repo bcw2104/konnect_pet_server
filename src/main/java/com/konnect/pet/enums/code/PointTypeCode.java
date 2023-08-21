@@ -13,7 +13,7 @@ import lombok.Getter;
  * 포인트 타
  */
 @Getter
-public enum PointTypeCode implements CommonCode {
+public enum PointTypeCode implements EnumCode {
 	POINT("001", "Point", "P");
 
 	private String code;

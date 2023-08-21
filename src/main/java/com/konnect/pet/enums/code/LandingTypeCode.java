@@ -6,7 +6,7 @@ import lombok.Getter;
  * sms 또는 email 인증이 발생하는 구역
  */
 @Getter
-public enum LandingTypeCode implements CommonCode {
+public enum LandingTypeCode implements EnumCode {
 	INAPP("001", "in app"), OUTLINK("002", "out link");
 
 	private String code;

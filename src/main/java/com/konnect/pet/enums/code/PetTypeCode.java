@@ -12,7 +12,7 @@ import lombok.Getter;
  * sms 또는 email 인증이 발생하는 구역
  */
 @Getter
-public enum PetTypeCode implements CommonCode{
+public enum PetTypeCode implements EnumCode{
 	DAY("001","Dog"),
 	WEEK("002","Cat"),
 

@@ -12,7 +12,7 @@ import lombok.Getter;
  *
  */
 @Getter
-public enum RewardTypeCode implements CommonCode {
+public enum RewardTypeCode implements EnumCode {
 	WALKING("001", "WalkingReward", "Walking reward"),
 	ATTENDANCE("002", "AttendanceReward","Attendance reward");
 

@@ -50,6 +50,10 @@ public enum ResponseType {
 
 	//반려견 관련 에러들...
 	TOO_MANY_PET("9400", "too many pet", "반려동물 등록 횟수를 초과했습니다."),
+	
+
+	//서비스 관련 에러들...
+	TOO_MANY_QNA_SUBMIT("9500", "too many q&a submit", "일일 Q&A 횟수를 초과했습니다. 추가 문의사항은 이메일을 이용해 주세요."),
 
 	//커뮤니티 관련 에러들...
 

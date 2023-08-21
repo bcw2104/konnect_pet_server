@@ -6,7 +6,7 @@ import lombok.Getter;
  * sms 또는 email 인증이 발생하는 구역
  */
 @Getter
-public enum PeriodCode implements CommonCode{
+public enum PeriodCode implements EnumCode{
 	DAY("001","Day"),
 	WEEK("002","Week"),
 	MONTH("003","Month"),

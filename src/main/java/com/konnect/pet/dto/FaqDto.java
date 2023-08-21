@@ -2,6 +2,7 @@ package com.konnect.pet.dto;
 
 import com.konnect.pet.entity.Faq;
 import com.konnect.pet.enums.code.NotificationCategoryCode;
+import com.konnect.pet.enums.code.ServiceCategoryCode;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +23,7 @@ public class FaqDto {
 	public FaqDto(Faq faq) {
 		this.faqId = faq.getId();
 		this.category = faq.getCategory();
-		this.categoryName = NotificationCategoryCode.findByCode(faq.getCategory()).getCodeForApp();
+		this.categoryName = ServiceCategoryCode.findByCode(faq.getCategory()).getCodeForApp();
 		this.question = faq.getQuestion();
 		this.answer = faq.getAnswer();
 	}

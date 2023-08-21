@@ -12,7 +12,7 @@ import lombok.Getter;
  * sms 또는 email 인증이 발생하는 구역
  */
 @Getter
-public enum NotificationCategoryCode implements CommonCode {
+public enum NotificationCategoryCode implements EnumCode {
 	ACCOUNT("001", "Account", "Account"),
 	WALKING("002", "Walking", "Walking"),
 	SHOPING("003", "Shoping","Shoping"),

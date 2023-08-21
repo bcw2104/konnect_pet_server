@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public enum WalkingRewardProvideTypeCode implements CommonCode {
+public enum WalkingRewardProvideTypeCode implements EnumCode {
 	REALTIME("001", "RealTime", "REALTIME"),
 	BATCH("002", "Batch", "BATCH");
 

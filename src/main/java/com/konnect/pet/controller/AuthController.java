@@ -2,32 +2,19 @@ package com.konnect.pet.controller;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.konnect.pet.constant.CommonCodeConst;
-import com.konnect.pet.dto.PickerItemDto;
 import com.konnect.pet.dto.AuthRequestDto;
 import com.konnect.pet.enums.PlatformType;
-import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.VerifyType;
 import com.konnect.pet.enums.code.LocationCode;
-import com.konnect.pet.response.ResponseDto;
 import com.konnect.pet.service.AuthService;
-import com.konnect.pet.service.CommonCodeService;
-import com.konnect.pet.service.TermsService;
-import com.konnect.pet.service.UserService;
 import com.konnect.pet.service.VerifyService;
 
 import jakarta.servlet.http.HttpServletRequest;
