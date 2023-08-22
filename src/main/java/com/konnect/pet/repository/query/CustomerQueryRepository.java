@@ -24,7 +24,7 @@ public class CustomerQueryRepository {
 						.constructor(QnaDto.class, qna.id, qna.category, qna.title, qna.createdDate, qna.answeredDate))
 				.from(qna)
 				.where(qna.user.id.eq(userId),
-						(type.equals("question") ? qna.answeredDate.isNull() : qna.answeredDate.isNotNull()))
+						(type.equals("unanswered") ? qna.answeredDate.isNull() : qna.answeredDate.isNotNull()))
 				.orderBy(qna.id.desc()).limit(limit).offset(offset).fetch();
 	}
 }
