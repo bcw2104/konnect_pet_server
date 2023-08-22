@@ -17,7 +17,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class UserNotificationDto {
-	private Long id;
+	private Long notiId;
 
 	private String category;
 	private String categoryName;
@@ -38,7 +38,7 @@ public class UserNotificationDto {
 
 	public UserNotificationDto(Long notiId, String category, String title, String content, String notiType,
 			String landingType, String landingUrl, boolean visitedYn, LocalDateTime createdDate) {
-		this.id = notiId;
+		this.notiId = notiId;
 		this.category = category;
 		this.categoryName = NotificationCategoryCode.findByCode(category).getCodeForApp();
 		this.title = title;

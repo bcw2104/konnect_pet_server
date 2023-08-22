@@ -18,12 +18,13 @@ public class CustomerQueryRepository {
 
 	private final JPAQueryFactory queryFactory;
 
-	public List<QnaDto> findQnaByUserId(Long userId) {
+	public List<QnaDto> findQnas(Long userId, String type, int limit, int offset) {
 		return queryFactory
-				.select(Projections.constructor(QnaDto.class, qna.id,qna.category,qna.title,qna.answeredDate))
+				.select(Projections
+						.constructor(QnaDto.class, qna.id, qna.category, qna.title, qna.createdDate, qna.answeredDate))
 				.from(qna)
-				.where(qna.user.id.eq(userId))
-				.orderBy(qna.id.desc()).fetch();
-
+				.where(qna.user.id.eq(userId),
+						(type.equals("question") ? qna.answeredDate.isNull() : qna.answeredDate.isNotNull()))
+				.orderBy(qna.id.desc()).limit(limit).offset(offset).fetch();
 	}
 }

@@ -1,5 +1,6 @@
 package com.konnect.pet.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +26,6 @@ public interface UserNotificationLogRepository extends JpaRepository<UserNotific
 	int countByUserIdAndVisitedYnIsFalse(@Param("userId") Long userId);
 
 	@Modifying
-	@Query("update UserNotificationLog l set l.visitedYn = true where l.user.id = :userId and l.visitedYn = false")
-	int updateVisitedYn(@Param("userId") Long userId);
+	@Query("update UserNotificationLog l set l.visitedYn = true where l.user.id = :userId and l.visitedYn = false and l.createdDate >= :afterDate")
+	int updateVisitedYnByUserIdAndAfterDate(@Param("userId") Long userId,@Param("afterDate") LocalDateTime afterDate);
 }

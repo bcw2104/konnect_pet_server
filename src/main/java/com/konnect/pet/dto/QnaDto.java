@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class QnaDto {
-	private Long faqId;
+	private Long qnaId;
 
 	private String category;
 	private String categoryName;
@@ -23,23 +23,26 @@ public class QnaDto {
 
 	private String answer;
 
+	private LocalDateTime createdDate;
 	private LocalDateTime answeredDate;
 	
 	public QnaDto(Qna qna) {
-		this.faqId = qna.getId();
+		this.qnaId = qna.getId();
 		this.category = qna.getCategory();
 		this.categoryName = ServiceCategoryCode.findByCode(qna.getCategory()).getCodeForApp();
 		this.title = qna.getTitle();
 		this.question = qna.getQuestion();
 		this.answer = qna.getAnswer();
+		this.createdDate = qna.getCreatedDate();
 		this.answeredDate = qna.getAnsweredDate();
 	}
 	
-	public QnaDto(Long faqId, String category, String title, LocalDateTime answeredDate) {
-		this.faqId = faqId;
+	public QnaDto(Long qnaId, String category, String title,LocalDateTime createdDate, LocalDateTime answeredDate) {
+		this.qnaId = qnaId;
 		this.category = category;
 		this.categoryName = ServiceCategoryCode.findByCode(category).getCodeForApp();
 		this.title = title;
+		this.createdDate = createdDate;
 		this.answeredDate = answeredDate;
 	}
 }

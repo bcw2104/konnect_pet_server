@@ -3,6 +3,7 @@ package com.konnect.pet.repository.query;
 import static com.konnect.pet.entity.QUserNotification.userNotification;
 import static com.konnect.pet.entity.QUserNotificationLog.userNotificationLog;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
@@ -19,7 +20,7 @@ public class UserNotificationQueryRepository {
 
 	private final JPAQueryFactory queryFactory;
 
-	public List<UserNotificationDto> findUserNotifications(Long userId, int limit,int offset) {
+	public List<UserNotificationDto> findUserNotifications(Long userId,LocalDateTime afterDate, int limit,int offset) {
 		return queryFactory
 				.select(Projections.constructor(UserNotificationDto.class
 						,userNotificationLog.id
@@ -33,7 +34,7 @@ public class UserNotificationQueryRepository {
 						,userNotificationLog.createdDate
 						))
 				.from(userNotificationLog).join(userNotificationLog.userNotification ,userNotification)
-				.where(userNotificationLog.user.id.eq(userId))
+				.where(userNotificationLog.user.id.eq(userId), userNotificationLog.createdDate.goe(afterDate))
 				.orderBy(userNotificationLog.id.desc())
 				.limit(limit)
 				.offset(offset)

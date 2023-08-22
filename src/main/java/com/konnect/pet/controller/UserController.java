@@ -146,7 +146,7 @@ public class UserController {
 	@GetMapping("/noti")
 	public ResponseEntity<?> notification(Authentication authentication, PageRequestDto pageDto) {
 		User user = (User) authentication.getPrincipal();
-		return ResponseEntity.ok(notificationService.getRecentUserNotifications(user, pageDto));
+		return ResponseEntity.ok(notificationService.getUserNotifications(user, pageDto));
 	}
 
 	@GetMapping("/point/history")

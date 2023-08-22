@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.konnect.pet.dto.FaqDto;
+import com.konnect.pet.dto.PageRequestDto;
 import com.konnect.pet.dto.PickerItemDto;
 import com.konnect.pet.dto.QnaDto;
 import com.konnect.pet.entity.Qna;
@@ -82,9 +83,32 @@ public class CustomerService {
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
 
-	public ResponseDto getQna(Long userId) {
-		List<QnaDto> qna = customerQueryRepository.findQnaByUserId(userId);
+	public ResponseDto getQnas(User user, String type, PageRequestDto pageDto) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
 
-		return new ResponseDto(ResponseType.SUCCESS, qna);
+		int limit = pageDto.getSize() + 1;
+		int offset = (pageDto.getPage() - 1) * pageDto.getSize();
+
+		List<QnaDto> qnas = customerQueryRepository.findQnas(user.getId(), type, limit, offset);
+
+		boolean hasNext = false;
+		if (qnas.size() == limit) {
+			qnas.remove(limit - 1);
+			hasNext = true;
+		}
+		resultMap.put("qnas", qnas);
+		resultMap.put("hasNext", hasNext);
+
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
+	public ResponseDto getQnaDetail(User user, Long qnaId) {
+		Qna qna = qnaRepository.findById(qnaId).orElse(null);
+
+		if (qna == null || !qna.getUser().getId().equals(user.getId())) {
+			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+		}
+
+		return new ResponseDto(ResponseType.SUCCESS, new QnaDto(qna));
 	}
 }

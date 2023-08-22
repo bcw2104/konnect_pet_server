@@ -1,5 +1,7 @@
 package com.konnect.pet.service;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,15 +35,16 @@ public class NotificationService {
 	private final UserNotificationQueryRepository userNotificationQueryRepository;
 
 	@Transactional
-	public ResponseDto getRecentUserNotifications(User user, PageRequestDto pageDto) {
+	public ResponseDto getUserNotifications(User user, PageRequestDto pageDto) {
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 
 		int limit = pageDto.getSize() + 1;
 		int offset = (pageDto.getPage() - 1) * pageDto.getSize();
 
-		List<UserNotificationDto> notifications = userNotificationQueryRepository.findUserNotifications(user.getId(),
+		LocalDateTime afterDate = LocalDateTime.now().minusMonths(1).with(LocalTime.MIDNIGHT);
+		List<UserNotificationDto> notifications = userNotificationQueryRepository.findUserNotifications(user.getId(),afterDate,
 				limit, offset);
-		userNotificationLogRepository.updateVisitedYn(user.getId());
+		userNotificationLogRepository.updateVisitedYnByUserIdAndAfterDate(user.getId(),afterDate);
 
 		boolean hasNext = false;
 		if (notifications.size() == limit) {
