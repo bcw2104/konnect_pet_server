@@ -23,8 +23,8 @@ public class TermsQueryRepository {
 
 	public List<TermsGroupDto> findTermsGroupByLocationCodeAndVisibleYn(LocationCode locationCode, boolean visibleYn) {
 		return queryFactory
-				.select(Projections.constructor(TermsGroupDto.class, termsGroup.id, termsGroup.termsGroupName,
-						termsGroup.termsGroupContent, termsGroup.requiredYn))
+				.select(Projections.constructor(TermsGroupDto.class, termsGroup.id, termsGroup.name,
+						termsGroup.content, termsGroup.requiredYn))
 				.from(termsGroup)
 				.where(termsGroup.visibleYn.eq(visibleYn),
 						locationCode == null ? null : termsGroup.locationCode.eq(locationCode.getCode()))
@@ -35,7 +35,7 @@ public class TermsQueryRepository {
 	public TermsDto findLastestTermsByTermsGroupsId(Long termsGroupId) {
 		return queryFactory
 				.select(Projections.constructor(TermsDto.class, terms.id, terms.termsGroup.id,
-						terms.termsGroup.termsGroupName, terms.termsName, terms.termsContent,
+						terms.termsGroup.name, terms.name, terms.content,
 						terms.termsGroup.requiredYn, terms.createdDate))
 				.from(terms).innerJoin(terms.termsGroup, termsGroup).where(terms.termsGroup.id.eq(termsGroupId))
 				.orderBy(terms.createdDate.desc()).limit(1).fetchOne();

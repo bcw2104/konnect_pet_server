@@ -22,7 +22,7 @@ public class UserFriendQueryRepository {
 	public List<UserFriendDto> findUserFriends(Long userId) {
 		return queryFactory
 				.select(Projections.constructor(UserFriendDto.class, userFriend.id, userFriend.toUser.id,
-						userProfile.nickname, userProfile.birthDate, userProfile.gender, userProfile.profileImgPath,
+						userProfile.nickname, userProfile.birthDate, userProfile.gender, userProfile.imgPath,
 						userFriend.status, userFriend.createdDate))
 				.from(userFriend).join(userProfile).on(userFriend.toUser.id.eq(userProfile.user.id))
 				.where(userFriend.fromUser.id.eq(userId), userFriend.status.eq(ProcessStatusCode.PERMITTED.getCode()))
@@ -34,7 +34,7 @@ public class UserFriendQueryRepository {
 
 		return queryFactory
 				.select(Projections.constructor(UserFriendDto.class, userFriend.id, userFriend.toUser.id,
-						userProfile.nickname, userProfile.birthDate, userProfile.gender, userProfile.profileImgPath,
+						userProfile.nickname, userProfile.birthDate, userProfile.gender, userProfile.imgPath,
 						userFriend.status, userFriend.createdDate))
 				.from(userFriend).join(userProfile).on(userFriend.toUser.id.eq(userProfile.user.id))
 				.where(userFriend.fromUser.id.eq(userId), userFriend.status.eq(ProcessStatusCode.PENDING.getCode()))
@@ -46,7 +46,7 @@ public class UserFriendQueryRepository {
 
 		return queryFactory
 				.select(Projections.constructor(UserFriendDto.class, userFriend.id, userFriend.fromUser.id,
-						userProfile.nickname, userProfile.birthDate, userProfile.gender, userProfile.profileImgPath,
+						userProfile.nickname, userProfile.birthDate, userProfile.gender, userProfile.imgPath,
 						userFriend.status, userFriend.createdDate))
 				.from(userFriend).join(userProfile).on(userFriend.fromUser.id.eq(userProfile.user.id))
 				.where(userFriend.toUser.id.eq(userId), userFriend.status.eq(ProcessStatusCode.PENDING.getCode()))
