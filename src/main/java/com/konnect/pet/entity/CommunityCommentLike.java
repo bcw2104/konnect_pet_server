@@ -30,7 +30,7 @@ public class CommunityCommentLike extends BaseAutoSetEntity{
 	private User user;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "comment_id", foreignKey = @ForeignKey(name = "FK_COMMUNITY_COMMENT_LIKE-POST_ID"), nullable = false)
+	@JoinColumn(name = "comment_id", foreignKey = @ForeignKey(name = "FK_COMMUNITY_COMMENT_LIKE-COMMENT_ID"), nullable = false)
 	private CommunityComment comment;
 
 }

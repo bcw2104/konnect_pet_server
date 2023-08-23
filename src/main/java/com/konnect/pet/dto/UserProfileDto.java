@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class UserProfileDto {
-	private Long id;
+	private Long profileId;
 
 	private String nickname;
 
@@ -21,7 +21,7 @@ public class UserProfileDto {
 	private String comment;
 
 	public UserProfileDto(UserProfile profile) {
-		this.id = profile.getId();
+		this.profileId = profile.getId();
 		this.nickname = profile.getNickname();
 		this.birthDate = profile.getBirthDate();
 		this.gender=profile.getGender();

@@ -2,6 +2,8 @@ package com.konnect.pet.entity;
 
 import java.util.List;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import com.konnect.pet.entity.embedded.CommonCodePair;
 
 import jakarta.persistence.Column;
@@ -40,6 +42,12 @@ public class CommunityPost extends BaseAutoSetEntity {
 
 	@Column(length = 800, nullable = false)
 	private String content;
+
+	@ColumnDefault("0")
+	private int likeCount;
+	
+	@ColumnDefault("0")
+	private int commentCount;
 
 	@OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
 	private List<CommunityPostFile> files;

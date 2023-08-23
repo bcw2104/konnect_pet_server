@@ -1,5 +1,7 @@
 package com.konnect.pet.entity;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import com.konnect.pet.entity.embedded.CommonCodePair;
 
 import jakarta.persistence.Column;
@@ -19,6 +21,7 @@ public class CommonCode extends BaseAutoSetEntity{
 	@Column(length = 30)
 	private String codeDescription;
 
+	@ColumnDefault("0")
 	private int sortOrder;
 }
 

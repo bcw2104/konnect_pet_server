@@ -2,6 +2,8 @@ package com.konnect.pet.entity;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -54,6 +56,7 @@ public class WalkingRewardPolicy extends BaseAutoSetAdminEntity {
 
 	private boolean activeYn;
 
+	@ColumnDefault("0")
 	private int sortOrder;
 
 }

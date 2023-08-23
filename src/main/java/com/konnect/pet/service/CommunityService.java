@@ -1,48 +1,39 @@
 package com.konnect.pet.service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.konnect.pet.dto.BannerDto;
+import com.konnect.pet.dto.CommunityCategoryDto;
+import com.konnect.pet.dto.CommunityCommentDto;
+import com.konnect.pet.dto.CommunityPostDto;
 import com.konnect.pet.dto.PageRequestDto;
 import com.konnect.pet.dto.UserFriendDto;
-import com.konnect.pet.dto.UserPetDto;
-import com.konnect.pet.dto.UserPointDto;
-import com.konnect.pet.dto.UserProfileDto;
-import com.konnect.pet.dto.UserSimpleDto;
-import com.konnect.pet.dto.VerifyFormat;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserFriend;
-import com.konnect.pet.entity.UserPet;
-import com.konnect.pet.entity.UserPoint;
-import com.konnect.pet.entity.UserProfile;
-import com.konnect.pet.entity.UserRemoved;
 import com.konnect.pet.enums.ResponseType;
-import com.konnect.pet.enums.VerifyType;
-import com.konnect.pet.enums.code.LocationCode;
 import com.konnect.pet.enums.code.NotificationTypeCode;
-import com.konnect.pet.enums.code.PointTypeCode;
 import com.konnect.pet.enums.code.ProcessStatusCode;
 import com.konnect.pet.enums.code.UserStatusCode;
 import com.konnect.pet.ex.CustomResponseException;
+import com.konnect.pet.repository.BannerRepository;
+import com.konnect.pet.repository.CommunityCategoryRepository;
+import com.konnect.pet.repository.CommunityCommentLikeRepository;
+import com.konnect.pet.repository.CommunityPostFileRepository;
+import com.konnect.pet.repository.CommunityPostLikeRepository;
 import com.konnect.pet.repository.UserFriendRepository;
+import com.konnect.pet.repository.UserNotificationLogRepository;
 import com.konnect.pet.repository.UserPetRepository;
-import com.konnect.pet.repository.UserPointRepository;
 import com.konnect.pet.repository.UserProfileRepository;
-import com.konnect.pet.repository.UserRemovedRepository;
 import com.konnect.pet.repository.UserRepository;
+import com.konnect.pet.repository.query.CommunityQueryRepository;
 import com.konnect.pet.repository.query.UserFriendQueryRepository;
-import com.konnect.pet.repository.redis.RefreshTokenRepository;
 import com.konnect.pet.response.ResponseDto;
-import com.konnect.pet.utils.Aes256Utils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,8 +48,15 @@ public class CommunityService {
 	private final UserFriendQueryRepository userFriendQueryRepository;
 	private final UserProfileRepository userProfileRepository;
 	private final UserFriendRepository userFriendRepository;
+	private final BannerRepository bannerRepository;
+	private final CommunityCategoryRepository communityCategoryRepository;
+	private final CommunityPostLikeRepository communityPostLikeRepository;
+	private final CommunityCommentLikeRepository communityCommentLikeRepository;
+	private final CommunityPostFileRepository communityPostFileRepository;
+	private final CommunityQueryRepository communityQueryRepository;
 
 	private final NotificationService notificationService;
+	private final UserNotificationLogRepository userNotificationLogRepository;
 
 	@Transactional
 	public ResponseDto requestFriend(User user, Long toUserId) {
@@ -182,6 +180,106 @@ public class CommunityService {
 			notificationService.createMacroUserNotificationLog(toUser, NotificationTypeCode.ACCEPT_FRIEND);
 		}
 		return new ResponseDto(ResponseType.SUCCESS, code.getCode());
+	}
+
+	@Transactional(readOnly = true)
+	public ResponseDto getCommunityData(User user) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		int newNotiCount = userNotificationLogRepository.countByUserIdAndVisitedYnIsFalse(user.getId());
+
+		List<CommunityCategoryDto> categories = communityCategoryRepository.findActive().stream()
+				.map(CommunityCategoryDto::new).toList();
+		List<BannerDto> banners = bannerRepository.findActive().stream().map(BannerDto::new).toList();
+
+		resultMap.put("categories", categories);
+		resultMap.put("banners", banners);
+		resultMap.put("newNotiCount", newNotiCount);
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
+	@Transactional(readOnly = true)
+	public ResponseDto getPosts(User user, Long categoryId, PageRequestDto pageDto) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		int limit = pageDto.getSize() + 1;
+		int offset = (pageDto.getPage() - 1) * pageDto.getSize();
+
+		List<CommunityPostDto> posts = communityQueryRepository.findPosts(categoryId, limit, offset);
+
+		boolean hasNext = false;
+		if (posts.size() == limit) {
+			posts.remove(limit - 1);
+			hasNext = true;
+		}
+		List<Long> postIds = posts.stream().map(ele -> ele.getPostId()).toList();
+
+		List<Long> likePostIds = communityPostLikeRepository.findPostIdsByUserIdAndPostIds(user.getId(), postIds);
+		Map<Long, List<String>> filePaths = communityQueryRepository
+				.findPostFilesByPostIds(postIds.toArray(Long[]::new));
+
+		for (CommunityPostDto dto : posts) {
+			dto.setFilePaths(filePaths.getOrDefault(dto.getPostId(), new ArrayList<>()));
+			dto.setLikeYn(likePostIds.contains(dto.getPostId()));
+		}
+		resultMap.put("posts", posts);
+		resultMap.put("hasNext", hasNext);
+
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
+	@Transactional
+	public ResponseDto savePost(User user, Map<String, Object> map) {
+
+		return new ResponseDto(ResponseType.SUCCESS);
+	}
+
+	@Transactional(readOnly = true)
+	public ResponseDto getPostComments(User user, Long postId, PageRequestDto pageDto) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		int limit = pageDto.getSize() + 1;
+		int offset = (pageDto.getPage() - 1) * pageDto.getSize();
+
+		List<CommunityCommentDto> parentComments = communityQueryRepository.findParentComments(postId, limit, offset);
+
+		boolean hasNext = false;
+		if (parentComments.size() == limit) {
+			parentComments.remove(limit - 1);
+			hasNext = true;
+		}
+		List<Long> commentIds = new ArrayList<>();
+		List<Long> parentCommentIds = parentComments.stream().map(ele -> ele.getCommentId()).toList();
+
+		Map<Long, List<CommunityCommentDto>> childComments = communityQueryRepository
+				.findChildComments(parentCommentIds.toArray(Long[]::new));
+
+		List<Long> childCommentIds = new ArrayList<>();
+		
+		childComments.values().stream().forEach(ele->{
+			childCommentIds.addAll(ele.stream().map(ele2->ele2.getCommentId()).toList());
+		});
+				
+		commentIds.addAll(parentCommentIds);
+		commentIds.addAll(childCommentIds);
+		
+		List<Long> likeCommentIds = communityPostLikeRepository.findPostIdsByUserIdAndPostIds(user.getId(), commentIds);
+
+		for (CommunityCommentDto dto : parentComments) {
+			List<CommunityCommentDto> children = childComments.get(dto.getCommentId());
+
+			for (CommunityCommentDto child : children) {
+				child.setLikeYn(likeCommentIds.contains(dto.getCommentId()));
+			}
+
+			dto.setChildrens(children);
+			dto.setLikeYn(likeCommentIds.contains(dto.getCommentId()));
+		}
+
+		resultMap.put("comments", parentComments);
+		resultMap.put("hasNext", hasNext);
+
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
 
 }

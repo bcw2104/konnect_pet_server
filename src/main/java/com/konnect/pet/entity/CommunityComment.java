@@ -2,6 +2,8 @@ package com.konnect.pet.entity;
 
 import java.util.List;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import com.konnect.pet.entity.embedded.CommonCodePair;
 
 import jakarta.persistence.Column;
@@ -29,7 +31,10 @@ public class CommunityComment extends BaseAutoSetEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "comment_id")
 	private Long id;
-	
+
+	@Column(name = "parent_comment_id")
+	private Long parentId;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "post_id", foreignKey = @ForeignKey(name = "FK_COMMUNITY_COMMENT-POST_ID"), nullable = false)
 	private CommunityPost post;
@@ -40,7 +45,12 @@ public class CommunityComment extends BaseAutoSetEntity {
 
 	@Column(length = 800, nullable = false)
 	private String content;
+	
+	@ColumnDefault("0")
+	private int likeCount;
+	
+	private boolean removedYn;
 
-	@OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
-	private List<CommunityPostFile> files;
+	@Column(length = 255)
+	private String imgPath;
 }

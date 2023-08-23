@@ -1,5 +1,7 @@
 package com.konnect.pet.entity;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -21,6 +23,7 @@ public class CommunityCategory extends BaseAutoSetAdminEntity{
 	@Column(length = 100, nullable = false)
 	private String category;
 
+	@ColumnDefault("0")
 	private int sortOrder;
 	
 	private boolean activeYn;

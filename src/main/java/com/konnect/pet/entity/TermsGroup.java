@@ -4,6 +4,8 @@ package com.konnect.pet.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import com.konnect.pet.enums.code.LocationCode;
 
 import jakarta.persistence.Column;
@@ -49,6 +51,7 @@ public class TermsGroup extends BaseAutoSetEntity{
 	@Column(length = 3, nullable = false)
 	private String locationCode;
 
+	@ColumnDefault("0")
 	private int sortOrder;
 
 	@Builder.Default

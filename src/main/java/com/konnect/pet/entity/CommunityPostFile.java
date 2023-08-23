@@ -29,4 +29,7 @@ public class CommunityPostFile extends BaseAutoSetEntity{
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_COMMUNITY_POST_FILE-USER_ID"), nullable = false)
 	private User user;
+	
+	@Column(length = 255,nullable = false)
+	private String filePath;
 }

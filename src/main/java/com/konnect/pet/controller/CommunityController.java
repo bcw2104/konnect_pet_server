@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konnect.pet.dto.PageRequestDto;
@@ -32,6 +34,36 @@ public class CommunityController {
 	private final UserService userService;
 	private final CommunityService communityService;
 
+	@GetMapping("")
+	public ResponseEntity<?> community(Authentication authentication) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.getCommunityData(user));
+	}
+
+	@GetMapping("/post")
+	public ResponseEntity<?> post(Authentication authentication, @RequestParam("category") Long categoryId,
+			PageRequestDto pageDto) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.getPosts(user, categoryId, pageDto));
+	}
+
+	@PostMapping("/post")
+	public ResponseEntity<?> savePost(Authentication authentication, @RequestBody Map<String, Object> body) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.savePost(user, body));
+	}
+
+	@GetMapping("/post/{id}/comment")
+	public ResponseEntity<?> postComment(Authentication authentication, @RequestParam("id") Long postId,
+			PageRequestDto pageDto) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.getPostComments(user, postId, pageDto));
+	}
+
 	@PutMapping("/friend/{id}")
 	public ResponseEntity<?> requestFriend(Authentication authentication, @PathVariable("id") Long toUserId) {
 		User user = (User) authentication.getPrincipal();
@@ -49,14 +81,14 @@ public class CommunityController {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(communityService.getPendingFriends(user));
 	}
-	
+
 	@PatchMapping("/friend/{id}")
 	public ResponseEntity<?> replyFriend(Authentication authentication, @PathVariable("id") Long toUserId,
-			@RequestBody Map<String,Object> body) {
+			@RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
-		
+
 		ProcessStatusCode code = ProcessStatusCode.findByCode(body.get("code").toString());
-		
-		return ResponseEntity.ok(communityService.replyFriend(user,toUserId,code));
+
+		return ResponseEntity.ok(communityService.replyFriend(user, toUserId, code));
 	}
 }
