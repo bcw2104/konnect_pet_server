@@ -81,6 +81,7 @@ public class UserWalkingQueryRepository {
 						userWalkingHistory.endDate))
 				.from(userWalkingHistory).where(userWalkingHistory.user.id.eq(userId),
 						userWalkingHistory.startDate.goe(startDate), userWalkingHistory.endDate.loe(endDate))
+				.orderBy(userWalkingHistory.id.desc())
 				.fetch();
 
 	}
