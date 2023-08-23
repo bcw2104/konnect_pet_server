@@ -31,7 +31,7 @@ public class UserWalkingHistory extends BaseAutoSetEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_walking_user"), nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_USER_WALKING_HISTORY-USER_ID"), nullable = false)
 	private User user;
 
 	private int meters;

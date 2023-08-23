@@ -37,10 +37,10 @@ public class TermsGroup extends BaseAutoSetEntity{
 	private Long id;
 
 	@Column(length = 30, nullable = false)
-	private String termsGroupName;
+	private String name;
 
 	@Column(length = 100)
-	private String termsGroupContent;
+	private String content;
 
 	private boolean requiredYn;
 

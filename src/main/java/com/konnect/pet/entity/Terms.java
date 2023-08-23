@@ -1,7 +1,5 @@
 package com.konnect.pet.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,15 +31,15 @@ public class Terms extends BaseAutoSetEntity {
 	private Long id;
 
 	@Column(length = 30, nullable = false)
-	private String termsName;
+	private String name;
 
 	@Column(columnDefinition = "TEXT", nullable = false)
-	private String termsContent;
+	private String content;
 
 	private boolean visibleYn;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "terms_group_id", foreignKey = @ForeignKey(name = "FK_terms_terms_group"), nullable = false)
+	@JoinColumn(name = "terms_group_id", foreignKey = @ForeignKey(name = "FK_TERMS-TERMS_GROUP_ID"), nullable = false)
 	private TermsGroup termsGroup;
 
 	@Column(updatable = false, nullable = false)

@@ -12,16 +12,16 @@ import lombok.Setter;
 public class TermsGroupDto {
 	private Long termsGroupId;
 
-	private String termsGroupName;
+	private String name;
 
-	private String termsGroupContent;
+	private String content;
 
 	private boolean requiredYn;
 
-	public TermsGroupDto(Long termsGroupId, String termsGroupName, String termsGroupContent, boolean requiredYn) {
+	public TermsGroupDto(Long termsGroupId, String name, String content, boolean requiredYn) {
 		this.termsGroupId = termsGroupId;
-		this.termsGroupName = termsGroupName;
-		this.termsGroupContent = termsGroupContent;
+		this.name = name;
+		this.content = content;
 		this.requiredYn = requiredYn;
 	}
 }

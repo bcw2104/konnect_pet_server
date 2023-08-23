@@ -38,7 +38,7 @@ public class Qna extends BaseAutoSetEntity {
 	private String category;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_qna_user"), nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_QNA-USER_ID"), nullable = false)
 	private User user;
 	
 	private Long answeredBy;

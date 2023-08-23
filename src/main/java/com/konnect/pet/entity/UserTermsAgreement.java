@@ -39,11 +39,11 @@ public class UserTermsAgreement extends BaseAutoSetEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "terms_group_id", foreignKey = @ForeignKey(name = "FK_agreement_terms_group"), nullable = false)
+	@JoinColumn(name = "terms_group_id", foreignKey = @ForeignKey(name = "FK_USER_TERMS_AGREEMENT-TERMS_GROUP_ID"), nullable = false)
 	private TermsGroup termsGroup;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_agreement_user"), nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_USER_TERMS_AGREEMENT-USER_ID"), nullable = false)
 	private User user;
 
 	private boolean agreedYn;

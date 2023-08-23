@@ -17,7 +17,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_point_type_user_id", columnNames = { "user_id","pointType" })})
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_USER_POINT-USER_ID-POINT_TYPE", columnNames = { "user_id","pointType" })})
 public class UserPoint extends BaseAutoSetEntity{
 
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +25,7 @@ public class UserPoint extends BaseAutoSetEntity{
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_point_user"), nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_USER_POINT-USER_ID"), nullable = false)
 	private User user;
 
 	private int balance;

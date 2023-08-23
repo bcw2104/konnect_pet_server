@@ -16,7 +16,7 @@ public class UserProfileDto {
 
 	private String gender;
 
-	private String profileImgPath;
+	private String imgPath;
 
 	private String comment;
 
@@ -25,7 +25,7 @@ public class UserProfileDto {
 		this.nickname = profile.getNickname();
 		this.birthDate = profile.getBirthDate();
 		this.gender=profile.getGender();
-		this.profileImgPath = profile.getProfileImgPath();
+		this.imgPath = profile.getImgPath();
 		this.comment = profile.getComment();
 	}
 

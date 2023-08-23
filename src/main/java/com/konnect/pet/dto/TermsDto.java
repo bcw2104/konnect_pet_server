@@ -17,20 +17,20 @@ public class TermsDto {
 	private Long termsGroupId;
 
 	private String termsGroupName;
-	private String termsName;
-	private String termsContent;
+	private String name;
+	private String content;
 
 	private boolean requiredYn;
 
 	private LocalDateTime createdDate;
 
-	public TermsDto(Long termsId, Long termsGroupId, String termsGroupName, String termsName, String termsContent,
+	public TermsDto(Long termsId, Long termsGroupId, String termsGroupName, String name, String content,
 			boolean requiredYn, LocalDateTime createdDate) {
 		this.termsId = termsId;
 		this.termsGroupId = termsGroupId;
 		this.termsGroupName = termsGroupName;
-		this.termsName = termsName;
-		this.termsContent = termsContent;
+		this.name = name;
+		this.content = content;
 		this.requiredYn = requiredYn;
 		this.createdDate = createdDate;
 	}

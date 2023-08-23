@@ -16,7 +16,7 @@ import lombok.Setter;
 @Entity
 @Setter
 @Getter
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_user_id", columnNames = { "user_id" })})
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_USER_PROFILE-USER_ID", columnNames = { "user_id" })})
 public class UserProfile extends BaseAutoSetEntity{
 
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +24,7 @@ public class UserProfile extends BaseAutoSetEntity{
 	private Long id;
 
 	@ManyToOne
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_profile_user"), nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_USER_PROFILE-USER_ID"), nullable = false)
 	private User user;
 
 
@@ -38,7 +38,7 @@ public class UserProfile extends BaseAutoSetEntity{
 	private String gender;
 
 	@Column(length = 255)
-	private String profileImgPath;
+	private String imgPath;
 
 	@Column(length = 255)
 	private String comment;

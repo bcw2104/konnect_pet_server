@@ -23,11 +23,11 @@ public class UserWalkingFootprint extends BaseAutoSetEntity{
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_walking_footprint_user"), nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_USER_WALKING_FOOTPRINT-USER_ID"), nullable = false)
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "walking_id", foreignKey = @ForeignKey(name = "FK_walking_footprint_walking"), nullable = false)
+	@JoinColumn(name = "walking_id", foreignKey = @ForeignKey(name = "FK_USER_WALKING_FOOTPRINT-WALKING_ID"), nullable = false)
 	private UserWalkingHistory userWalkingHistory;
 
 	private double longitude;

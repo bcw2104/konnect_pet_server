@@ -20,7 +20,7 @@ import lombok.Setter;
 @Entity
 @Setter
 @Getter
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_user_id", columnNames = { "user_id" }) })
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_USER_APP_SETTING-USER_ID", columnNames = { "user_id" }) })
 public class UserAppSetting extends BaseAutoSetEntity {
 
 	@Id
@@ -29,7 +29,7 @@ public class UserAppSetting extends BaseAutoSetEntity {
 	private Long id;
 
 	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_setting_user"), nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_USER_APP_SETTING-USER_ID"), nullable = false)
 	private User user;
 
 	@ColumnDefault("true")

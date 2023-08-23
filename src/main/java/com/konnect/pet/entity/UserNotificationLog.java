@@ -29,11 +29,11 @@ public class UserNotificationLog extends BaseAutoSetEntity{
 	private boolean visitedYn;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "noti_id", foreignKey = @ForeignKey(name = "FK_noti_log_noti"), nullable = false)
+	@JoinColumn(name = "noti_id", foreignKey = @ForeignKey(name = "FK_USER_NOTIFICATION_LOG-NOTI_ID"), nullable = false)
 	private UserNotification userNotification;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_noti_log_user"), nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_USER_NOTIFICATION_LOG-USER_ID"), nullable = false)
 	private User user;
 
 }

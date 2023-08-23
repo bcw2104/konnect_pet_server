@@ -34,5 +34,5 @@ public class Faq extends BaseAutoSetAdminEntity {
 	private boolean activeYn;
 
 	@ColumnDefault("0")
-	private Integer sortOrder;
+	private int sortOrder;
 }

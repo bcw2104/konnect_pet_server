@@ -28,7 +28,7 @@ public class UserDailyAccessLog extends BaseAutoSetEntity{
 	private Long id;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_daily_access_user"), nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_USER_DAILY_ACCESS_LOG-USER_ID"), nullable = false)
 	private User user;
 	
 	@Column(length = 10)

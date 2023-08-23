@@ -29,15 +29,15 @@ public class UserWalkingRewardHistory extends BaseAutoSetEntity{
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_walking_reward_user"), nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_USER_WALKING_REWARD_HISTORY-USER_ID"), nullable = false)
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "policy_id", foreignKey = @ForeignKey(name = "FK_walking_reward_policy"), nullable = false)
+	@JoinColumn(name = "policy_id", foreignKey = @ForeignKey(name = "FK_USER_WALKING_REWARD_HISTORY-POLICY_ID"), nullable = false)
 	private WalkingRewardPolicy walkingRewardPolicy;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "walking_id", foreignKey = @ForeignKey(name = "FK_walking_reward_walking"), nullable = false)
+	@JoinColumn(name = "walking_id", foreignKey = @ForeignKey(name = "FK_USER_WALKING_REWARD_HISTORY-WALKING_ID"), nullable = false)
 	private UserWalkingHistory userWalkingHistory;
 
 	private int amount;

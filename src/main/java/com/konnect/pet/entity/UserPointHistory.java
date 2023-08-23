@@ -31,6 +31,6 @@ public class UserPointHistory extends BaseAutoSetEntity {
 	private String historyType;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_point_history_user"), nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_USER_POINT_HISTORY-USER_ID"), nullable = false)
 	private User user;
 }

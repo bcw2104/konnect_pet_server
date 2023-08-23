@@ -23,15 +23,15 @@ public class UserWalkingFootprintCatchHistory extends BaseAutoSetEntity{
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_footprint_catch_hist_user"), nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_USER_WALKING_FOOTPRINT_CATCH_HISTORY-USER_ID"), nullable = false)
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "footprint_id", foreignKey = @ForeignKey(name = "FK_footprint_catch_hist_footprint"), nullable = false)
+	@JoinColumn(name = "footprint_id", foreignKey = @ForeignKey(name = "FK_USER_WALKING_FOOTPRINT_CATCH_HISTORY-FOOTPRINT_ID"), nullable = false)
 	private UserWalkingFootprint userWalkingFootprint;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "walking_id", foreignKey = @ForeignKey(name = "FK_footprint_catch_hist_walking"), nullable = false)
+	@JoinColumn(name = "walking_id", foreignKey = @ForeignKey(name = "FK_USER_WALKING_FOOTPRINT_CATCH_HISTORY-WALKING_ID"), nullable = false)
 	private UserWalkingHistory userWalkingHistory;
 
 }

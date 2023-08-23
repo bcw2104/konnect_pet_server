@@ -17,7 +17,7 @@ import lombok.Setter;
 @Entity
 @Setter
 @Getter
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_from_to_user_id", columnNames = { "from_user_id","to_user_id" })})
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_USER_FRIEND-FROM_USER_ID-TO_USER_ID", columnNames = { "from_user_id","to_user_id" })})
 public class UserFriend extends BaseAutoSetEntity {
 
 	@Id
@@ -26,11 +26,11 @@ public class UserFriend extends BaseAutoSetEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "from_user_id", foreignKey = @ForeignKey(name = "FK_friend_from_user"), nullable = false)
+	@JoinColumn(name = "from_user_id", foreignKey = @ForeignKey(name = "FK_USER_FRIEND-FROM_USER_ID"), nullable = false)
 	private User fromUser;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "to_user_id", foreignKey = @ForeignKey(name = "FK_friend_to_user"), nullable = false)
+	@JoinColumn(name = "to_user_id", foreignKey = @ForeignKey(name = "FK_USER_FRIEND-TO_USER_ID"), nullable = false)
 	private User toUser;
 
 	@Column(length = 3, nullable = false)

@@ -32,16 +32,16 @@ public class UserPetService {
 	public ResponseDto saveOrEditPet(User user, Map<String, Object> body, Long petId) {
 
 		try {
-			String petName = body.get("petName").toString();
-			String petType = body.get("petType").toString();
-			String petSpecies = body.get("petSpecies").toString();
-			String petGender = body.get("petGender").toString();
-			BigDecimal petWeight = new BigDecimal(body.get("petWeight").toString());
+			String petName = body.get("name").toString();
+			String petType = body.get("type").toString();
+			String petSpecies = body.get("species").toString();
+			String petGender = body.get("gender").toString();
+			BigDecimal petWeight = new BigDecimal(body.get("weight").toString());
 			String birthDate = body.get("birthDate").toString();
 			boolean neuteredYn = Boolean.parseBoolean(body.get("neuteredYn").toString());
 			boolean inoculatedYn = Boolean.parseBoolean(body.get("inoculatedYn").toString());
-			String petImgPath = body.get("petImgPath") == null ? null : body.get("petImgPath").toString();
-			String petDescription = body.get("petDescription") == null ? "" : body.get("petDescription").toString();
+			String petImgPath = body.get("imgPath") == null ? null : body.get("imgPath").toString();
+			String petDescription = body.get("description") == null ? "" : body.get("description").toString();
 
 			UserPet pet = null;
 			if (petId != null) {
@@ -53,13 +53,13 @@ public class UserPetService {
 				pet.setBirthDate(birthDate);
 				pet.setInoculatedYn(inoculatedYn);
 				pet.setNeuteredYn(neuteredYn);
-				pet.setPetGender(petGender);
-				pet.setPetWeight(petWeight);
-				pet.setPetType(petType);
-				pet.setPetName(petName);
-				pet.setPetSpecies(petSpecies);
-				pet.setPetDescription(petDescription);
-				pet.setPetImgPath(petImgPath);
+				pet.setGender(petGender);
+				pet.setWeight(petWeight);
+				pet.setType(petType);
+				pet.setName(petName);
+				pet.setSpecies(petSpecies);
+				pet.setDescription(petDescription);
+				pet.setImgPath(petImgPath);
 
 			} else {
 				int petCount = userPetRepository.countByUserId(user.getId());
@@ -75,13 +75,13 @@ public class UserPetService {
 				pet.setBirthDate(birthDate);
 				pet.setInoculatedYn(inoculatedYn);
 				pet.setNeuteredYn(neuteredYn);
-				pet.setPetGender(petGender);
-				pet.setPetWeight(petWeight);
-				pet.setPetType(petType);
-				pet.setPetName(petName);
-				pet.setPetSpecies(petSpecies);
-				pet.setPetDescription(petDescription);
-				pet.setPetImgPath(petImgPath);
+				pet.setGender(petGender);
+				pet.setWeight(petWeight);
+				pet.setType(petType);
+				pet.setName(petName);
+				pet.setSpecies(petSpecies);
+				pet.setDescription(petDescription);
+				pet.setImgPath(petImgPath);
 
 				userPetRepository.save(pet);
 			}

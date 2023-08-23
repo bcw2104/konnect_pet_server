@@ -25,23 +25,23 @@ public class UserPet {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_pet_user"), nullable = false)
+	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "FK_USER_PET-USER_ID"), nullable = false)
 	private User user;
 
 	@Column(length = 30, nullable = false)
-	private String petName;
+	private String name;
 
 	@Column(length = 3, nullable = false)
-	private String petType;
+	private String type;
 
 	@Column(length = 30)
-	private String petSpecies;
+	private String species;
 
 	@Column(length = 1, nullable = false)
-	private String petGender;
+	private String gender;
 
 	@Column(precision = 10, scale = 2 ,nullable = false)
-	private BigDecimal petWeight;
+	private BigDecimal weight;
 
 	@Column(length = 8, nullable = false)
 	private String birthDate;
@@ -51,10 +51,10 @@ public class UserPet {
 	private boolean inoculatedYn;
 
 	@Column(length = 255)
-	private String petDescription;
+	private String description;
 
 	@Column(length = 255)
-	private String petImgPath;
+	private String imgPath;
 
 
 }
