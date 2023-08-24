@@ -81,6 +81,12 @@ public class CommunityController {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(communityService.getPendingFriends(user));
 	}
+	
+	@GetMapping("/friend/recommend")
+	public ResponseEntity<?> recommendFriends(Authentication authentication) {
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.ok(communityService.getRecommendFriends(user));
+	}
 
 	@PatchMapping("/friend/{id}")
 	public ResponseEntity<?> replyFriend(Authentication authentication, @PathVariable("id") Long toUserId,

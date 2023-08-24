@@ -34,5 +34,13 @@ public class UserFriendDto {
 		this.status = status;
 		this.createdDate = createdDate;
 	}
+	
+	public UserFriendDto(Long userId, String nickname, String birthDate, String gender,String imgPath) {
+		this.userId = userId;
+		this.nickname = nickname;
+		this.birthDate = birthDate;
+		this.gender = gender;
+		this.imgPath = imgPath;
+	}
 
 }

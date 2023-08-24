@@ -25,7 +25,7 @@ public class CommunityCommentDto {
 
 	private int likeCount;
 
-	private boolean likeYn;
+//	private boolean likeYn;
 	
 	private boolean removedYn;
 

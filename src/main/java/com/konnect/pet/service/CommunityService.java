@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -140,6 +141,23 @@ public class CommunityService {
 
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
+	
+	@Transactional(readOnly = true)
+	public ResponseDto getRecommendFriends(User user) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		int userCount = userRepository.countProfileHasUserByStatus(UserStatusCode.ACTIVE.getCode());
+		int limit = 10;
+		
+		Random random = new Random();
+		
+		random.setSeed(System.currentTimeMillis());
+		int offset = random.nextInt(userCount-limit);
+		List<UserFriendDto> recommendFriend = userFriendQueryRepository.findRecommendFriends(user.getId(),limit,offset);
+		
+		resultMap.put("recommends", recommendFriend);
+		
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
 
 	@Transactional
 	public ResponseDto replyFriend(User user, Long toUserId, ProcessStatusCode code) {
@@ -248,32 +266,36 @@ public class CommunityService {
 			parentComments.remove(limit - 1);
 			hasNext = true;
 		}
-		List<Long> commentIds = new ArrayList<>();
 		List<Long> parentCommentIds = parentComments.stream().map(ele -> ele.getCommentId()).toList();
 
 		Map<Long, List<CommunityCommentDto>> childComments = communityQueryRepository
 				.findChildComments(parentCommentIds.toArray(Long[]::new));
 
-		List<Long> childCommentIds = new ArrayList<>();
-		
-		childComments.values().stream().forEach(ele->{
-			childCommentIds.addAll(ele.stream().map(ele2->ele2.getCommentId()).toList());
-		});
-				
-		commentIds.addAll(parentCommentIds);
-		commentIds.addAll(childCommentIds);
-		
-		List<Long> likeCommentIds = communityPostLikeRepository.findPostIdsByUserIdAndPostIds(user.getId(), commentIds);
+//		댓글 좋아요 기능 - 나중에 수요가 있을 시 추가
+//		List<Long> childCommentIds = new ArrayList<>();
+//		
+//		childComments.values().stream().forEach(ele->{
+//			childCommentIds.addAll(ele.stream().map(ele2->ele2.getCommentId()).toList());
+//		});
+//
+//		List<Long> commentIds = new ArrayList<>();
+//		commentIds.addAll(parentCommentIds);
+//		commentIds.addAll(childCommentIds);
+//		
+//		List<Long> likeCommentIds = communityPostLikeRepository.findPostIdsByUserIdAndPostIds(user.getId(), commentIds);
 
 		for (CommunityCommentDto dto : parentComments) {
 			List<CommunityCommentDto> children = childComments.get(dto.getCommentId());
-
-			for (CommunityCommentDto child : children) {
-				child.setLikeYn(likeCommentIds.contains(dto.getCommentId()));
-			}
-
 			dto.setChildrens(children);
-			dto.setLikeYn(likeCommentIds.contains(dto.getCommentId()));
+			
+//			댓글 좋아요 기능 - 나중에 수요가 있을 시 추가
+//			List<CommunityCommentDto> children = childComments.get(dto.getCommentId());
+//
+//			for (CommunityCommentDto child : children) {
+//				child.setLikeYn(likeCommentIds.contains(dto.getCommentId()));
+//			}
+//
+//			dto.setLikeYn(likeCommentIds.contains(dto.getCommentId()));
 		}
 
 		resultMap.put("comments", parentComments);

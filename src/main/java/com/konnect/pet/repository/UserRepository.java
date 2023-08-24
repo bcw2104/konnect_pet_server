@@ -16,6 +16,9 @@ public interface UserRepository extends JpaRepository<User, Long>{
 	@Query("select u from User u where u.telHash = :telHash")
 	Optional<User> findByTelHash(@Param("telHash")String telHash);
 
+	@Query("select count(u) from User u join UserProfile up on u.userId = up.userId where u.status = :status")
+	int countProfileHasUserByStatus(@Param("status") String status);
+
 	boolean existsByEmail(@Param("email")String email);
 	boolean existsByTelEnc(@Param("telEnc")String telEnc);
 	boolean existsByTelHash(@Param("telHash")String telHash);
