@@ -31,20 +31,20 @@ public class CommunityQueryRepository {
 		return queryFactory
 				.select(Projections.constructor(CommunityPostDto.class, communityPost.id, communityPost.category.id,
 						communityPost.category.category, communityPost.user.id, userProfile.nickname,
-						userProfile.imgPath, communityPost.user.residenceCity, communityPost.content,
-						communityPost.likeCount, communityPost.commentCount, communityPost.createdDate))
-				.from(communityPost).join(communityPost.category, communityCategory).join(communityPost.user, user)
-				.join(userProfile).on(communityPost.user.id.eq(userProfile.user.id))
-				.where(communityPost.category.id.eq(categoryId)).limit(limit).offset(offset)
-				.orderBy(communityPost.id.desc()).fetch();
+						userProfile.imgPath, communityPost.content, communityPost.likeCount, communityPost.commentCount,
+						communityPost.createdDate))
+				.from(communityPost).join(communityPost.category, communityCategory).join(userProfile)
+				.on(communityPost.user.id.eq(userProfile.user.id))
+				.where((categoryId.equals(-1L) ? null : communityPost.category.id.eq(categoryId))).limit(limit)
+				.offset(offset).orderBy(communityPost.id.desc()).fetch();
 	}
 
 	public List<CommunityCommentDto> findParentComments(Long postId, int limit, int offset) {
 		return queryFactory
 				.select(Projections.constructor(CommunityCommentDto.class, communityComment.id,
 						communityComment.post.id, communityComment.user.id, userProfile.nickname, userProfile.imgPath,
-						communityComment.user.residenceCity, communityComment.content, communityComment.likeCount,
-						communityPost.createdDate, communityComment.imgPath, communityComment.parentId,communityComment.removedYn))
+						communityComment.content, communityComment.likeCount, communityPost.createdDate,
+						communityComment.imgPath, communityComment.parentId, communityComment.removedYn))
 				.from(communityComment).join(userProfile).on(communityComment.user.id.eq(userProfile.user.id))
 				.where(communityComment.post.id.eq(postId), communityComment.parentId.isNull()).limit(limit)
 				.offset(offset).orderBy(communityComment.id.asc()).fetch();
@@ -56,9 +56,9 @@ public class CommunityQueryRepository {
 				.transform(GroupBy.groupBy(communityComment.parentId)
 						.as(GroupBy.list(Projections.constructor(CommunityCommentDto.class, communityComment.id,
 								communityComment.post.id, communityComment.user.id, userProfile.nickname,
-								userProfile.imgPath, communityComment.user.residenceCity, communityComment.content,
-								communityComment.likeCount, communityPost.createdDate, communityComment.imgPath,
-								communityComment.parentId,communityComment.removedYn))));
+								userProfile.imgPath, communityComment.content, communityComment.likeCount,
+								communityPost.createdDate, communityComment.imgPath, communityComment.parentId,
+								communityComment.removedYn))));
 	}
 
 	public Map<Long, List<String>> findPostFilesByPostIds(Long[] postIds) {

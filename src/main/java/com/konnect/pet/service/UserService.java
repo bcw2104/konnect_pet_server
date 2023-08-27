@@ -37,6 +37,7 @@ import com.konnect.pet.enums.code.ProcessStatusCode;
 import com.konnect.pet.enums.code.UserStatusCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.BannerRepository;
+import com.konnect.pet.repository.PropertiesRepository;
 import com.konnect.pet.repository.TermsGroupRepository;
 import com.konnect.pet.repository.UserAppSettingRepository;
 import com.konnect.pet.repository.UserFriendRepository;
@@ -75,6 +76,7 @@ public class UserService {
 	private final BannerRepository bannerRepository;
 	private final TermsGroupRepository termsGroupRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final PropertiesRepository propertiesRepository;
 
 	@Value("${application.aes.privacy.key}")
 	private String PRIVACY_AES_KEY;
@@ -295,8 +297,13 @@ public class UserService {
 		int friendCount = userFriendRepository.countByFromUserIdAndStatus(user.getId(),
 				ProcessStatusCode.PERMITTED.getCode());
 
+		int petMaxCount = Integer
+				.parseInt(propertiesRepository.findValueByKey("pet_max_add_count").orElse("3"));
+
+		resultMap.put("point", pointMap.get(PointTypeCode.POINT.getCode()));
 		resultMap.put("point", pointMap.get(PointTypeCode.POINT.getCode()));
 		resultMap.put("banners", banners);
+		resultMap.put("petMaxCount", petMaxCount);
 		resultMap.put("newNotiCount", newNotiCount);
 		resultMap.put("friendCount", friendCount);
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);

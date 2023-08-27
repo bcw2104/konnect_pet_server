@@ -17,7 +17,7 @@ import lombok.Setter;
 @Entity
 @Setter
 @Getter
-public class UserPet {
+public class UserPet extends BaseAutoSetEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -41,9 +41,16 @@ public class CommunityController {
 		return ResponseEntity.ok(communityService.getCommunityData(user));
 	}
 
+	@GetMapping("/user/{id}")
+	public ResponseEntity<?> userDetail(Authentication authentication, @PathVariable("id") Long userId) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.getUserDetail(user, userId));
+	}
+
 	@GetMapping("/post")
-	public ResponseEntity<?> post(Authentication authentication, @RequestParam("category") Long categoryId,
-			PageRequestDto pageDto) {
+	public ResponseEntity<?> post(Authentication authentication,
+			@RequestParam(name = "category", required = false) Long categoryId, PageRequestDto pageDto) {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(communityService.getPosts(user, categoryId, pageDto));
@@ -54,6 +61,15 @@ public class CommunityController {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(communityService.savePost(user, body));
+	}
+
+	@PostMapping("/post/{id}/like")
+	public ResponseEntity<?> changePostLike(Authentication authentication, @PathVariable("id") Long postId,
+			@RequestBody Map<String, Object> body) {
+		User user = (User) authentication.getPrincipal();
+
+		boolean likeYn = Boolean.parseBoolean(body.get("likeYn").toString());
+		return ResponseEntity.ok(communityService.changePostLike(user, postId, likeYn));
 	}
 
 	@GetMapping("/post/{id}/comment")
@@ -81,7 +97,7 @@ public class CommunityController {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(communityService.getPendingFriends(user));
 	}
-	
+
 	@GetMapping("/friend/recommend")
 	public ResponseEntity<?> recommendFriends(Authentication authentication) {
 		User user = (User) authentication.getPrincipal();

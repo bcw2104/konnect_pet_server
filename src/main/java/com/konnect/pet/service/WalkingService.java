@@ -23,7 +23,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konnect.pet.dto.PropertiesDto;
-import com.konnect.pet.dto.UserWalkingFootprintDetailDto;
+import com.konnect.pet.dto.UserDetailDto;
 import com.konnect.pet.dto.UserWalkingFootprintDto;
 import com.konnect.pet.dto.UserWalkingHistoryDto;
 import com.konnect.pet.dto.UserWalkingHistoryListDto;
@@ -404,7 +404,7 @@ public class WalkingService {
 
 		UserProfile profile = userProfileRepository.findByUserId(footprint.getUser().getId()).orElse(new UserProfile());
 
-		return new ResponseDto(ResponseType.SUCCESS, new UserWalkingFootprintDetailDto(footprint, profile, friend));
+		return new ResponseDto(ResponseType.SUCCESS, new UserDetailDto(footprint.getUser(), profile, friend));
 	}
 
 	@Transactional(readOnly = true)
@@ -449,7 +449,8 @@ public class WalkingService {
 
 	@Transactional(readOnly = true)
 	public ResponseDto getWalkingHistories(User user, LocalDateTime startDate, LocalDateTime endDate) {
-		List<UserWalkingHistoryListDto> histories = userWalkingQueryRepository.findUserWalkingHistory(user.getId(), startDate, endDate);
+		List<UserWalkingHistoryListDto> histories = userWalkingQueryRepository.findUserWalkingHistory(user.getId(),
+				startDate, endDate);
 
 		return new ResponseDto(ResponseType.SUCCESS, histories);
 	}

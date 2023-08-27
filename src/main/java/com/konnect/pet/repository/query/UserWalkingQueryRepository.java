@@ -16,7 +16,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
-import com.konnect.pet.dto.UserWalkingFootprintDetailDto;
+import com.konnect.pet.dto.UserDetailDto;
 import com.konnect.pet.dto.UserWalkingHistoryListDto;
 import com.konnect.pet.entity.QUser;
 import com.konnect.pet.entity.QUserWalkingFootprint;

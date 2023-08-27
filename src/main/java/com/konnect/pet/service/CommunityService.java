@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.stereotype.Service;
@@ -15,8 +16,13 @@ import com.konnect.pet.dto.CommunityCommentDto;
 import com.konnect.pet.dto.CommunityPostDto;
 import com.konnect.pet.dto.PageRequestDto;
 import com.konnect.pet.dto.UserFriendDto;
+import com.konnect.pet.dto.UserDetailDto;
+import com.konnect.pet.entity.CommunityPost;
+import com.konnect.pet.entity.CommunityPostLike;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserFriend;
+import com.konnect.pet.entity.UserProfile;
+import com.konnect.pet.entity.UserWalkingFootprint;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.code.NotificationTypeCode;
 import com.konnect.pet.enums.code.ProcessStatusCode;
@@ -27,6 +33,7 @@ import com.konnect.pet.repository.CommunityCategoryRepository;
 import com.konnect.pet.repository.CommunityCommentLikeRepository;
 import com.konnect.pet.repository.CommunityPostFileRepository;
 import com.konnect.pet.repository.CommunityPostLikeRepository;
+import com.konnect.pet.repository.CommunityPostRepository;
 import com.konnect.pet.repository.UserFriendRepository;
 import com.konnect.pet.repository.UserNotificationLogRepository;
 import com.konnect.pet.repository.UserPetRepository;
@@ -51,6 +58,7 @@ public class CommunityService {
 	private final UserFriendRepository userFriendRepository;
 	private final BannerRepository bannerRepository;
 	private final CommunityCategoryRepository communityCategoryRepository;
+	private final CommunityPostRepository communityPostRepository;
 	private final CommunityPostLikeRepository communityPostLikeRepository;
 	private final CommunityCommentLikeRepository communityCommentLikeRepository;
 	private final CommunityPostFileRepository communityPostFileRepository;
@@ -141,21 +149,22 @@ public class CommunityService {
 
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
-	
+
 	@Transactional(readOnly = true)
 	public ResponseDto getRecommendFriends(User user) {
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 		int userCount = userRepository.countProfileHasUserByStatus(UserStatusCode.ACTIVE.getCode());
 		int limit = 10;
-		
+
 		Random random = new Random();
-		
+
 		random.setSeed(System.currentTimeMillis());
-		int offset = random.nextInt(userCount-limit);
-		List<UserFriendDto> recommendFriend = userFriendQueryRepository.findRecommendFriends(user.getId(),limit,offset);
-		
+		int offset = random.nextInt(userCount - limit);
+		List<UserFriendDto> recommendFriend = userFriendQueryRepository.findRecommendFriends(user.getId(), limit,
+				offset);
+
 		resultMap.put("recommends", recommendFriend);
-		
+
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
 
@@ -168,10 +177,6 @@ public class CommunityService {
 
 		User toUser = userRepository.findById(toUserId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
-
-		if (toUser.getStatus().equals(UserStatusCode.REMOVED.getCode())) {
-			return new ResponseDto(ResponseType.LEAVED_USER);
-		}
 
 		UserFriend friend = userFriendRepository.findByFromUserIdAndToUserId(user.getId(), toUserId).orElse(null);
 		UserFriend toFriend = userFriendRepository.findByFromUserIdAndToUserId(toUserId, user.getId()).orElse(null);
@@ -214,6 +219,19 @@ public class CommunityService {
 		resultMap.put("banners", banners);
 		resultMap.put("newNotiCount", newNotiCount);
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
+	@Transactional(readOnly = true)
+	public ResponseDto getUserDetail(User user, Long userId) {
+		User targetUser = userRepository.findById(userId)
+				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+		UserFriend friend = userFriendRepository.findByFromUserIdAndToUserId(user.getId(), targetUser.getId())
+				.orElse(null);
+
+		UserProfile profile = userProfileRepository.findByUserId(targetUser.getId()).orElse(new UserProfile());
+
+		return new ResponseDto(ResponseType.SUCCESS, new UserDetailDto(targetUser, profile, friend));
 	}
 
 	@Transactional(readOnly = true)
@@ -273,7 +291,7 @@ public class CommunityService {
 
 //		댓글 좋아요 기능 - 나중에 수요가 있을 시 추가
 //		List<Long> childCommentIds = new ArrayList<>();
-//		
+//
 //		childComments.values().stream().forEach(ele->{
 //			childCommentIds.addAll(ele.stream().map(ele2->ele2.getCommentId()).toList());
 //		});
@@ -281,13 +299,13 @@ public class CommunityService {
 //		List<Long> commentIds = new ArrayList<>();
 //		commentIds.addAll(parentCommentIds);
 //		commentIds.addAll(childCommentIds);
-//		
+//
 //		List<Long> likeCommentIds = communityPostLikeRepository.findPostIdsByUserIdAndPostIds(user.getId(), commentIds);
 
 		for (CommunityCommentDto dto : parentComments) {
 			List<CommunityCommentDto> children = childComments.get(dto.getCommentId());
 			dto.setChildrens(children);
-			
+
 //			댓글 좋아요 기능 - 나중에 수요가 있을 시 추가
 //			List<CommunityCommentDto> children = childComments.get(dto.getCommentId());
 //
@@ -302,6 +320,30 @@ public class CommunityService {
 		resultMap.put("hasNext", hasNext);
 
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
+	@Transactional
+	public ResponseDto changePostLike(User user, Long postId, boolean likeYn) {
+		CommunityPostLike like = communityPostLikeRepository.findByUserIdAndPostId(user.getId(), postId).orElse(null);
+
+		CommunityPost post = communityPostRepository.findByIdForUpdate(postId)
+				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+		if (likeYn) {
+			if (like == null) {
+				like = new CommunityPostLike();
+				like.setPost(post);
+				like.setUser(user);
+				communityPostLikeRepository.save(like);
+				post.setLikeCount(post.getLikeCount() + 1);
+			}
+		} else {
+			if (like != null) {
+				communityPostLikeRepository.delete(like);
+				post.setLikeCount(post.getLikeCount() - 1);
+			}
+		}
+
+		return new ResponseDto(ResponseType.SUCCESS);
 	}
 
 }
