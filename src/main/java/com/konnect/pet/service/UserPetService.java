@@ -27,6 +27,7 @@ public class UserPetService {
 
 	private final UserPetRepository userPetRepository;
 	private final PropertiesRepository propertiesRepository;
+	private final S3StorageService s3StorageService;
 
 	@Transactional
 	public ResponseDto saveOrEditPet(User user, Map<String, Object> body, Long petId) {
@@ -50,6 +51,11 @@ public class UserPetService {
 				if (pet == null || !pet.getUser().getId().equals(user.getId())) {
 					throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
 				}
+
+				if(pet.getImgPath() != null) {
+					s3StorageService.removeOnS3(pet.getImgPath());
+				}
+				
 				pet.setBirthDate(birthDate);
 				pet.setInoculatedYn(inoculatedYn);
 				pet.setNeuteredYn(neuteredYn);
@@ -103,6 +109,10 @@ public class UserPetService {
 
 			if (pet == null || !pet.getUser().getId().equals(user.getId())) {
 				throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+			}
+
+			if(pet.getImgPath() != null) {
+				s3StorageService.removeOnS3(pet.getImgPath());
 			}
 
 			userPetRepository.delete(pet);

@@ -1,5 +1,7 @@
 package com.konnect.pet.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,14 +25,20 @@ public class FileUploadController {
 	private final S3StorageService s3StorageService;
 
 	@PostMapping("/images/profile/user")
-	public ResponseEntity<?> uploadUserImage(@RequestParam("image") MultipartFile multipartFile) {
+	public ResponseEntity<?> uploadUserImage(@RequestPart("image") MultipartFile multipartFile) {
 
 		return ResponseEntity.ok(s3StorageService.uploadOnS3(multipartFile, ServiceConst.S3_PROFILE_USER_DIR_PATH));
 	}
 
 	@PostMapping("/images/profile/pet")
-	public ResponseEntity<?> uploadPetImage(@RequestParam("image") MultipartFile multipartFile) {
+	public ResponseEntity<?> uploadPetImage(@RequestPart("image") MultipartFile multipartFile) {
 
 		return ResponseEntity.ok(s3StorageService.uploadOnS3(multipartFile, ServiceConst.S3_PROFILE_PET_DIR_PATH));
+	
+	}
+	@PostMapping("/images/community/post")
+	public ResponseEntity<?> uploadPostImage(@RequestPart(value="images") List<MultipartFile> multipartFiles) {
+		
+		return ResponseEntity.ok(s3StorageService.uploadMultiOnS3(multipartFiles, ServiceConst.S3_PROFILE_PET_DIR_PATH));
 	}
 }

@@ -47,9 +47,6 @@ public class UserWalkingRewardHistory extends BaseAutoSetEntity{
 	@Column(length = 3, nullable = false)
 	private String pointType;
 
-	@Column(length = 200)
-	private String policyName;
-
 	@Column(length = 3, nullable = false)
 	private String rewardProvideType;
 

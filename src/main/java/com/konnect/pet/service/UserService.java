@@ -1,5 +1,6 @@
 package com.konnect.pet.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,7 @@ import com.konnect.pet.entity.TermsGroup;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserAppSetting;
 import com.konnect.pet.entity.UserFriend;
+import com.konnect.pet.entity.UserPet;
 import com.konnect.pet.entity.UserPoint;
 import com.konnect.pet.entity.UserProfile;
 import com.konnect.pet.entity.UserRemoved;
@@ -37,6 +39,9 @@ import com.konnect.pet.enums.code.ProcessStatusCode;
 import com.konnect.pet.enums.code.UserStatusCode;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.BannerRepository;
+import com.konnect.pet.repository.CommunityCommentRepository;
+import com.konnect.pet.repository.CommunityPostLikeRepository;
+import com.konnect.pet.repository.CommunityPostRepository;
 import com.konnect.pet.repository.PropertiesRepository;
 import com.konnect.pet.repository.TermsGroupRepository;
 import com.konnect.pet.repository.UserAppSettingRepository;
@@ -77,6 +82,11 @@ public class UserService {
 	private final TermsGroupRepository termsGroupRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final PropertiesRepository propertiesRepository;
+	private final S3StorageService s3StorageService;
+
+	private final CommunityPostRepository communityPostRepository;
+	private final CommunityPostLikeRepository communityPostLikeRepository;
+	private final CommunityCommentRepository communityCommentRepository;
 
 	@Value("${application.aes.privacy.key}")
 	private String PRIVACY_AES_KEY;
@@ -205,7 +215,7 @@ public class UserService {
 
 		log.info("remove user - userId: {}", userId);
 
-		User user = userRepository.findById(userId)
+		User user = userRepository.findByIdForUpdate(userId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
 		String tel = null;
@@ -234,10 +244,12 @@ public class UserService {
 
 		user.setPassword(null);
 		user.setEmail(dummy);
-
+		
+		user.setMarketingYn(false);
 		user.setTelEnc(dummy);
 		user.setTelHash(dummy);
 		user.setTelMask(dummy);
+		user.setAktId(null);
 		user.setDeviceModel(null);
 		user.setDeviceOs(null);
 		user.setDeviceOsVersion(null);
@@ -246,6 +258,24 @@ public class UserService {
 
 		userRemovedRepository.save(userRemoved);
 
+		UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
+
+		if (profile != null) {
+			if (profile.getImgPath() != null) {
+				s3StorageService.removeOnS3(profile.getImgPath());
+			}
+			profile.setImgPath(null);
+		}
+		List<UserPet> pets = user.getUserPets();
+		
+		for(UserPet pet : pets) {
+			if (pet.getImgPath() != null) {
+				s3StorageService.removeOnS3(pet.getImgPath());
+			}
+			pet.setImgPath(null);
+		}
+
+		refreshTokenRepository.deleteById(userId);
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
 
@@ -261,6 +291,9 @@ public class UserService {
 			UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
 
 			if (profile != null) {
+				if (profile.getImgPath() != null) {
+					s3StorageService.removeOnS3(profile.getImgPath());
+				}
 				profile.setBirthDate(birthDate);
 				profile.setNickname(nickname);
 				profile.setImgPath(imgPath);
@@ -294,18 +327,20 @@ public class UserService {
 
 		List<BannerDto> banners = bannerRepository.findActive().stream().map(BannerDto::new).toList();
 
-		int friendCount = userFriendRepository.countByFromUserIdAndStatus(user.getId(),
-				ProcessStatusCode.PERMITTED.getCode());
+		int postCount = communityPostRepository.countActiveByUserId(user.getId());
+		int commentCount = communityCommentRepository.countActiveByUserId(user.getId());
+		int postLikeCount = communityPostLikeRepository.countByUserId(user.getId());
 
-		int petMaxCount = Integer
-				.parseInt(propertiesRepository.findValueByKey("pet_max_add_count").orElse("3"));
+		int petMaxCount = Integer.parseInt(propertiesRepository.findValueByKey("pet_max_add_count").orElse("3"));
 
 		resultMap.put("point", pointMap.get(PointTypeCode.POINT.getCode()));
 		resultMap.put("point", pointMap.get(PointTypeCode.POINT.getCode()));
 		resultMap.put("banners", banners);
 		resultMap.put("petMaxCount", petMaxCount);
 		resultMap.put("newNotiCount", newNotiCount);
-		resultMap.put("friendCount", friendCount);
+		resultMap.put("postCount", postCount);
+		resultMap.put("commentCount", commentCount);
+		resultMap.put("postLikeCount", postLikeCount);
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
 

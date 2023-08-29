@@ -26,7 +26,7 @@ public class UserWalkingRewardHistoryDto {
 		this.pointType = pointTypeCode.getCode();
 		this.pointTypeName = pointTypeCode.getCodeName();
 		this.pointTypeSymbol = pointTypeCode.getCodeForApp();
-		this.policyName = history.getPolicyName();
+		this.policyName = history.getWalkingRewardPolicy().getPolicyName();
 	}
 
 }

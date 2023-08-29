@@ -3,6 +3,8 @@ package com.konnect.pet.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.konnect.pet.entity.CommunityPost;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,11 +31,14 @@ public class CommunityPostDto {
 	private boolean likeYn;
 
 	private LocalDateTime createdDate;
+	
+	private boolean removedYn;
 
 	private List<String> filePaths;
 
+	
 	public CommunityPostDto(Long postId, Long categoryId, String category, Long userId, String nickname,
-			String profileImgPath, String content, int likeCount, int commentCount, LocalDateTime createdDate) {
+			String profileImgPath, String content, int likeCount, int commentCount, LocalDateTime createdDate,boolean removedYn) {
 		this.postId = postId;
 		this.categoryId = categoryId;
 		this.category = category;
@@ -44,6 +49,7 @@ public class CommunityPostDto {
 		this.likeCount = likeCount;
 		this.commentCount = commentCount;
 		this.createdDate = createdDate;
+		this.removedYn = removedYn;
 	}
 
 }

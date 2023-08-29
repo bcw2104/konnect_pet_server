@@ -1,10 +1,8 @@
 package com.konnect.pet.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -13,12 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.Upload;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.response.ResponseDto;
@@ -34,8 +28,20 @@ public class S3StorageService {
 	private String bucket;
 	@Value("${cloud.aws.s3.url}")
 	private String bucketUrl;
+	@Value("${cloud.aws.s3.public-path}")
+	private String publicPath;
 
 	private final AmazonS3Client amazonS3Client;
+
+	public void removeOnS3(String path) {
+		if (path.startsWith(publicPath) && path.contains(".")) {
+			try {
+				amazonS3Client.deleteObject(bucket, path);
+			} catch (Exception e) {
+				log.error("S3 Object remove Error");
+			}
+		}
+	}
 
 	public ResponseDto uploadOnS3(MultipartFile uploadFile, String dirPath) {
 		String origName = uploadFile.getOriginalFilename();
@@ -48,15 +54,41 @@ public class S3StorageService {
 			metadata.setContentType(uploadFile.getContentType());
 			metadata.setContentLength(uploadFile.getSize());
 
-			path = dirPath + "/" + saveFileName;
+			path = publicPath + "/" + dirPath + "/" + saveFileName;
 			amazonS3Client.putObject(bucket, path, uploadFile.getInputStream(), metadata);
 		} catch (Exception e) {
+			log.error("S3 Object upload Error");
 			throw new CustomResponseException(ResponseType.FAIL, e.getMessage());
 		}
 
-		Map<String, String> resultMap = new HashMap<String, String>();
-		resultMap.put("imagePath", "/" + path);
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap.put("imagePath", path);
 
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
+	public ResponseDto uploadMultiOnS3(List<MultipartFile> multipartFiles, String dirPath) {
+		List<String> paths = new ArrayList<String>();
+		for (MultipartFile uploadFile : multipartFiles) {
+			String origName = uploadFile.getOriginalFilename();
+			String path = null;
+			try {
+				final String ext = origName.substring(origName.lastIndexOf('.'));
+				final String saveFileName = getUuid() + ext;
+
+				ObjectMetadata metadata = new ObjectMetadata();
+				metadata.setContentType(uploadFile.getContentType());
+				metadata.setContentLength(uploadFile.getSize());
+
+				path = publicPath + "/" + dirPath + "/" + saveFileName;
+				amazonS3Client.putObject(bucket, path, uploadFile.getInputStream(), metadata);
+				paths.add(path);
+			} catch (Exception e) {
+				log.error("S3 Object upload Error");
+			}
+		}
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		resultMap.put("imagePaths", paths);
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
 

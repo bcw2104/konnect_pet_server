@@ -19,5 +19,10 @@ public interface CommunityPostRepository extends JpaRepository<CommunityPost, Lo
 	@Query("select p from CommunityPost p where p.id = :id")
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	Optional<CommunityPost> findByIdForUpdate(@Param("id") Long id);
+	
+	@Query("select p from CommunityPost p where p.id = :id and p.removedYn = false")
+	Optional<CommunityPost> findActiveById(@Param("id") Long id);
 
+	@Query("select count(p) from CommunityPost p where p.user.id = :userId and p.removedYn = false")
+	int countActiveByUserId(@Param("userId") Long userId);
 }

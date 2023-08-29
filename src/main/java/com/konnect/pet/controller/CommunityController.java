@@ -49,7 +49,7 @@ public class CommunityController {
 	}
 
 	@GetMapping("/post")
-	public ResponseEntity<?> post(Authentication authentication,
+	public ResponseEntity<?> posts(Authentication authentication,
 			@RequestParam(name = "category", required = false) Long categoryId, PageRequestDto pageDto) {
 		User user = (User) authentication.getPrincipal();
 
@@ -62,6 +62,13 @@ public class CommunityController {
 
 		return ResponseEntity.ok(communityService.savePost(user, body));
 	}
+	
+	@PostMapping("/post/{id}")
+	public ResponseEntity<?> post(Authentication authentication, @RequestParam("id") Long postId) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.getPost(user, postId));
+	}
 
 	@PostMapping("/post/{id}/like")
 	public ResponseEntity<?> changePostLike(Authentication authentication, @PathVariable("id") Long postId,
@@ -73,7 +80,7 @@ public class CommunityController {
 	}
 
 	@GetMapping("/post/{id}/comment")
-	public ResponseEntity<?> postComment(Authentication authentication, @RequestParam("id") Long postId,
+	public ResponseEntity<?> postComment(Authentication authentication, @PathVariable("id") Long postId,
 			PageRequestDto pageDto) {
 		User user = (User) authentication.getPrincipal();
 

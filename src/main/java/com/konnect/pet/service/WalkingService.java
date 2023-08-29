@@ -239,7 +239,6 @@ public class WalkingService {
 				UserWalkingRewardHistory rewardHistory = new UserWalkingRewardHistory();
 				rewardHistory.setAmount(rewardAmount);
 				rewardHistory.setPointType(policy.getPointType());
-				rewardHistory.setPolicyName(policy.getPolicyName());
 				rewardHistory.setRewardProvideType(policy.getRewardProvideType());
 				rewardHistory.setRewardType(policy.getRewardType());
 				rewardHistory.setUser(user);

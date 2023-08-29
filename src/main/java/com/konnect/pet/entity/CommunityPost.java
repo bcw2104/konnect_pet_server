@@ -48,6 +48,8 @@ public class CommunityPost extends BaseAutoSetEntity {
 	
 	@ColumnDefault("0")
 	private int commentCount;
+	
+	private boolean removedYn;
 
 	@OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
 	private List<CommunityPostFile> files;

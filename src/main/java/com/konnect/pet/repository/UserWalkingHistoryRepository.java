@@ -23,7 +23,10 @@ public interface UserWalkingHistoryRepository extends JpaRepository<UserWalkingH
 	List<UserWalkingHistory> findByUserIdAndStartDate(@Param("userId") Long userId,
 			@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-	@Query("select u from UserWalkingHistory u left join fetch u.rewardHistories rh where u.id = :id")
+	@Query("select u from UserWalkingHistory u "
+			+ "left join fetch u.rewardHistories rh "
+			+ "left join fetch rh.walkingRewardPolicy wrp "
+			+ "where u.id = :id")
 	Optional<UserWalkingHistory> findWithRewardHistById(@Param("id") Long id);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)

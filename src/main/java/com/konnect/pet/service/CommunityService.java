@@ -241,7 +241,7 @@ public class CommunityService {
 		int limit = pageDto.getSize() + 1;
 		int offset = (pageDto.getPage() - 1) * pageDto.getSize();
 
-		List<CommunityPostDto> posts = communityQueryRepository.findPosts(categoryId, limit, offset);
+		List<CommunityPostDto> posts = communityQueryRepository.findActivePosts(categoryId, limit, offset);
 
 		boolean hasNext = false;
 		if (posts.size() == limit) {
@@ -265,8 +265,19 @@ public class CommunityService {
 	}
 
 	@Transactional
-	public ResponseDto savePost(User user, Map<String, Object> map) {
+	public ResponseDto getPost(User user, Long postId) {
+		CommunityPostDto post = communityQueryRepository.findActivePostById(postId);
+		int likeYn = communityPostLikeRepository.countByUserIdAndPostId(user.getId(), postId);
+		List<String> filePaths = communityQueryRepository.findPostFilesByPostId(postId);
 
+		post.setLikeYn(likeYn >= 1);
+		post.setFilePaths(filePaths);
+
+		return new ResponseDto(ResponseType.SUCCESS, post);
+	}
+
+	@Transactional
+	public ResponseDto savePost(User user, Map<String, Object> map) {
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
 
