@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.collections4.ListUtils;
 import org.joda.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.ex.CustomResponseException;
@@ -34,12 +37,33 @@ public class S3StorageService {
 	private final AmazonS3Client amazonS3Client;
 
 	public void removeOnS3(String path) {
-		if (path.startsWith(publicPath) && path.contains(".")) {
+		if (path != null && path.startsWith(publicPath) && path.contains(".")) {
 			try {
 				amazonS3Client.deleteObject(bucket, path);
 			} catch (Exception e) {
 				log.error("S3 Object remove Error");
 			}
+		}
+	}
+
+	public void removeMultiOnS3(List<String> paths) {
+		List<KeyVersion> keys = new ArrayList<KeyVersion>();
+		for (String path : paths) {
+			if (path != null && path.startsWith(publicPath) && path.contains(".")) {
+				keys.add(new KeyVersion(path));
+			}
+		}
+
+		try {
+			List<List<KeyVersion>> partitions = ListUtils.partition(keys, 500);
+
+			for (List<KeyVersion> partition : partitions) {
+				DeleteObjectsRequest multiObjectDeleteRequest = new DeleteObjectsRequest(bucket).withKeys(keys)
+						.withQuiet(false);
+				amazonS3Client.deleteObjects(multiObjectDeleteRequest);
+			}
+		} catch (Exception e) {
+			log.error("S3 Object remove Error");
 		}
 	}
 

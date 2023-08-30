@@ -124,13 +124,13 @@ public class UserController {
 		return ResponseEntity.ok(userService.saveProfile(user, body));
 	}
 
-	@PutMapping("/pet")
+	@PostMapping("/pet")
 	public ResponseEntity<?> savePetInfo(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(userPetService.saveOrEditPet(user, body, null));
 	}
 
-	@PatchMapping("/pet/{id}")
+	@PutMapping("/pet/{id}")
 	public ResponseEntity<?> savePetInfo(Authentication authentication, @RequestBody Map<String, Object> body,
 			@PathVariable("id") Long id) {
 		User user = (User) authentication.getPrincipal();

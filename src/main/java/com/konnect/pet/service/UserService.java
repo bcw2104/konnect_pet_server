@@ -244,7 +244,7 @@ public class UserService {
 
 		user.setPassword(null);
 		user.setEmail(dummy);
-		
+
 		user.setMarketingYn(false);
 		user.setTelEnc(dummy);
 		user.setTelHash(dummy);
@@ -261,17 +261,13 @@ public class UserService {
 		UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
 
 		if (profile != null) {
-			if (profile.getImgPath() != null) {
-				s3StorageService.removeOnS3(profile.getImgPath());
-			}
+			s3StorageService.removeOnS3(profile.getImgPath());
 			profile.setImgPath(null);
 		}
 		List<UserPet> pets = user.getUserPets();
-		
-		for(UserPet pet : pets) {
-			if (pet.getImgPath() != null) {
-				s3StorageService.removeOnS3(pet.getImgPath());
-			}
+
+		for (UserPet pet : pets) {
+			s3StorageService.removeOnS3(pet.getImgPath());
 			pet.setImgPath(null);
 		}
 
@@ -291,9 +287,7 @@ public class UserService {
 			UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
 
 			if (profile != null) {
-				if (profile.getImgPath() != null) {
-					s3StorageService.removeOnS3(profile.getImgPath());
-				}
+				s3StorageService.removeOnS3(profile.getImgPath());
 				profile.setBirthDate(birthDate);
 				profile.setNickname(nickname);
 				profile.setImgPath(imgPath);

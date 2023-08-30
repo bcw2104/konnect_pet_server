@@ -52,10 +52,8 @@ public class UserPetService {
 					throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
 				}
 
-				if(pet.getImgPath() != null) {
-					s3StorageService.removeOnS3(pet.getImgPath());
-				}
-				
+				s3StorageService.removeOnS3(pet.getImgPath());
+
 				pet.setBirthDate(birthDate);
 				pet.setInoculatedYn(inoculatedYn);
 				pet.setNeuteredYn(neuteredYn);
@@ -111,9 +109,7 @@ public class UserPetService {
 				throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
 			}
 
-			if(pet.getImgPath() != null) {
-				s3StorageService.removeOnS3(pet.getImgPath());
-			}
+			s3StorageService.removeOnS3(pet.getImgPath());
 
 			userPetRepository.delete(pet);
 

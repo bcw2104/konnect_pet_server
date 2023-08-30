@@ -1,5 +1,6 @@
 package com.konnect.pet.entity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.hibernate.annotations.ColumnDefault;
@@ -50,6 +51,8 @@ public class CommunityPost extends BaseAutoSetEntity {
 	private int commentCount;
 	
 	private boolean removedYn;
+	
+	private LocalDateTime removedDate;
 
 	@OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
 	private List<CommunityPostFile> files;

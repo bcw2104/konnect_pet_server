@@ -1,5 +1,6 @@
 package com.konnect.pet.entity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.hibernate.annotations.ColumnDefault;
@@ -50,6 +51,8 @@ public class CommunityComment extends BaseAutoSetEntity {
 	private int likeCount;
 	
 	private boolean removedYn;
+
+	private LocalDateTime removedDate;
 
 	@Column(length = 255)
 	private String imgPath;

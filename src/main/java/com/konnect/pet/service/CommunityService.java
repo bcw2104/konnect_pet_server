@@ -1,5 +1,6 @@
 package com.konnect.pet.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +11,8 @@ import java.util.Random;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konnect.pet.dto.BannerDto;
 import com.konnect.pet.dto.CommunityCategoryDto;
 import com.konnect.pet.dto.CommunityCommentDto;
@@ -17,7 +20,10 @@ import com.konnect.pet.dto.CommunityPostDto;
 import com.konnect.pet.dto.PageRequestDto;
 import com.konnect.pet.dto.UserFriendDto;
 import com.konnect.pet.dto.UserDetailDto;
+import com.konnect.pet.entity.CommunityCategory;
+import com.konnect.pet.entity.CommunityComment;
 import com.konnect.pet.entity.CommunityPost;
+import com.konnect.pet.entity.CommunityPostFile;
 import com.konnect.pet.entity.CommunityPostLike;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserFriend;
@@ -31,6 +37,7 @@ import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.BannerRepository;
 import com.konnect.pet.repository.CommunityCategoryRepository;
 import com.konnect.pet.repository.CommunityCommentLikeRepository;
+import com.konnect.pet.repository.CommunityCommentRepository;
 import com.konnect.pet.repository.CommunityPostFileRepository;
 import com.konnect.pet.repository.CommunityPostLikeRepository;
 import com.konnect.pet.repository.CommunityPostRepository;
@@ -50,6 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class CommunityService {
+	private final ObjectMapper objectMapper;
 
 	private final UserRepository userRepository;
 	private final UserPetRepository userPetRepository;
@@ -60,9 +68,11 @@ public class CommunityService {
 	private final CommunityCategoryRepository communityCategoryRepository;
 	private final CommunityPostRepository communityPostRepository;
 	private final CommunityPostLikeRepository communityPostLikeRepository;
+	private final CommunityCommentRepository communityCommentRepository;
 	private final CommunityCommentLikeRepository communityCommentLikeRepository;
 	private final CommunityPostFileRepository communityPostFileRepository;
 	private final CommunityQueryRepository communityQueryRepository;
+	private final S3StorageService s3StorageService;
 
 	private final NotificationService notificationService;
 	private final UserNotificationLogRepository userNotificationLogRepository;
@@ -277,7 +287,75 @@ public class CommunityService {
 	}
 
 	@Transactional
-	public ResponseDto savePost(User user, Map<String, Object> map) {
+	public ResponseDto saveOrEditPost(User user, Map<String, Object> body, Long postId) {
+		try {
+			Long categoryId = Long.parseLong(body.get("categoryId").toString());
+			String content = body.get("content").toString();
+			List<String> filePaths = objectMapper.readValue(body.get("filePaths").toString(),
+					new TypeReference<List<String>>() {
+					});
+			CommunityCategory category = communityCategoryRepository.findById(categoryId)
+					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+			CommunityPost post = null;
+			if (postId != null) {
+				post = communityPostRepository.findById(postId).orElse(null);
+				if (post == null || !post.getUser().getId().equals(user.getId())) {
+					throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+				}
+
+				post.setCategory(category);
+				post.setContent(content);
+
+				List<CommunityPostFile> files = post.getFiles();
+
+				List<String> paths = files.stream().map(file -> file.getFilePath()).toList();
+				s3StorageService.removeMultiOnS3(paths);
+
+				communityPostFileRepository.deleteAllInBatch(files);
+			} else {
+				post = new CommunityPost();
+				post.setCommentCount(0);
+				post.setCategory(category);
+				post.setContent(content);
+				post.setUser(user);
+				post.setRemovedYn(false);
+				post.setLikeCount(0);
+
+				communityPostRepository.save(post);
+			}
+
+			List<CommunityPostFile> files = new ArrayList<>();
+
+			for (String path : filePaths) {
+				CommunityPostFile file = new CommunityPostFile();
+				file.setUser(user);
+				file.setPost(post);
+				file.setFilePath(path);
+
+				files.add(file);
+			}
+
+			communityPostFileRepository.saveAll(files);
+
+			return new ResponseDto(ResponseType.SUCCESS);
+		} catch (Exception e) {
+			log.error("Save post failed - user: {}, body: {}", user.getId(), body.toString(), e);
+			throw new CustomResponseException(ResponseType.INVALID_PARAMETER, e.getMessage());
+		}
+	}
+
+	@Transactional
+	public ResponseDto removePost(User user, Long postId) {
+
+		CommunityPost post = communityPostRepository.findById(postId).orElse(null);
+		if (post == null || !post.getUser().getId().equals(user.getId())) {
+			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+		}
+
+		post.setRemovedYn(true);
+		post.setRemovedDate(LocalDateTime.now());
+
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
 
@@ -331,6 +409,62 @@ public class CommunityService {
 		resultMap.put("hasNext", hasNext);
 
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
+	@Transactional
+	public ResponseDto saveOrEditComment(User user, Map<String, Object> body, Long postId, Long commentId) {
+		try {
+			Long parentId = body.get("parentId") != null ? Long.parseLong(body.get("parentId").toString()) : null;
+			String content = body.get("content").toString();
+			String imagePath = body.get("imagePath").toString();
+
+			CommunityPost post = communityPostRepository.findById(postId)
+					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+			CommunityComment comment = null;
+			if (commentId != null) {
+				comment = communityCommentRepository.findById(commentId).orElse(null);
+				if (comment == null || !comment.getUser().getId().equals(user.getId())
+						|| !comment.getPost().getId().equals(postId)) {
+					throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+				}
+
+				s3StorageService.removeOnS3(comment.getImgPath());
+
+				comment.setContent(content);
+				comment.setImgPath(imagePath);
+			} else {
+				comment = new CommunityComment();
+				comment.setContent(content);
+				comment.setImgPath(imagePath);
+				comment.setLikeCount(0);
+				comment.setParentId(parentId);
+				comment.setPost(post);
+				comment.setRemovedYn(false);
+				comment.setUser(user);
+
+				communityCommentRepository.save(comment);
+			}
+
+			return new ResponseDto(ResponseType.SUCCESS);
+		} catch (Exception e) {
+			log.error("Save comment failed - user: {}, body: {}", user.getId(), body.toString(), e);
+			throw new CustomResponseException(ResponseType.INVALID_PARAMETER, e.getMessage());
+		}
+	}
+
+	@Transactional
+	public ResponseDto removeComment(User user, Long postId, Long commentId) {
+		CommunityComment comment = communityCommentRepository.findById(postId).orElse(null);
+		if (comment == null || !comment.getUser().getId().equals(user.getId())
+				|| !comment.getPost().getId().equals(postId)) {
+			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+		}
+
+		comment.setRemovedYn(true);
+		comment.setRemovedDate(LocalDateTime.now());
+
+		return new ResponseDto(ResponseType.SUCCESS);
 	}
 
 	@Transactional

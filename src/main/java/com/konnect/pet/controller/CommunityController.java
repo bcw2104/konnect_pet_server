@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -60,10 +61,26 @@ public class CommunityController {
 	public ResponseEntity<?> savePost(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 
-		return ResponseEntity.ok(communityService.savePost(user, body));
+		return ResponseEntity.ok(communityService.saveOrEditPost(user, body, null));
 	}
-	
-	@PostMapping("/post/{id}")
+
+	@PutMapping("/post/{id}")
+	public ResponseEntity<?> editPost(Authentication authentication, @RequestParam("id") Long postId,
+			@RequestBody Map<String, Object> body) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.saveOrEditPost(user, body, postId));
+	}
+
+	@DeleteMapping("/post/{id}")
+	public ResponseEntity<?> deletePost(Authentication authentication, @RequestParam("id") Long postId,
+			@RequestBody Map<String, Object> body) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.removePost(user, postId));
+	}
+
+	@GetMapping("/post/{id}")
 	public ResponseEntity<?> post(Authentication authentication, @RequestParam("id") Long postId) {
 		User user = (User) authentication.getPrincipal();
 
@@ -87,7 +104,31 @@ public class CommunityController {
 		return ResponseEntity.ok(communityService.getPostComments(user, postId, pageDto));
 	}
 
-	@PutMapping("/friend/{id}")
+	@PostMapping("/post/{id}/comment")
+	public ResponseEntity<?> saveComment(Authentication authentication, @RequestParam("id") Long postId,
+			@RequestBody Map<String, Object> body) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.saveOrEditComment(user, body, postId, null));
+	}
+
+	@PutMapping("/post/{postId}/comment/{id}")
+	public ResponseEntity<?> editComment(Authentication authentication, @RequestParam("postId") Long postId,
+			@RequestParam("id") Long commentId, @RequestBody Map<String, Object> body) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.saveOrEditComment(user, body, postId, commentId));
+	}
+
+	@DeleteMapping("/post/{postId}/comment/{id}")
+	public ResponseEntity<?> deleteComment(Authentication authentication, @RequestParam("postId") Long postId,
+			@RequestParam("id") Long commentId) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.removeComment(user, postId,commentId));
+	}
+
+	@PostMapping("/friend/{id}")
 	public ResponseEntity<?> requestFriend(Authentication authentication, @PathVariable("id") Long toUserId) {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(communityService.requestFriend(user, toUserId));

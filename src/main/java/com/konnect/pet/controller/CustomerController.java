@@ -40,7 +40,7 @@ public class CustomerController {
 		return ResponseEntity.ok(customerService.getQnaFormData());
 	}
 
-	@PutMapping("/qna/new")
+	@PostMapping("/qna/new")
 	public ResponseEntity<?> saveQna(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 

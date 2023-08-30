@@ -39,6 +39,12 @@ public class FileUploadController {
 	@PostMapping("/images/community/post")
 	public ResponseEntity<?> uploadPostImage(@RequestPart(value="images") List<MultipartFile> multipartFiles) {
 		
-		return ResponseEntity.ok(s3StorageService.uploadMultiOnS3(multipartFiles, ServiceConst.S3_PROFILE_PET_DIR_PATH));
+		return ResponseEntity.ok(s3StorageService.uploadMultiOnS3(multipartFiles, ServiceConst.S3_COMMUNITY_POST_DIR_PATH));
+	}
+	
+	@PostMapping("/images/community/comment")
+	public ResponseEntity<?> uploadCommentImage(@RequestPart(value="image") MultipartFile multipartFile) {
+		
+		return ResponseEntity.ok(s3StorageService.uploadOnS3(multipartFile, ServiceConst.S3_COMMUNITY_COMMENT_DIR_PATH));
 	}
 }
