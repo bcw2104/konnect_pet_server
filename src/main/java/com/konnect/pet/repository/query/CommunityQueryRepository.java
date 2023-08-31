@@ -53,7 +53,7 @@ public class CommunityQueryRepository {
 		return queryFactory
 				.select(Projections.constructor(CommunityCommentDto.class, communityComment.id,
 						communityComment.post.id, communityComment.user.id, userProfile.nickname, userProfile.imgPath,
-						communityComment.content, communityComment.likeCount, communityPost.createdDate,
+						communityComment.content, communityComment.likeCount, communityComment.createdDate,
 						communityComment.imgPath, communityComment.parentId, communityComment.removedYn))
 				.from(communityComment).join(userProfile).on(communityComment.user.id.eq(userProfile.user.id))
 				.where(communityComment.post.id.eq(postId), communityComment.parentId.isNull()).limit(limit)
@@ -67,7 +67,7 @@ public class CommunityQueryRepository {
 						.as(GroupBy.list(Projections.constructor(CommunityCommentDto.class, communityComment.id,
 								communityComment.post.id, communityComment.user.id, userProfile.nickname,
 								userProfile.imgPath, communityComment.content, communityComment.likeCount,
-								communityPost.createdDate, communityComment.imgPath, communityComment.parentId,
+								communityComment.createdDate, communityComment.imgPath, communityComment.parentId,
 								communityComment.removedYn))));
 	}
 

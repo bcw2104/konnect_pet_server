@@ -19,14 +19,12 @@ public class CommunityCommentDto {
 
 	private String profileImgPath;
 
-	private String residenceCity;
-
 	private String content;
 
 	private int likeCount;
 
 //	private boolean likeYn;
-	
+
 	private boolean removedYn;
 
 	private LocalDateTime createdDate;
@@ -34,18 +32,17 @@ public class CommunityCommentDto {
 	private String imgPath;
 
 	private Long parentCommentId;
-	
+
 	private List<CommunityCommentDto> childrens;
 
 	public CommunityCommentDto(Long commentId, Long postId, Long userId, String nickname, String profileImgPath,
-			String residenceCity, String content, int likeCount, LocalDateTime createdDate, String imgPath,
-			Long parentCommentId, boolean removedYn) {
+			String content, int likeCount, LocalDateTime createdDate, String imgPath, Long parentCommentId,
+			boolean removedYn) {
 		this.postId = postId;
 		this.commentId = commentId;
 		this.userId = userId;
 		this.nickname = nickname;
 		this.profileImgPath = profileImgPath;
-		this.residenceCity = residenceCity;
 		this.content = content;
 		this.likeCount = likeCount;
 		this.createdDate = createdDate;
