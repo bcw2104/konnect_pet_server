@@ -30,26 +30,30 @@ public class CommunityPostDto {
 
 	private boolean likeYn;
 
-	private LocalDateTime createdDate;
-	
 	private boolean removedYn;
+
+	private boolean blockedYn;
+
+	private LocalDateTime createdDate;
 
 	private List<String> filePaths;
 
-	
 	public CommunityPostDto(Long postId, Long categoryId, String category, Long userId, String nickname,
-			String profileImgPath, String content, int likeCount, int commentCount, LocalDateTime createdDate,boolean removedYn) {
+			String profileImgPath, String content, int likeCount, int commentCount, LocalDateTime createdDate,
+			boolean removedYn, boolean blockedYn) {
+
 		this.postId = postId;
 		this.categoryId = categoryId;
 		this.category = category;
 		this.userId = userId;
 		this.nickname = nickname;
 		this.profileImgPath = profileImgPath;
-		this.content = content;
+		this.content = removedYn ? "This post has been deleted."
+				: blockedYn ? "This post has been deleted by administrator." : content;
 		this.likeCount = likeCount;
 		this.commentCount = commentCount;
 		this.createdDate = createdDate;
 		this.removedYn = removedYn;
+		this.blockedYn = blockedYn;
 	}
-
 }

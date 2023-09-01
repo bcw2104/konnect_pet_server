@@ -19,6 +19,10 @@ public interface CommunityCommentRepository extends JpaRepository<CommunityComme
 
 	@Query("select c from CommunityComment c where c.id = :id")
 	Optional<CommunityComment> findById(@Param("id") Long id);
+	
+	@Query("select c from CommunityComment c where c.id = :id")
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	Optional<CommunityComment> findByIdForUpdate(@Param("id") Long id);
 
 	@Query("select count(c) from CommunityComment c where c.user.id = :userId and c.removedYn = false")
 	int countActiveByUserId(@Param("userId") Long userId);

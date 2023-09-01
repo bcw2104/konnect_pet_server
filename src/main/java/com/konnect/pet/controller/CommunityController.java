@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.konnect.pet.dto.PageRequestDto;
 import com.konnect.pet.entity.User;
+import com.konnect.pet.enums.ReportType;
 import com.konnect.pet.enums.code.ProcessStatusCode;
 import com.konnect.pet.service.CommonCodeService;
 import com.konnect.pet.service.CommunityService;
@@ -125,7 +126,7 @@ public class CommunityController {
 			@RequestParam("id") Long commentId) {
 		User user = (User) authentication.getPrincipal();
 
-		return ResponseEntity.ok(communityService.removeComment(user, postId,commentId));
+		return ResponseEntity.ok(communityService.removeComment(user, postId, commentId));
 	}
 
 	@PostMapping("/friend/{id}")
@@ -160,5 +161,14 @@ public class CommunityController {
 		ProcessStatusCode code = ProcessStatusCode.findByCode(body.get("code").toString());
 
 		return ResponseEntity.ok(communityService.replyFriend(user, toUserId, code));
+	}
+
+	@PostMapping("/report")
+	public ResponseEntity<?> reportUser(Authentication authentication, @RequestBody Map<String, Object> body) {
+		User user = (User) authentication.getPrincipal();
+		ReportType type = ReportType.valueOf(body.get("type").toString());
+		Long targetId = Long.parseLong(body.get("targetId").toString());
+
+		return ResponseEntity.ok(communityService.report(user, type, targetId));
 	}
 }

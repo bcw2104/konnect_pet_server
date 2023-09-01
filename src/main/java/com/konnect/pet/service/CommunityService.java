@@ -22,13 +22,16 @@ import com.konnect.pet.dto.UserFriendDto;
 import com.konnect.pet.dto.UserDetailDto;
 import com.konnect.pet.entity.CommunityCategory;
 import com.konnect.pet.entity.CommunityComment;
+import com.konnect.pet.entity.CommunityCommentReportHistory;
 import com.konnect.pet.entity.CommunityPost;
 import com.konnect.pet.entity.CommunityPostFile;
 import com.konnect.pet.entity.CommunityPostLike;
+import com.konnect.pet.entity.CommunityPostReportHistory;
 import com.konnect.pet.entity.User;
 import com.konnect.pet.entity.UserFriend;
 import com.konnect.pet.entity.UserProfile;
 import com.konnect.pet.entity.UserWalkingFootprint;
+import com.konnect.pet.enums.ReportType;
 import com.konnect.pet.enums.ResponseType;
 import com.konnect.pet.enums.code.NotificationTypeCode;
 import com.konnect.pet.enums.code.ProcessStatusCode;
@@ -37,9 +40,11 @@ import com.konnect.pet.ex.CustomResponseException;
 import com.konnect.pet.repository.BannerRepository;
 import com.konnect.pet.repository.CommunityCategoryRepository;
 import com.konnect.pet.repository.CommunityCommentLikeRepository;
+import com.konnect.pet.repository.CommunityCommentReportHistoryRepository;
 import com.konnect.pet.repository.CommunityCommentRepository;
 import com.konnect.pet.repository.CommunityPostFileRepository;
 import com.konnect.pet.repository.CommunityPostLikeRepository;
+import com.konnect.pet.repository.CommunityPostReportHistoryRepository;
 import com.konnect.pet.repository.CommunityPostRepository;
 import com.konnect.pet.repository.UserFriendRepository;
 import com.konnect.pet.repository.UserNotificationLogRepository;
@@ -67,8 +72,10 @@ public class CommunityService {
 	private final BannerRepository bannerRepository;
 	private final CommunityCategoryRepository communityCategoryRepository;
 	private final CommunityPostRepository communityPostRepository;
+	private final CommunityPostReportHistoryRepository communityPostReportHistoryRepository;
 	private final CommunityPostLikeRepository communityPostLikeRepository;
 	private final CommunityCommentRepository communityCommentRepository;
+	private final CommunityCommentReportHistoryRepository communityCommentReportHistoryRepository;
 	private final CommunityCommentLikeRepository communityCommentLikeRepository;
 	private final CommunityPostFileRepository communityPostFileRepository;
 	private final CommunityQueryRepository communityQueryRepository;
@@ -265,7 +272,11 @@ public class CommunityService {
 				.findPostFilesByPostIds(postIds.toArray(Long[]::new));
 
 		for (CommunityPostDto dto : posts) {
-			dto.setFilePaths(filePaths.getOrDefault(dto.getPostId(), new ArrayList<>()));
+			if (dto.isRemovedYn() || dto.isBlockedYn()) {
+				dto.setFilePaths(new ArrayList<>());
+			} else {
+				dto.setFilePaths(filePaths.getOrDefault(dto.getPostId(), new ArrayList<>()));
+			}
 			dto.setLikeYn(likePostIds.contains(dto.getPostId()));
 		}
 		resultMap.put("posts", posts);
@@ -277,8 +288,14 @@ public class CommunityService {
 	@Transactional
 	public ResponseDto getPost(User user, Long postId) {
 		CommunityPostDto post = communityQueryRepository.findActivePostById(postId);
+
+		if (post == null) {
+			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
+		}
+
 		int likeYn = communityPostLikeRepository.countByUserIdAndPostId(user.getId(), postId);
-		List<String> filePaths = communityQueryRepository.findPostFilesByPostId(postId);
+		List<String> filePaths = (post.isRemovedYn() || post.isBlockedYn())  
+				? new ArrayList<>() :  communityQueryRepository.findPostFilesByPostId(postId);
 
 		post.setLikeYn(likeYn >= 1);
 		post.setFilePaths(filePaths);
@@ -488,6 +505,47 @@ public class CommunityService {
 			}
 		}
 
+		return new ResponseDto(ResponseType.SUCCESS);
+	}
+
+	@Transactional
+	public ResponseDto report(User user, ReportType type, Long targetId) {
+		if (type.equals(ReportType.POST)) {
+			CommunityPost post = communityPostRepository.findByIdForUpdate(targetId)
+					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+			post.setReportCount(post.getReportCount() + 1);
+			int reportCount = communityPostReportHistoryRepository.countByUserIdAndPostId(user.getId(), post.getId());
+
+			if (reportCount > 0) {
+				return new ResponseDto(ResponseType.ALREADY_REPORTED);
+			}
+
+			CommunityPostReportHistory reportHistory = new CommunityPostReportHistory();
+			reportHistory.setPost(post);
+			reportHistory.setUser(user);
+			reportHistory.setReportType("999");
+			communityPostReportHistoryRepository.save(reportHistory);
+
+		} else if (type.equals(ReportType.COMMENT)) {
+			CommunityComment comment = communityCommentRepository.findByIdForUpdate(targetId)
+					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+
+			comment.setReportCount(comment.getReportCount() + 1);
+
+			int reportCount = communityCommentReportHistoryRepository.countByUserIdAndCommentId(user.getId(),
+					comment.getId());
+
+			if (reportCount > 0) {
+				return new ResponseDto(ResponseType.ALREADY_REPORTED);
+			}
+
+			CommunityCommentReportHistory reportHistory = new CommunityCommentReportHistory();
+			reportHistory.setComment(comment);
+			reportHistory.setUser(user);
+			reportHistory.setReportType("999");
+			communityCommentReportHistoryRepository.save(reportHistory);
+		}
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
 

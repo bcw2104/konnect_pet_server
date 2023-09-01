@@ -19,39 +19,39 @@ public class CommunityCommentDto {
 
 	private String profileImgPath;
 
-	private String residenceCity;
-
 	private String content;
 
 	private int likeCount;
 
 //	private boolean likeYn;
-	
+
 	private boolean removedYn;
+	private boolean blockedYn;
 
 	private LocalDateTime createdDate;
 
 	private String imgPath;
 
 	private Long parentCommentId;
-	
+
 	private List<CommunityCommentDto> childrens;
 
 	public CommunityCommentDto(Long commentId, Long postId, Long userId, String nickname, String profileImgPath,
-			String residenceCity, String content, int likeCount, LocalDateTime createdDate, String imgPath,
-			Long parentCommentId, boolean removedYn) {
+			String content, int likeCount, LocalDateTime createdDate, String imgPath, Long parentCommentId,
+			boolean removedYn, boolean blockedYn) {
 		this.postId = postId;
 		this.commentId = commentId;
 		this.userId = userId;
 		this.nickname = nickname;
 		this.profileImgPath = profileImgPath;
-		this.residenceCity = residenceCity;
-		this.content = content;
+		this.content = removedYn ? "This comment has been deleted."
+				: blockedYn ? "This comment has been deleted by administrator." : content;
 		this.likeCount = likeCount;
 		this.createdDate = createdDate;
-		this.imgPath = imgPath;
+		this.imgPath = (removedYn || blockedYn) ? null : imgPath;
 		this.parentCommentId = parentCommentId;
 		this.removedYn = removedYn;
+		this.blockedYn = blockedYn;
 	}
 
 }

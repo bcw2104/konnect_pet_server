@@ -56,6 +56,7 @@ public enum ResponseType {
 	TOO_MANY_QNA_SUBMIT("9500", "too many q&a submit", "일일 Q&A 횟수를 초과했습니다. 추가 문의사항은 이메일을 이용해 주세요."),
 
 	//커뮤니티 관련 에러들...
+	ALREADY_REPORTED("9600", "already report", "이미 신고가 접수된 사용자입니다."),
 
 	dummy("10000", "dummy","dummy");
 

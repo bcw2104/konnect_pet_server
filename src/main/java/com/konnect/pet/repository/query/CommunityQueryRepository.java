@@ -30,10 +30,9 @@ public class CommunityQueryRepository {
 				.select(Projections.constructor(CommunityPostDto.class, communityPost.id, communityPost.category.id,
 						communityPost.category.category, communityPost.user.id, userProfile.nickname,
 						userProfile.imgPath, communityPost.content, communityPost.likeCount, communityPost.commentCount,
-						communityPost.createdDate, communityPost.removedYn))
+						communityPost.createdDate, communityPost.removedYn, communityPost.blockedYn))
 				.from(communityPost).join(communityPost.category, communityCategory).join(userProfile)
-				.on(communityPost.user.id.eq(userProfile.user.id))
-				.where(communityPost.id.eq(postId), communityPost.removedYn.eq(false)).fetchFirst();
+				.on(communityPost.user.id.eq(userProfile.user.id)).where(communityPost.id.eq(postId)).fetchFirst();
 	}
 
 	public List<CommunityPostDto> findActivePosts(Long categoryId, int limit, int offset) {
@@ -41,7 +40,7 @@ public class CommunityQueryRepository {
 				.select(Projections.constructor(CommunityPostDto.class, communityPost.id, communityPost.category.id,
 						communityPost.category.category, communityPost.user.id, userProfile.nickname,
 						userProfile.imgPath, communityPost.content, communityPost.likeCount, communityPost.commentCount,
-						communityPost.createdDate, communityPost.removedYn))
+						communityPost.createdDate, communityPost.removedYn, communityPost.blockedYn))
 				.from(communityPost).join(communityPost.category, communityCategory).join(userProfile)
 				.on(communityPost.user.id.eq(userProfile.user.id))
 				.where((categoryId.equals(-1L) ? null : communityPost.category.id.eq(categoryId)),
@@ -54,7 +53,8 @@ public class CommunityQueryRepository {
 				.select(Projections.constructor(CommunityCommentDto.class, communityComment.id,
 						communityComment.post.id, communityComment.user.id, userProfile.nickname, userProfile.imgPath,
 						communityComment.content, communityComment.likeCount, communityPost.createdDate,
-						communityComment.imgPath, communityComment.parentId, communityComment.removedYn))
+						communityComment.imgPath, communityComment.parentId, communityComment.removedYn,
+						communityComment.blockedYn))
 				.from(communityComment).join(userProfile).on(communityComment.user.id.eq(userProfile.user.id))
 				.where(communityComment.post.id.eq(postId), communityComment.parentId.isNull()).limit(limit)
 				.offset(offset).orderBy(communityComment.id.asc()).fetch();
@@ -68,7 +68,7 @@ public class CommunityQueryRepository {
 								communityComment.post.id, communityComment.user.id, userProfile.nickname,
 								userProfile.imgPath, communityComment.content, communityComment.likeCount,
 								communityPost.createdDate, communityComment.imgPath, communityComment.parentId,
-								communityComment.removedYn))));
+								communityComment.removedYn, communityComment.blockedYn))));
 	}
 
 	public List<String> findPostFilesByPostId(Long postId) {

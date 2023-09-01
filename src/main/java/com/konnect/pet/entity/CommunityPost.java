@@ -50,7 +50,12 @@ public class CommunityPost extends BaseAutoSetEntity {
 	@ColumnDefault("0")
 	private int commentCount;
 	
+	@ColumnDefault("0")
+	private int reportCount;
+	
 	private boolean removedYn;
+	
+	private boolean blockedYn;
 	
 	private LocalDateTime removedDate;
 

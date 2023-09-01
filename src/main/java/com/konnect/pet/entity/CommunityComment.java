@@ -49,10 +49,15 @@ public class CommunityComment extends BaseAutoSetEntity {
 	
 	@ColumnDefault("0")
 	private int likeCount;
+
+	@ColumnDefault("0")
+	private int reportCount;
 	
 	private boolean removedYn;
 
 	private LocalDateTime removedDate;
+
+	private boolean blockedYn;
 
 	@Column(length = 255)
 	private String imgPath;
