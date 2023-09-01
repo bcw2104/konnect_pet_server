@@ -82,7 +82,7 @@ public class CommunityController {
 	}
 
 	@GetMapping("/post/{id}")
-	public ResponseEntity<?> post(Authentication authentication, @RequestParam("id") Long postId) {
+	public ResponseEntity<?> post(Authentication authentication, @PathVariable("id") Long postId) {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(communityService.getPost(user, postId));
@@ -106,7 +106,7 @@ public class CommunityController {
 	}
 
 	@PostMapping("/post/{id}/comment")
-	public ResponseEntity<?> saveComment(Authentication authentication, @RequestParam("id") Long postId,
+	public ResponseEntity<?> saveComment(Authentication authentication, @PathVariable("id") Long postId,
 			@RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 
@@ -114,16 +114,16 @@ public class CommunityController {
 	}
 
 	@PutMapping("/post/{postId}/comment/{id}")
-	public ResponseEntity<?> editComment(Authentication authentication, @RequestParam("postId") Long postId,
-			@RequestParam("id") Long commentId, @RequestBody Map<String, Object> body) {
+	public ResponseEntity<?> editComment(Authentication authentication, @PathVariable("postId") Long postId,
+			@PathVariable("id") Long commentId, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(communityService.saveOrEditComment(user, body, postId, commentId));
 	}
 
 	@DeleteMapping("/post/{postId}/comment/{id}")
-	public ResponseEntity<?> deleteComment(Authentication authentication, @RequestParam("postId") Long postId,
-			@RequestParam("id") Long commentId) {
+	public ResponseEntity<?> deleteComment(Authentication authentication, @PathVariable("postId") Long postId,
+			@PathVariable("id") Long commentId) {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(communityService.removeComment(user, postId, commentId));
