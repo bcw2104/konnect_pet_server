@@ -294,8 +294,8 @@ public class CommunityService {
 		}
 
 		int likeYn = communityPostLikeRepository.countByUserIdAndPostId(user.getId(), postId);
-		List<String> filePaths = (post.isRemovedYn() || post.isBlockedYn())  
-				? new ArrayList<>() :  communityQueryRepository.findPostFilesByPostId(postId);
+		List<String> filePaths = (post.isRemovedYn() || post.isBlockedYn()) ? new ArrayList<>()
+				: communityQueryRepository.findPostFilesByPostId(postId);
 
 		post.setLikeYn(likeYn >= 1);
 		post.setFilePaths(filePaths);
@@ -433,7 +433,7 @@ public class CommunityService {
 		try {
 			Long parentId = body.get("parentId") != null ? Long.parseLong(body.get("parentId").toString()) : null;
 			String content = body.get("content").toString();
-			String imagePath = body.get("imagePath").toString();
+			String imagePath = body.get("imagePath") == null ? null : body.get("imagePath").toString();
 
 			CommunityPost post = communityPostRepository.findById(postId)
 					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
