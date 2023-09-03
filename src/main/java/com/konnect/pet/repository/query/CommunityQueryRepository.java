@@ -25,7 +25,7 @@ public class CommunityQueryRepository {
 
 	private final JPAQueryFactory queryFactory;
 
-	public CommunityPostDto findActivePostById(Long postId) {
+	public CommunityPostDto findPostById(Long postId) {
 		return queryFactory
 				.select(Projections.constructor(CommunityPostDto.class, communityPost.id, communityPost.category.id,
 						communityPost.category.category, communityPost.user.id, userProfile.nickname,

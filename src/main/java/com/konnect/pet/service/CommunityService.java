@@ -287,7 +287,7 @@ public class CommunityService {
 
 	@Transactional
 	public ResponseDto getPost(User user, Long postId) {
-		CommunityPostDto post = communityQueryRepository.findActivePostById(postId);
+		CommunityPostDto post = communityQueryRepository.findPostById(postId);
 
 		if (post == null) {
 			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
@@ -472,7 +472,7 @@ public class CommunityService {
 
 	@Transactional
 	public ResponseDto removeComment(User user, Long postId, Long commentId) {
-		CommunityComment comment = communityCommentRepository.findById(postId).orElse(null);
+		CommunityComment comment = communityCommentRepository.findById(commentId).orElse(null);
 		if (comment == null || !comment.getUser().getId().equals(user.getId())
 				|| !comment.getPost().getId().equals(postId)) {
 			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);

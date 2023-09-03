@@ -44,8 +44,7 @@ public class CommunityCommentDto {
 		this.userId = userId;
 		this.nickname = nickname;
 		this.profileImgPath = profileImgPath;
-		this.content = removedYn ? "This comment has been deleted."
-				: blockedYn ? "This comment has been deleted by administrator." : content;
+		this.content = (removedYn || blockedYn) ? "" : content;
 		this.likeCount = likeCount;
 		this.createdDate = createdDate;
 		this.imgPath = (removedYn || blockedYn) ? null : imgPath;

@@ -66,7 +66,7 @@ public class CommunityController {
 	}
 
 	@PutMapping("/post/{id}")
-	public ResponseEntity<?> editPost(Authentication authentication, @RequestParam("id") Long postId,
+	public ResponseEntity<?> editPost(Authentication authentication, @PathVariable("id") Long postId,
 			@RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 
@@ -74,8 +74,7 @@ public class CommunityController {
 	}
 
 	@DeleteMapping("/post/{id}")
-	public ResponseEntity<?> deletePost(Authentication authentication, @RequestParam("id") Long postId,
-			@RequestBody Map<String, Object> body) {
+	public ResponseEntity<?> deletePost(Authentication authentication, @PathVariable("id") Long postId) {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(communityService.removePost(user, postId));
