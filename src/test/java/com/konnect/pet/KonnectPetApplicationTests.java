@@ -26,7 +26,6 @@ class KonnectPetApplicationTests {
 		TestEntity t = new TestEntity("Test1");
 		em.persist(t);
 
-
 	}
 
 }

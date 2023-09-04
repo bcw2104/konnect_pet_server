@@ -34,7 +34,6 @@ public class GlobalExceptionHandler {
 				e.getResponseType().getMessage(), CustomResponseException.class);
 		return ResponseEntity.status(e.getStatus()).body(new ResponseDto(e.getResponseType()));
 	}
-
 	@ExceptionHandler(RuntimeException.class)
 	protected ResponseEntity<?> handleRuntimeException(RuntimeException e) {
 		log.error("message: {}, class: {}", e.getMessage(), RuntimeException.class, e);
