@@ -18,6 +18,7 @@ import com.konnect.pet.dto.CommunityCategoryDto;
 import com.konnect.pet.dto.CommunityCommentDto;
 import com.konnect.pet.dto.CommunityPostDto;
 import com.konnect.pet.dto.PageRequestDto;
+import com.konnect.pet.dto.PickerItemDto;
 import com.konnect.pet.dto.UserFriendDto;
 import com.konnect.pet.dto.UserDetailDto;
 import com.konnect.pet.entity.CommunityCategory;
@@ -46,6 +47,7 @@ import com.konnect.pet.repository.CommunityPostFileRepository;
 import com.konnect.pet.repository.CommunityPostLikeRepository;
 import com.konnect.pet.repository.CommunityPostReportHistoryRepository;
 import com.konnect.pet.repository.CommunityPostRepository;
+import com.konnect.pet.repository.PropertiesRepository;
 import com.konnect.pet.repository.UserFriendRepository;
 import com.konnect.pet.repository.UserNotificationLogRepository;
 import com.konnect.pet.repository.UserPetRepository;
@@ -79,6 +81,7 @@ public class CommunityService {
 	private final CommunityCommentLikeRepository communityCommentLikeRepository;
 	private final CommunityPostFileRepository communityPostFileRepository;
 	private final CommunityQueryRepository communityQueryRepository;
+	private final PropertiesRepository propertiesRepository;
 	private final S3StorageService s3StorageService;
 
 	private final NotificationService notificationService;
@@ -301,6 +304,22 @@ public class CommunityService {
 		post.setFilePaths(filePaths);
 
 		return new ResponseDto(ResponseType.SUCCESS, post);
+	}
+
+	@Transactional(readOnly = true)
+	public ResponseDto getPostFormData() {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		int maxImageCount = Integer
+				.parseInt(propertiesRepository.findValueByKey("community_post_max_image_count").orElse("6"));
+
+		List<PickerItemDto> categories = communityCategoryRepository.findActive().stream()
+				.map(ele -> new PickerItemDto(ele.getCategory(), String.valueOf(ele.getId()))).toList();
+
+		resultMap.put("categories", categories);
+		resultMap.put("maxImageCount", maxImageCount);
+
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
 
 	@Transactional
