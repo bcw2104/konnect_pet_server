@@ -325,9 +325,9 @@ public class CommunityService {
 	@Transactional
 	public ResponseDto saveOrEditPost(User user, Map<String, Object> body, Long postId) {
 		try {
-			Long categoryId = Long.parseLong(body.get("categoryId").toString());
+			Long categoryId = Long.parseLong(body.get("category").toString());
 			String content = body.get("content").toString();
-			List<String> filePaths = objectMapper.readValue(body.get("filePaths").toString(),
+			List<String> filePaths = objectMapper.readValue(body.get("imgPaths").toString(),
 					new TypeReference<List<String>>() {
 					});
 			CommunityCategory category = communityCategoryRepository.findById(categoryId)

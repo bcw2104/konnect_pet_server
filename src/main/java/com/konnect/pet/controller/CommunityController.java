@@ -58,16 +58,16 @@ public class CommunityController {
 		return ResponseEntity.ok(communityService.getPosts(user, categoryId, pageDto));
 	}
 
+	@GetMapping("/posts/form")
+	public ResponseEntity<?> postFormData() {
+		return ResponseEntity.ok(communityService.getPostFormData());
+	}
+
 	@PostMapping("/posts")
 	public ResponseEntity<?> savePost(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 
 		return ResponseEntity.ok(communityService.saveOrEditPost(user, body, null));
-	}
-
-	@GetMapping("/posts/form")
-	public ResponseEntity<?> postFormData() {
-		return ResponseEntity.ok(communityService.getPostFormData());
 	}
 
 	@PutMapping("/posts/{id}")
