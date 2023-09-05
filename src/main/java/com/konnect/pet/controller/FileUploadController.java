@@ -32,7 +32,7 @@ public class FileUploadController {
 
 	@PostMapping("/images/profile/pet")
 	public ResponseEntity<?> uploadPetImage(@RequestPart("image") MultipartFile multipartFile) {
-
+		
 		return ResponseEntity.ok(s3StorageService.uploadOnS3(multipartFile, ServiceConst.S3_PROFILE_PET_DIR_PATH));
 	
 	}

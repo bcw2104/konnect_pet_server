@@ -18,6 +18,7 @@ import com.konnect.pet.dto.CommunityCategoryDto;
 import com.konnect.pet.dto.CommunityCommentDto;
 import com.konnect.pet.dto.CommunityPostDto;
 import com.konnect.pet.dto.PageRequestDto;
+import com.konnect.pet.dto.PickerItemDto;
 import com.konnect.pet.dto.UserFriendDto;
 import com.konnect.pet.dto.UserDetailDto;
 import com.konnect.pet.entity.CommunityCategory;
@@ -46,6 +47,7 @@ import com.konnect.pet.repository.CommunityPostFileRepository;
 import com.konnect.pet.repository.CommunityPostLikeRepository;
 import com.konnect.pet.repository.CommunityPostReportHistoryRepository;
 import com.konnect.pet.repository.CommunityPostRepository;
+import com.konnect.pet.repository.PropertiesRepository;
 import com.konnect.pet.repository.UserFriendRepository;
 import com.konnect.pet.repository.UserNotificationLogRepository;
 import com.konnect.pet.repository.UserPetRepository;
@@ -79,6 +81,7 @@ public class CommunityService {
 	private final CommunityCommentLikeRepository communityCommentLikeRepository;
 	private final CommunityPostFileRepository communityPostFileRepository;
 	private final CommunityQueryRepository communityQueryRepository;
+	private final PropertiesRepository propertiesRepository;
 	private final S3StorageService s3StorageService;
 
 	private final NotificationService notificationService;
@@ -287,15 +290,15 @@ public class CommunityService {
 
 	@Transactional
 	public ResponseDto getPost(User user, Long postId) {
-		CommunityPostDto post = communityQueryRepository.findActivePostById(postId);
+		CommunityPostDto post = communityQueryRepository.findPostById(postId);
 
 		if (post == null) {
 			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);
 		}
 
 		int likeYn = communityPostLikeRepository.countByUserIdAndPostId(user.getId(), postId);
-		List<String> filePaths = (post.isRemovedYn() || post.isBlockedYn())  
-				? new ArrayList<>() :  communityQueryRepository.findPostFilesByPostId(postId);
+		List<String> filePaths = (post.isRemovedYn() || post.isBlockedYn()) ? new ArrayList<>()
+				: communityQueryRepository.findPostFilesByPostId(postId);
 
 		post.setLikeYn(likeYn >= 1);
 		post.setFilePaths(filePaths);
@@ -303,12 +306,28 @@ public class CommunityService {
 		return new ResponseDto(ResponseType.SUCCESS, post);
 	}
 
+	@Transactional(readOnly = true)
+	public ResponseDto getPostFormData() {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		int maxImageCount = Integer
+				.parseInt(propertiesRepository.findValueByKey("community_post_max_image_count").orElse("6"));
+
+		List<PickerItemDto> categories = communityCategoryRepository.findActive().stream()
+				.map(ele -> new PickerItemDto(ele.getCategory(), String.valueOf(ele.getId()))).toList();
+
+		resultMap.put("categories", categories);
+		resultMap.put("maxImageCount", maxImageCount);
+
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
 	@Transactional
 	public ResponseDto saveOrEditPost(User user, Map<String, Object> body, Long postId) {
 		try {
-			Long categoryId = Long.parseLong(body.get("categoryId").toString());
+			Long categoryId = Long.parseLong(body.get("category").toString());
 			String content = body.get("content").toString();
-			List<String> filePaths = objectMapper.readValue(body.get("filePaths").toString(),
+			List<String> filePaths = objectMapper.readValue(body.get("imgPaths").toString(),
 					new TypeReference<List<String>>() {
 					});
 			CommunityCategory category = communityCategoryRepository.findById(categoryId)
@@ -433,7 +452,7 @@ public class CommunityService {
 		try {
 			Long parentId = body.get("parentId") != null ? Long.parseLong(body.get("parentId").toString()) : null;
 			String content = body.get("content").toString();
-			String imagePath = body.get("imagePath").toString();
+			String imagePath = body.get("imagePath") == null ? null : body.get("imagePath").toString();
 
 			CommunityPost post = communityPostRepository.findById(postId)
 					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
@@ -472,7 +491,7 @@ public class CommunityService {
 
 	@Transactional
 	public ResponseDto removeComment(User user, Long postId, Long commentId) {
-		CommunityComment comment = communityCommentRepository.findById(postId).orElse(null);
+		CommunityComment comment = communityCommentRepository.findById(commentId).orElse(null);
 		if (comment == null || !comment.getUser().getId().equals(user.getId())
 				|| !comment.getPost().getId().equals(postId)) {
 			throw new CustomResponseException(ResponseType.INVALID_PARAMETER);

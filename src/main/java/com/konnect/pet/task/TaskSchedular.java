@@ -22,14 +22,14 @@ public class TaskSchedular {
 		this.transactionTemplate = new TransactionTemplate(manager);
 	}
 
-	@Scheduled(cron = "0/10 * * * * *")
-	@SchedulerLock(name = "TASK_TEST", lockAtLeastFor = "PT5S", lockAtMostFor = "PT5S")
-	public void taskTest() {
-		TaskExecutor executor = new TaskExecutor("TASK_TEST");
-		executor.run(() -> {
-			log.info("Doing task");
-		});
-	}
+//	@Scheduled(cron = "0/10 * * * * *")
+//	@SchedulerLock(name = "TASK_TEST", lockAtLeastFor = "PT5S", lockAtMostFor = "PT5S")
+//	public void taskTest() {
+//		TaskExecutor executor = new TaskExecutor("TASK_TEST");
+//		executor.run(() -> {
+//			log.info("Doing task");
+//		});
+//	}
 
 	@Scheduled(cron = "0 0 2 * * *")
 	@SchedulerLock(name = "TASK_REMOVED_POST_COMMENT_CLEANER", lockAtLeastFor = "PT11H", lockAtMostFor = "PT11H")

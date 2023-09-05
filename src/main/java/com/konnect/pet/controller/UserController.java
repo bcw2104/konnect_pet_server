@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api/v1/users")
 public class UserController {
 
 	private final NotificationService notificationService;
@@ -124,20 +124,20 @@ public class UserController {
 		return ResponseEntity.ok(userService.saveProfile(user, body));
 	}
 
-	@PostMapping("/pet")
+	@PostMapping("/pets")
 	public ResponseEntity<?> savePetInfo(Authentication authentication, @RequestBody Map<String, Object> body) {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(userPetService.saveOrEditPet(user, body, null));
 	}
 
-	@PutMapping("/pet/{id}")
+	@PutMapping("/pets/{id}")
 	public ResponseEntity<?> savePetInfo(Authentication authentication, @RequestBody Map<String, Object> body,
 			@PathVariable("id") Long id) {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(userPetService.saveOrEditPet(user, body, id));
 	}
 
-	@DeleteMapping("/pet/{id}")
+	@DeleteMapping("/pets/{id}")
 	public ResponseEntity<?> deletePetInfo(Authentication authentication, @PathVariable("id") Long id) {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.ok(userPetService.removePet(user, id));

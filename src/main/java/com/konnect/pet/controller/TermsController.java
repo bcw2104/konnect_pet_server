@@ -18,17 +18,17 @@ import lombok.RequiredArgsConstructor;
 public class TermsController {
 	private final TermsService termsService;
 
-	@GetMapping("/group/signup")
+	@GetMapping("/groups/signup")
 	public ResponseEntity<?> signupTerms(){
 		return ResponseEntity.ok(termsService.getTermsGroupByLocationCodeAndVisibleYn(LocationCode.SIGNUP,true));
 	}
 
-	@GetMapping("/group/all")
+	@GetMapping("/groups/all")
 	public ResponseEntity<?> allTerms(){
 		return ResponseEntity.ok(termsService.getTermsGroupByLocationCodeAndVisibleYn(null,true));
 	}
 
-	@GetMapping("/group/{groupId}/lastest")
+	@GetMapping("/groups/{groupId}/lastest")
 	public ResponseEntity<?> termDetail(@PathVariable("groupId") Long termGroupId){
 		return ResponseEntity.ok(termsService.getLastestTermsByTermsGroupId(termGroupId));
 	}
