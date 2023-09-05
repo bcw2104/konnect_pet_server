@@ -14,8 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Transactional
-@Rollback(false)
 @SpringBootTest
 @Slf4j
 public class CommunityServiceTest {
@@ -25,15 +23,15 @@ public class CommunityServiceTest {
 
 	@Test
 	void dLock() throws InterruptedException {
-		ExecutorService service = Executors.newFixedThreadPool(1);
+		ExecutorService service = Executors.newFixedThreadPool(10);
 
-		for (int i = 1; i <= 1; i++) {
+		for (int i = 1; i <= 10; i++) {
 			service.execute(() -> {
 				communityService.changePostLikeT(3L);
 			});
 		}
 		service.shutdown();
-		service.awaitTermination(5, TimeUnit.MINUTES);
+		service.awaitTermination(6, TimeUnit.MINUTES);
 		
 		log.info("finish");
 	}

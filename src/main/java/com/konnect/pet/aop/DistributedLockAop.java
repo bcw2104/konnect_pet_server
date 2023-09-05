@@ -10,6 +10,7 @@ import org.redisson.Redisson;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.konnect.pet.annotation.DistributedLock;
 import com.konnect.pet.enums.ResponseType;
@@ -26,7 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 public class DistributedLockAop {
 	private static final String REDISSON_LOCK_PREFIX = "DLOCK:";
 	private final RedissonClient redissonClient;
-
+	private final AopForTransaction aopForTransaction;
+	
 	@Around("@annotation(distributedLock)")
 	public Object lock(ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {
 		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -43,7 +45,7 @@ public class DistributedLockAop {
 
 			log.info("Hold lock.");
 			// 잠금 획득 성공 시, 대상 메소드 실행
-			return joinPoint.proceed();
+			return aopForTransaction.proceed(joinPoint);
 		} finally {
 			// 현재 스레드가 잠금을 보유하고 있는지 확인 후 잠금 해제
 			if (lock.isLocked() && lock.isHeldByCurrentThread()) {

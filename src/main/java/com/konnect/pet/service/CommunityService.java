@@ -535,13 +535,6 @@ public class CommunityService {
 		CommunityPost post = communityPostRepository.findById(postId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 				post.setLikeCount(post.getLikeCount() + 1);
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
 

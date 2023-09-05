@@ -29,12 +29,12 @@ public @interface DistributedLock {
 	 *
 	 * @return 대기 시간 (단위: 초)
 	 */
-	long waitTime() default 5;
+	long waitTime() default 10;
 
 	/**
 	 * 잠금을 보유할 최대 시간(초)을 지정.
 	 *
 	 * @return 보유 시간 (단위: 초)
 	 */
-	long leaseTime() default 3;
+	long leaseTime() default 10;
 }
