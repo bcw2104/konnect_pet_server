@@ -9,6 +9,14 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Target(METHOD)
 public @interface DistributedLock {
+	
+
+	/**
+	 * 잠금 키를 지정한다. Spring EL 표현식을 사용하여 동적인 값을 지정한다. 예: "#paramName"
+	 *
+	 * @return 잠금 키 문자열
+	 */
+	String prefix() default "";
 	/**
 	 * 잠금 키를 지정한다. Spring EL 표현식을 사용하여 동적인 값을 지정한다. 예: "#paramName"
 	 *
@@ -28,5 +36,5 @@ public @interface DistributedLock {
 	 *
 	 * @return 보유 시간 (단위: 초)
 	 */
-	long leaseTime() default 1;
+	long leaseTime() default 3;
 }

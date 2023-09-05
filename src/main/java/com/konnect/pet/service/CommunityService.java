@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.konnect.pet.annotation.DistributedLock;
 import com.konnect.pet.dto.BannerDto;
 import com.konnect.pet.dto.CommunityCategoryDto;
 import com.konnect.pet.dto.CommunityCommentDto;
@@ -503,11 +504,12 @@ public class CommunityService {
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
 
+	@DistributedLock(prefix = "POST_LIKE_", key = "#postId")
 	@Transactional
 	public ResponseDto changePostLike(User user, Long postId, boolean likeYn) {
 		CommunityPostLike like = communityPostLikeRepository.findByUserIdAndPostId(user.getId(), postId).orElse(null);
 
-		CommunityPost post = communityPostRepository.findByIdForUpdate(postId)
+		CommunityPost post = communityPostRepository.findById(postId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 		if (likeYn) {
 			if (like == null) {
@@ -526,11 +528,29 @@ public class CommunityService {
 
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
+	
+	@DistributedLock(prefix = "POST_LIKE_", key = "#postId")
+	@Transactional
+	public ResponseDto changePostLikeT(Long postId) {
+		CommunityPost post = communityPostRepository.findById(postId)
+				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
+				post.setLikeCount(post.getLikeCount() + 1);
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
+		return new ResponseDto(ResponseType.SUCCESS);
+	}
+
+
+	@DistributedLock(prefix = "REPORT_", key = "#type.name().concat('_').concat(#targetId)")
 	@Transactional
 	public ResponseDto report(User user, ReportType type, Long targetId) {
 		if (type.equals(ReportType.POST)) {
-			CommunityPost post = communityPostRepository.findByIdForUpdate(targetId)
+			CommunityPost post = communityPostRepository.findById(targetId)
 					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
 			post.setReportCount(post.getReportCount() + 1);
@@ -547,7 +567,7 @@ public class CommunityService {
 			communityPostReportHistoryRepository.save(reportHistory);
 
 		} else if (type.equals(ReportType.COMMENT)) {
-			CommunityComment comment = communityCommentRepository.findByIdForUpdate(targetId)
+			CommunityComment comment = communityCommentRepository.findById(targetId)
 					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
 			comment.setReportCount(comment.getReportCount() + 1);

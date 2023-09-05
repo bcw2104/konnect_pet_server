@@ -30,9 +30,9 @@ public class DistributedLockAop {
 	@Around("@annotation(distributedLock)")
 	public Object lock(ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {
 		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-		String key = REDISSON_LOCK_PREFIX + CustomSpringELParser.getDynamicValue(signature.getParameterNames(),
-				joinPoint.getArgs(), distributedLock.key());
-
+		String key = REDISSON_LOCK_PREFIX + distributedLock.prefix() + CustomSpringELParser
+				.getDynamicValue(signature.getParameterNames(), joinPoint.getArgs(), distributedLock.key());
+		log.info(key);
 		RLock lock = redissonClient.getLock(key);
 		try {
 			// 잠금 시도: 지정된 대기 시간 동안 잠금을 획득하려고 시도
@@ -40,11 +40,14 @@ public class DistributedLockAop {
 				log.info("Failed to acquire lock.");
 				return null;
 			}
+
+			log.info("Hold lock.");
 			// 잠금 획득 성공 시, 대상 메소드 실행
 			return joinPoint.proceed();
 		} finally {
 			// 현재 스레드가 잠금을 보유하고 있는지 확인 후 잠금 해제
 			if (lock.isLocked() && lock.isHeldByCurrentThread()) {
+				log.info("Release lock.");
 				lock.unlock();
 			}
 		}
