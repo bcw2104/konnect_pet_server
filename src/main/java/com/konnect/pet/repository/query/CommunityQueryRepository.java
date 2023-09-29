@@ -4,6 +4,7 @@ import static com.konnect.pet.entity.QCommunityCategory.communityCategory;
 import static com.konnect.pet.entity.QCommunityComment.communityComment;
 import static com.konnect.pet.entity.QCommunityPost.communityPost;
 import static com.konnect.pet.entity.QCommunityPostFile.communityPostFile;
+import static com.konnect.pet.entity.QCommunityPostLike.communityPostLike;
 import static com.konnect.pet.entity.QUserProfile.userProfile;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import com.konnect.pet.dto.CommunityCommentDto;
 import com.konnect.pet.dto.CommunityPostDto;
+import com.konnect.pet.entity.QCommunityPostLike;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -46,6 +48,43 @@ public class CommunityQueryRepository {
 				.where((categoryId.equals(-1L) ? null : communityPost.category.id.eq(categoryId)),
 						communityPost.removedYn.eq(false))
 				.limit(limit).offset(offset).orderBy(communityPost.id.desc()).fetch();
+	}
+
+	public List<CommunityPostDto> findActiveMyPosts(Long userId, int limit, int offset) {
+		return queryFactory
+				.select(Projections.constructor(CommunityPostDto.class, communityPost.id, communityPost.category.id,
+						communityPost.category.category, communityPost.user.id, userProfile.nickname,
+						userProfile.imgPath, communityPost.content, communityPost.likeCount, communityPost.commentCount,
+						communityPost.createdDate, communityPost.removedYn, communityPost.blockedYn))
+				.from(communityPost).join(communityPost.category, communityCategory).join(userProfile)
+				.on(communityPost.user.id.eq(userProfile.user.id))
+				.where(communityPost.user.id.eq(userId), communityPost.removedYn.eq(false)).limit(limit).offset(offset)
+				.orderBy(communityPost.id.desc()).fetch();
+	}
+
+	public List<CommunityPostDto> findActiveMyLikePosts(Long userId, int limit, int offset) {
+		return queryFactory
+				.select(Projections.constructor(CommunityPostDto.class, communityPost.id, communityPost.category.id,
+						communityPost.category.category, communityPost.user.id, userProfile.nickname,
+						userProfile.imgPath, communityPost.content, communityPost.likeCount, communityPost.commentCount,
+						communityPost.createdDate, communityPost.removedYn, communityPost.blockedYn))
+				.from(communityPostLike).join(communityPostLike.post, communityPost)
+				.join(communityPost.category, communityCategory).join(userProfile)
+				.on(communityPost.user.id.eq(userProfile.user.id))
+				.where(communityPostLike.user.id.eq(userId), communityPost.removedYn.eq(false)).limit(limit).offset(offset)
+				.orderBy(communityPost.id.desc()).fetch();
+	}
+
+	public List<CommunityCommentDto> findMyComments(Long userId, int limit, int offset) {
+		return queryFactory
+				.select(Projections.constructor(CommunityCommentDto.class, communityComment.id,
+						communityComment.post.id, communityComment.user.id, userProfile.nickname, userProfile.imgPath,
+						communityComment.content, communityComment.likeCount, communityComment.createdDate,
+						communityComment.imgPath, communityComment.parentId, communityComment.removedYn,
+						communityComment.blockedYn))
+				.from(communityComment).join(userProfile).on(communityComment.user.id.eq(userProfile.user.id))
+				.where(communityComment.user.id.eq(userId)).limit(limit).offset(offset)
+				.orderBy(communityComment.id.desc()).fetch();
 	}
 
 	public List<CommunityCommentDto> findParentComments(Long postId, int limit, int offset) {

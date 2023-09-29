@@ -289,6 +289,40 @@ public class CommunityService {
 		return new ResponseDto(ResponseType.SUCCESS, resultMap);
 	}
 
+	@Transactional(readOnly = true)
+	public ResponseDto getMyPosts(User user, PageRequestDto pageDto) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		int limit = pageDto.getSize() + 1;
+		int offset = (pageDto.getPage() - 1) * pageDto.getSize();
+
+		List<CommunityPostDto> posts = communityQueryRepository.findActiveMyPosts(user.getId(), limit, offset);
+
+		boolean hasNext = false;
+		if (posts.size() == limit) {
+			posts.remove(limit - 1);
+			hasNext = true;
+		}
+		List<Long> postIds = posts.stream().map(ele -> ele.getPostId()).toList();
+
+		List<Long> likePostIds = communityPostLikeRepository.findPostIdsByUserIdAndPostIds(user.getId(), postIds);
+		Map<Long, List<String>> filePaths = communityQueryRepository
+				.findPostFilesByPostIds(postIds.toArray(Long[]::new));
+
+		for (CommunityPostDto dto : posts) {
+			if (dto.isRemovedYn() || dto.isBlockedYn()) {
+				dto.setFilePaths(new ArrayList<>());
+			} else {
+				dto.setFilePaths(filePaths.getOrDefault(dto.getPostId(), new ArrayList<>()));
+			}
+			dto.setLikeYn(likePostIds.contains(dto.getPostId()));
+		}
+		resultMap.put("posts", posts);
+		resultMap.put("hasNext", hasNext);
+
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
 	@Transactional
 	public ResponseDto getPost(User user, Long postId) {
 		CommunityPostDto post = communityQueryRepository.findPostById(postId);
@@ -397,6 +431,73 @@ public class CommunityService {
 	}
 
 	@Transactional(readOnly = true)
+	public ResponseDto getMyPostComments(User user, PageRequestDto pageDto) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		int limit = pageDto.getSize() + 1;
+		int offset = (pageDto.getPage() - 1) * pageDto.getSize();
+
+		List<CommunityCommentDto> myComments = communityQueryRepository.findMyComments(user.getId(), limit, offset);
+
+		boolean hasNext = false;
+		if (myComments.size() == limit) {
+			myComments.remove(limit - 1);
+			hasNext = true;
+		}
+
+//		댓글 좋아요 기능 - 나중에 수요가 있을 시 추가
+//		List<Long> childCommentIds = new ArrayList<>();
+//
+//		childComments.values().stream().forEach(ele->{
+//			childCommentIds.addAll(ele.stream().map(ele2->ele2.getCommentId()).toList());
+//		});
+//
+//		List<Long> commentIds = new ArrayList<>();
+//		commentIds.addAll(parentCommentIds);
+//		commentIds.addAll(childCommentIds);
+//
+//		List<Long> likeCommentIds = communityPostLikeRepository.findPostIdsByUserIdAndPostIds(user.getId(), commentIds);
+
+		resultMap.put("comments", myComments);
+		resultMap.put("hasNext", hasNext);
+
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
+	@Transactional(readOnly = true)
+	public ResponseDto getMyPostLikes(User user, PageRequestDto pageDto) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		int limit = pageDto.getSize() + 1;
+		int offset = (pageDto.getPage() - 1) * pageDto.getSize();
+
+		List<CommunityPostDto> posts = communityQueryRepository.findActiveMyLikePosts(user.getId(), limit, offset);
+
+		boolean hasNext = false;
+		if (posts.size() == limit) {
+			posts.remove(limit - 1);
+			hasNext = true;
+		}
+		List<Long> postIds = posts.stream().map(ele -> ele.getPostId()).toList();
+
+		Map<Long, List<String>> filePaths = communityQueryRepository
+				.findPostFilesByPostIds(postIds.toArray(Long[]::new));
+
+		for (CommunityPostDto dto : posts) {
+			if (dto.isRemovedYn() || dto.isBlockedYn()) {
+				dto.setFilePaths(new ArrayList<>());
+			} else {
+				dto.setFilePaths(filePaths.getOrDefault(dto.getPostId(), new ArrayList<>()));
+			}
+			dto.setLikeYn(true);
+		}
+		resultMap.put("posts", posts);
+		resultMap.put("hasNext", hasNext);
+
+		return new ResponseDto(ResponseType.SUCCESS, resultMap);
+	}
+
+	@Transactional(readOnly = true)
 	public ResponseDto getPostComments(User user, Long postId, PageRequestDto pageDto) {
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 
@@ -455,7 +556,7 @@ public class CommunityService {
 			String content = body.get("content").toString();
 			String imagePath = body.get("imagePath") == null ? null : body.get("imagePath").toString();
 
-			CommunityPost post = communityPostRepository.findById(postId)
+			CommunityPost post = communityPostRepository.findByIdForUpdate(postId)
 					.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
 
 			CommunityComment comment = null;
@@ -481,6 +582,8 @@ public class CommunityService {
 				comment.setUser(user);
 
 				communityCommentRepository.save(comment);
+
+				post.setCommentCount(post.getCommentCount() + 1);
 			}
 
 			return new ResponseDto(ResponseType.SUCCESS);
@@ -528,16 +631,15 @@ public class CommunityService {
 
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
-	
+
 	@DistributedLock(prefix = "POST_LIKE_", key = "#postId")
 	@Transactional
 	public ResponseDto changePostLikeT(Long postId) {
 		CommunityPost post = communityPostRepository.findById(postId)
 				.orElseThrow(() -> new CustomResponseException(ResponseType.INVALID_PARAMETER));
-				post.setLikeCount(post.getLikeCount() + 1);
+		post.setLikeCount(post.getLikeCount() + 1);
 		return new ResponseDto(ResponseType.SUCCESS);
 	}
-
 
 	@DistributedLock(prefix = "REPORT_", key = "#type.name().concat('_').concat(#targetId)")
 	@Transactional

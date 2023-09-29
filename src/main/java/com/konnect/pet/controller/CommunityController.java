@@ -58,6 +58,13 @@ public class CommunityController {
 		return ResponseEntity.ok(communityService.getPosts(user, categoryId, pageDto));
 	}
 
+	@GetMapping("/posts/my")
+	public ResponseEntity<?> myPosts(Authentication authentication, PageRequestDto pageDto) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.getMyPosts(user, pageDto));
+	}
+
 	@GetMapping("/posts/form")
 	public ResponseEntity<?> postFormData() {
 		return ResponseEntity.ok(communityService.getPostFormData());
@@ -99,6 +106,20 @@ public class CommunityController {
 
 		boolean likeYn = Boolean.parseBoolean(body.get("likeYn").toString());
 		return ResponseEntity.ok(communityService.changePostLike(user, postId, likeYn));
+	}
+
+	@GetMapping("/posts/like/my")
+	public ResponseEntity<?> getMyLike(Authentication authentication, PageRequestDto pageDto) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.getMyPostLikes(user, pageDto));
+	}
+
+	@GetMapping("/comments/my")
+	public ResponseEntity<?> myComment(Authentication authentication, PageRequestDto pageDto) {
+		User user = (User) authentication.getPrincipal();
+
+		return ResponseEntity.ok(communityService.getMyPostComments(user, pageDto));
 	}
 
 	@GetMapping("/posts/{id}/comments")
