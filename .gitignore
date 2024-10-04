@@ -2,6 +2,7 @@ HELP.md
 .gradle
 gradle/
 build/
+!build/generated/
 !gradle/wrapper/gradle-wrapper.jar
 *.log
 .dbeaver/
