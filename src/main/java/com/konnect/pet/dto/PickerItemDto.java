@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class PickerItemDto {
-	private String label;
+	private String label;	
 	private String value;
 
 	

@@ -1,10 +1,15 @@
 HELP.md
 .gradle
-gradle
+gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
+*.log
+.dbeaver/
+.DS_Store
+
+# setting
+*.yml
+ExternalApiServiceTest.java
 
 ### STS ###
 .apt_generated
@@ -15,8 +20,6 @@ build/
 .springBeans
 .sts4-cache
 bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
 .idea
